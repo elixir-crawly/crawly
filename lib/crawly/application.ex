@@ -6,10 +6,15 @@ defmodule Crawly.Application do
   use Application
 
   def start(_type, _args) do
+    import Supervisor.Spec, warn: false
     # List all child processes to be supervised
     children = [
-      # Starts a worker by calling: Crawly.Worker.start_link(arg)
-      # {Crawly.Worker, arg},
+      worker(Crawly.Engine, []),
+      supervisor(Crawly.EngineSup, []),
+      supervisor(Registry, [:unique, Crawly.Registry]),
+      {Crawly.DataStorage, []},
+      {Crawly.URLStorage, []},
+      {DynamicSupervisor, strategy: :one_for_one, name: Crawly.URLStorage.WorkersSup}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
