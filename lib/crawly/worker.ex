@@ -29,27 +29,28 @@ defmodule Crawly.Worker do
     new_backoff =
       case Crawly.URLStorage.pop(spider_name) do
         nil ->
+          # Slow down a bit when there are no new URLs
           backoff * 2
 
         url ->
-          IO.puts("[error] URL: #{url}")
           {:ok, response} = HTTPoison.get(url)
 
           case spider_name.parse_item(response) do
             {:urls, urls} ->
               new_urls =
                 urls
-                |> Enum.map(fn url -> URI.merge(base_url, url) |> to_string() end)
+                |> Enum.map(fn url ->
+                  URI.merge(base_url, url) |> to_string()
+                end)
                 |> Enum.filter(fn url -> String.starts_with?(url, base_url) end)
                 |> Enum.uniq()
 
               Crawly.URLStorage.store(spider_name, new_urls)
 
             {:items, items} ->
-              :items
-
-            {:item, item} ->
-              :item
+              Enum.each(items, fn item ->
+                Crawly.DataStorage.store(spider_name, item)
+              end)
 
             _ ->
               Logger.info("""
@@ -58,10 +59,9 @@ defmodule Crawly.Worker do
               """)
           end
 
-          @default_backoff * 2
+          @default_backoff
       end
 
-    IO.puts("New backoff: #{new_backoff}")
     Process.send_after(self(), :work, new_backoff)
     {:noreply, %{state | backoff: new_backoff}}
   end

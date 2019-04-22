@@ -14,6 +14,6 @@ defmodule BlogEsl do
       |> Floki.find("a")
       |> Floki.attribute("href")
 
-    {:urls, urls}
+    {:items, [%{title: "Blog post", body: "Awesome article"}]}
   end
 end

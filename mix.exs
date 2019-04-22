@@ -3,6 +3,9 @@ defmodule Crawly.Mixfile do
 
   def project do
     [
+
+
+
       app: :crawly,
       version: "0.1.0",
       elixir: "~> 1.5",
@@ -24,7 +27,8 @@ defmodule Crawly.Mixfile do
     [
       {:httpoison, "~> 1.4"},
       {:floki, "~> 0.20.0"},
-      {:uuid, "~> 1.1"}
+      {:uuid, "~> 1.1"},
+      {:poison, "~> 3.1"}
     ]
   end
 end

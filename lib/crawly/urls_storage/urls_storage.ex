@@ -34,8 +34,6 @@ defmodule Crawly.URLStorage do
   end
 
   def start_link([]) do
-    Logger.info("Starting URLS manager...")
-
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 

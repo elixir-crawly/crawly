@@ -73,12 +73,10 @@ defmodule Crawly.URLStorage.Worker do
         [url | rest] -> {url, rest, cnt - 1}
       end
 
-    Logger.info("[error] [error] Returning url: #{url}")
     {:reply, url, %Worker{state | urls: rest, count: cnt}}
   end
 
   def handle_info(:info, state) do
-    Logger.info("[error] Known URLs: #{inspect(state.count)}")
     Process.send_after(self(), :info, 5000)
     {:noreply, state}
   end
