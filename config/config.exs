@@ -30,3 +30,9 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 
 config :crawly, Crawly.Worker, client: HTTPoison
+
+config :crawly,
+  base_store_path: "/tmp/",
+  pipelines: [Crawly.Pipelines.Validate],
+
+  item: [:body, :title, :url]
