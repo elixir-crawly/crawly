@@ -12,11 +12,10 @@ defmodule Crawly.Application do
     children = [
       worker(Crawly.Engine, []),
       supervisor(Crawly.EngineSup, []),
-      supervisor(Registry, [:unique, Crawly.Registry]),
       {Crawly.DataStorage, []},
-      {Crawly.URLStorage, []},
+      {Crawly.RequestsStorage, []},
       {DynamicSupervisor,
-       strategy: :one_for_one, name: Crawly.URLStorage.WorkersSup},
+       strategy: :one_for_one, name: Crawly.RequestsStorage.WorkersSup},
       {DynamicSupervisor,
        strategy: :one_for_one, name: Crawly.DataStorage.WorkersSup}
     ]

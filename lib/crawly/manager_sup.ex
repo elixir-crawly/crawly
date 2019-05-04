@@ -7,7 +7,6 @@ defmodule Crawly.ManagerSup do
 
   @impl true
   def init(spider_name) do
-    IO.puts("Spider name is: #{inspect(spider_name)}")
 
     children = [
       {DynamicSupervisor, strategy: :one_for_one, name: spider_name},

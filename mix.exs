@@ -28,7 +28,8 @@ defmodule Crawly.Mixfile do
       {:httpoison, "~> 1.4"},
       {:floki, "~> 0.20.0"},
       {:uuid, "~> 1.1"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:gollum, path: "/Users/olegtarasenko/repos/gollum"}
     ]
   end
 end

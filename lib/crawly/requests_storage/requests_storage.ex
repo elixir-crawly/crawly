@@ -1,4 +1,4 @@
-defmodule Crawly.URLStorage do
+defmodule Crawly.RequestsStorage do
   @moduledoc """
   URLS Storage, a module responsible for storing urls for crawling
   """
@@ -19,14 +19,14 @@ defmodule Crawly.URLStorage do
 
   defstruct workers: %{}
 
-  alias Crawly.URLStorage
+  alias Crawly.RequestsStorage
 
-  def store(spider_name, urls) when is_list(urls) do
-    GenServer.call(__MODULE__, {:store, {spider_name, urls}})
+  def store(spider_name, requests) when is_list(requests) do
+    GenServer.call(__MODULE__, {:store, {spider_name, requests}})
   end
 
-  def store(spider_name, url) do
-    store(spider_name, [url])
+  def store(spider_name, request) do
+    store(spider_name, [request])
   end
 
   def pop(spider_name) do
@@ -38,19 +38,20 @@ defmodule Crawly.URLStorage do
   end
 
   def init(_args) do
-    {:ok, %URLStorage{}}
+    {:ok, %RequestsStorage{}}
   end
 
-  def handle_call({:store, {spider_name, urls}}, _from, state) do
+  def handle_call({:store, {spider_name, requests}}, _from, state) do
     %{workers: workers} = state
 
+    # Start the requests storage worker if it not started yet
     {worker_pid, new_workers} =
       case Map.get(workers, spider_name) do
         nil ->
           {:ok, pid} =
             DynamicSupervisor.start_child(
-              Crawly.URLStorage.WorkersSup,
-              Crawly.URLStorage.Worker
+              Crawly.RequestsStorage.WorkersSup,
+              {Crawly.RequestsStorage.Worker, spider_name}
             )
 
           {pid, Map.put(workers, spider_name, pid)}
@@ -59,8 +60,8 @@ defmodule Crawly.URLStorage do
           {pid, workers}
       end
 
-    Crawly.URLStorage.Worker.store(worker_pid, urls)
-    {:reply, :ok, %URLStorage{state | workers: new_workers}}
+    Crawly.RequestsStorage.Worker.store(worker_pid, requests)
+    {:reply, :ok, %RequestsStorage{state | workers: new_workers}}
   end
 
   def handle_call({:pop, spider_name}, _from, state = %{workers: workers}) do
@@ -70,7 +71,7 @@ defmodule Crawly.URLStorage do
           {:error, :no_worker_registered}
 
         pid ->
-          Crawly.URLStorage.Worker.pop(pid)
+          Crawly.RequestsStorage.Worker.pop(pid)
       end
 
     {:reply, resp, state}

@@ -24,40 +24,31 @@ defmodule Crawly.Worker do
   end
 
   def handle_info(:work, state) do
-    %{spider_name: spider_name, backoff: backoff, base_url: base_url} = state
+    %{spider_name: spider_name, backoff: backoff, base_url: _base_url} = state
 
     new_backoff =
-      case Crawly.URLStorage.pop(spider_name) do
+      case Crawly.RequestsStorage.pop(spider_name) do
         nil ->
           # Slow down a bit when there are no new URLs
           backoff * 2
 
-        url ->
-          {:ok, response} = HTTPoison.get(url)
+        request ->
+          {:ok, response} = HTTPoison.get(request.url, request.headers)
 
-          case spider_name.parse_item(response) do
-            {:urls, urls} ->
-              new_urls =
-                urls
-                |> Enum.map(fn url ->
-                  URI.merge(base_url, url) |> to_string()
-                end)
-                |> Enum.filter(fn url -> String.starts_with?(url, base_url) end)
-                |> Enum.uniq()
+          spider_response = spider_name.parse_item(response)
+          requests = Map.get(spider_response, :requests, [])
+          items = Map.get(spider_response, :items, [])
 
-              Crawly.URLStorage.store(spider_name, new_urls)
+          # Process all requests one by one
+          Enum.each(requests, fn request ->
+            request = Map.put(request, :prev_response, response)
+            Crawly.RequestsStorage.store(spider_name, request)
+          end)
 
-            {:items, items} ->
-              Enum.each(items, fn item ->
-                Crawly.DataStorage.store(spider_name, item)
-              end)
-
-            _ ->
-              Logger.info("""
-              Unxepected response from spider. Please check if it implements
-              parse_item behaviour correctly!"
-              """)
-          end
+          # Process all items one by one
+          Enum.each(items, fn item ->
+            Crawly.DataStorage.store(spider_name, item)
+          end)
 
           @default_backoff
       end

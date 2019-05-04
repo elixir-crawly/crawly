@@ -16,10 +16,16 @@ defmodule Crawly.Manager do
     [start_urls: urls] = spider_name.init()
 
     base_url = get_base_url(hd(urls))
-    Crawly.URLStorage.store(spider_name, urls)
+
+    # Register a worker for a given spider
+    # this is a hackish way of doing things. TODO: make register API
+    Crawly.RequestsStorage.store(spider_name, %Crawly.Request{url: hd(urls)})
 
     {:ok, pid} =
-      DynamicSupervisor.start_child(spider_name, {Crawly.Worker, [spider_name, base_url]})
+      DynamicSupervisor.start_child(
+        spider_name,
+        {Crawly.Worker, [spider_name, base_url]}
+      )
 
     Logger.info("[error] Worker pid #{inspect(pid)}")
     {:ok, %{name: spider_name}}
