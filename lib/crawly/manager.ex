@@ -21,13 +21,19 @@ defmodule Crawly.Manager do
     # this is a hackish way of doing things. TODO: make register API
     Crawly.RequestsStorage.store(spider_name, %Crawly.Request{url: hd(urls)})
 
-    {:ok, pid} =
-      DynamicSupervisor.start_child(
-        spider_name,
-        {Crawly.Worker, [spider_name, base_url]}
-      )
+    num_workers =
+      Application.get_env(:crawly, :concurrent_requests_per_domain, 1)
 
-    Logger.info("[error] Worker pid #{inspect(pid)}")
+    worker_pids =
+      Enum.map(1..num_workers, fn _x ->
+        DynamicSupervisor.start_child(
+          spider_name,
+          {Crawly.Worker, [spider_name, base_url]}
+        )
+      end)
+
+    Logger.debug("Spider workers pids: #{inspect(worker_pids)}")
+
     {:ok, %{name: spider_name}}
   end
 

@@ -53,27 +53,7 @@ defmodule Crawly.RequestsStorage.Worker do
         {new_request, new_state} ->
           # Process request here....
           %{new_state | requests: [new_request | requests]}
-          new_state
       end
-
-    # %{count: cnt, requests: requests, seen_fingerprints: seen_fingerprints} =
-    #   state
-
-    # fingerprint = UUID.uuid3(:url, request.url)
-
-    # new_state =
-    #   case fingerprint in seen_fingerprints do
-    #     false ->
-    #       %Worker{
-    #         state
-    #         | requests: [request | requests],
-    #           count: cnt + 1,
-    #           seen_fingerprints: [fingerprint | seen_fingerprints]
-    #       }
-
-    #     true ->
-    #       state
-    #   end
 
     {:reply, :ok, new_state}
   end

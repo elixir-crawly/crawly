@@ -6,10 +6,13 @@ defmodule Crawly.Middlewares.DomainFilter do
 
     case String.contains?(request.url, base_url) do
       false ->
-        Logger.info("Dropping unrelated request: #{inspect(request)}")
+        Logger.debug(
+          "Dropping request: #{inspect(request.url)} (domain filter)"
+        )
+
         {false, state}
+
       true ->
-        Logger.info("Processing requst")
         {request, state}
     end
   end

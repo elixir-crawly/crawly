@@ -5,9 +5,9 @@ defmodule Crawly.Worker do
   """
   require Logger
 
-  @default_backoff 1000
+  @default_backoff 300
 
-  defstruct backoff: 1000, spider_name: nil, base_url: nil
+  defstruct backoff: @default_backoff, spider_name: nil, base_url: nil
 
   use GenServer
 
@@ -18,9 +18,16 @@ defmodule Crawly.Worker do
   end
 
   def init([spider_name, base_url]) do
-    Process.send_after(self(), :work, 2_000)
+    IO.puts("Init worker called...")
+    Process.send_after(self(), :work, @default_backoff)
 
-    {:ok, %{spider_name: spider_name, backoff: 2000, base_url: base_url}}
+    state = %{
+      spider_name: spider_name,
+      backoff: @default_backoff,
+      base_url: base_url
+    }
+
+    {:ok, state}
   end
 
   def handle_info(:work, state) do
@@ -29,19 +36,27 @@ defmodule Crawly.Worker do
     new_backoff =
       case Crawly.RequestsStorage.pop(spider_name) do
         nil ->
+          Logger.debug("No work, increase backoff to #{inspect(backoff * 2)}")
           # Slow down a bit when there are no new URLs
           backoff * 2
 
         request ->
-          {:ok, response} = HTTPoison.get(request.url, request.headers)
+          {:ok, response} =
+            HTTPoison.get(request.url, request.headers, request.options)
 
           spider_response = spider_name.parse_item(response)
           requests = Map.get(spider_response, :requests, [])
           items = Map.get(spider_response, :items, [])
 
+
+          follow_redirect = Application.get_env(:crawly, :follow_redirect, false)
+
           # Process all requests one by one
           Enum.each(requests, fn request ->
-            request = Map.put(request, :prev_response, response)
+            request = request
+            |> Map.put(:prev_response, response)
+            |> Map.put(:options, [{:follow_redirect, follow_redirect}])
+
             Crawly.RequestsStorage.store(spider_name, request)
           end)
 

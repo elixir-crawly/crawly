@@ -34,8 +34,9 @@ config :crawly, Crawly.Worker, client: HTTPoison
 config :crawly,
   base_store_path: "/tmp/",
   pipelines: [Crawly.Pipelines.Validate],
-
+  follow_redirect: true,
   item: [:body, :title, :url],
+  concurrent_requests_per_domain: 16,
   user_agents: [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",

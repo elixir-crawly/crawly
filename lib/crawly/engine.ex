@@ -16,10 +16,6 @@ defmodule Crawly.Engine do
   end
 
   def init(_args) do
-
-
-
-
     {:ok, %{}}
   end
 end
