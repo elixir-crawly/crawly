@@ -33,6 +33,10 @@ defmodule Crawly.RequestsStorage do
     GenServer.call(__MODULE__, {:pop, spider_name})
   end
 
+  def stats(spider_name) do
+    GenServer.call(__MODULE__, {:stats, spider_name})
+  end
+
   def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -75,5 +79,17 @@ defmodule Crawly.RequestsStorage do
       end
 
     {:reply, resp, state}
+  end
+
+  def handle_call({:stats, spider_name}, _from, state) do
+    msg =
+      case Map.get(state.workers, spider_name) do
+        nil ->
+          {:error, :storage_worker_not_running}
+
+        pid ->
+          Crawly.RequestsStorage.Worker.stats(pid)
+      end
+    {:reply, msg, state}
   end
 end

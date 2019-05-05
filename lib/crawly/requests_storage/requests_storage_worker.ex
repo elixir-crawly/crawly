@@ -31,6 +31,10 @@ defmodule Crawly.RequestsStorage.Worker do
     GenServer.call(pid, :pop)
   end
 
+  def stats(pid) do
+    GenServer.call(pid, :stats)
+  end
+
   def start_link(spider_name) do
     Logger.info("Starting requests storage worker for #{spider_name}...")
 
@@ -42,7 +46,7 @@ defmodule Crawly.RequestsStorage.Worker do
   end
 
   # Store the given request
-  def handle_call({:store, request}, _from, %{requests: requests} = state) do
+  def handle_call({:store, request}, _from, state) do
     middlewares = Application.get_env(:crawly, :middlewares, [])
 
     new_state =
@@ -52,7 +56,11 @@ defmodule Crawly.RequestsStorage.Worker do
 
         {new_request, new_state} ->
           # Process request here....
-          %{new_state | requests: [new_request | requests]}
+          %{
+            new_state
+            | count: state.count + 1,
+              requests: [new_request | state.requests]
+          }
       end
 
     {:reply, :ok, new_state}
@@ -70,5 +78,9 @@ defmodule Crawly.RequestsStorage.Worker do
       end
 
     {:reply, request, %Worker{state | requests: rest, count: new_cnt}}
+  end
+
+  def handle_call(:stats, _from, state) do
+    {:reply, {:stored_requests, state.count}, state}
   end
 end
