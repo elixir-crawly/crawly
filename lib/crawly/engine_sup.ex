@@ -24,7 +24,10 @@ defmodule Crawly.EngineSup do
     end
   end
 
-  def stop_spider(spider_name) do
-    {:ignore, :not_implemented}
+  def stop_spider(pid) do
+    DynamicSupervisor.terminate_child(
+      __MODULE__,
+      pid
+    )
   end
 end
