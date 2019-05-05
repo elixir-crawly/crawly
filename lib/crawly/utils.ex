@@ -13,8 +13,13 @@ defmodule Crawly.Utils do
       try do
         {new_item, new_state} = pipeline.run(item, state)
       catch
-        _, _ ->
-          Logger.error("Pipeline crash: #{pipeline}")
+        error, reason ->
+          Logger.error(
+            "Pipeline crash: #{pipeline}, error: #{inspect(error)}, reason: #{
+              inspect(reason)
+            }"
+          )
+
           {item, state}
       end
 
