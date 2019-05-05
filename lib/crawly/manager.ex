@@ -15,8 +15,7 @@ defmodule Crawly.Manager do
   def init(spider_name) do
     [start_urls: urls] = spider_name.init()
 
-    base_url = get_base_url(hd(urls))
-
+    Crawly.DataStorage.start_worker(spider_name)
     Crawly.RequestsStorage.start_worker(spider_name)
 
     # Store start requests
@@ -27,6 +26,7 @@ defmodule Crawly.Manager do
     num_workers =
       Application.get_env(:crawly, :concurrent_requests_per_domain, 1)
 
+    base_url = get_base_url(hd(urls))
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
         DynamicSupervisor.start_child(

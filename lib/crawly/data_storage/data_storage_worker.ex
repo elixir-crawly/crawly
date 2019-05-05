@@ -1,15 +1,20 @@
 defmodule Crawly.DataStorage.Worker do
+  alias Crawly.DataStorage.Worker
   require Logger
 
   use GenServer
+
+  defstruct fd: nil, stored_items: 0
 
   def start_link(spider_name: spider_name) do
     GenServer.start_link(__MODULE__, spider_name: spider_name)
   end
 
+  def stats(pid), do: GenServer.call(pid, :stats)
+
   def store(pid, item) do
-    GenServer.cast(pid, {:store, item})
     Logger.info("Storing item: #{inspect(pid)}/#{inspect(item)}")
+    GenServer.cast(pid, {:store, item})
   end
 
   def init(spider_name: spider_name) do
@@ -22,7 +27,7 @@ defmodule Crawly.DataStorage.Worker do
         :delayed_write
       ])
 
-    {:ok, %{fd: fd}}
+    {:ok, %Worker{fd: fd}}
   end
 
   def handle_cast({:store, item}, state) do
@@ -35,10 +40,14 @@ defmodule Crawly.DataStorage.Worker do
 
         {new_item, new_state} ->
           IO.write(state.fd, Poison.encode!(new_item))
-          new_state
+
+          %Worker{new_state | stored_items: state.stored_items + 1}
       end
 
     {:noreply, state}
   end
 
+  def handle_call(:stats, _from, state) do
+    {:reply, state.stored_items, state}
+  end
 end
