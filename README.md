@@ -3,7 +3,7 @@
 **Commands**
 
 1. Start crawler:
-`Crawly.EngineSup.start_manager(BlogEsl)`
+`Crawly.EngineSup.start_spider(BlogEsl)`
 
 **Tasks**
 

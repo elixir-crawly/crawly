@@ -7,8 +7,10 @@ defmodule Crawly.Engine do
 
   use GenServer
 
-  def start_spider(name) do
-    Logger.info("Started:  #{name}")
+  defstruct started_spiders: %{}
+
+  def start_spider(spider_name) do
+    GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
   def start_link() do
@@ -16,6 +18,19 @@ defmodule Crawly.Engine do
   end
 
   def init(_args) do
-    {:ok, %{}}
+    {:ok, %Crawly.Engine{}}
+  end
+
+  def handle_call({:start_spider, spider_name}, _form, state) do
+    {msg, pid} =
+      case Map.get(state.started_spiders, spider_name) do
+        nil ->
+          Crawly.EngineSup.start_spider(spider_name)
+
+        pid ->
+          {{:error, :spider_already_started}, pid}
+      end
+    new_started_spiders = Map.put(state.started_spiders, spider_name, pid)
+    {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 end

@@ -32,7 +32,9 @@ defmodule Crawly.Manager do
         )
       end)
 
-    Logger.debug("Spider workers pids: #{inspect(worker_pids)}")
+    Logger.debug(
+      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
+    )
 
     {:ok, %{name: spider_name}}
   end
