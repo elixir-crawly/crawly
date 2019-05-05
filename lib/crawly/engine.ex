@@ -17,6 +17,9 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 
+  def running_spiders() do
+    GenServer.call(__MODULE__, :running_spiders)
+  end
 
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -24,6 +27,18 @@ defmodule Crawly.Engine do
 
   def init(_args) do
     {:ok, %Crawly.Engine{}}
+  end
+
+  def handle_call(:running_spiders, _from, state) do
+    running_spiders = state.started_spiders
+    msg =
+      case Enum.count(running_spiders) do
+        0 ->
+          "No spiders are currently running"
+        _ ->
+          "Following spiders are running currently: #{inspect(running_spiders)}"
+      end
+    {:reply, msg, state}
   end
 
   def handle_call({:start_spider, spider_name}, _form, state) do
