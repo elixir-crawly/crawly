@@ -28,10 +28,8 @@ defmodule Crawly.DataStorage.Worker do
   def handle_cast({:store, item}, state) do
     pipelines = Application.get_env(:crawly, :pipelines, [])
 
-    # Update the state of the data storage worker after running
-    # pipelines
     state =
-      case pipeline_runner(pipelines, item, state) do
+      case Crawly.Utils.pipe(pipelines, item, state) do
         {false, new_state} ->
           new_state
 
@@ -43,12 +41,4 @@ defmodule Crawly.DataStorage.Worker do
     {:noreply, state}
   end
 
-  defp pipeline_runner([], item, state), do: {item, state}
-
-  defp pipeline_runner(_, false, state), do: {false, state}
-
-  defp pipeline_runner([pipeline | pipelines], item, state) do
-    {new_item, new_state} = pipeline.run(item, state)
-    pipeline_runner(pipelines, new_item, new_state)
-  end
 end
