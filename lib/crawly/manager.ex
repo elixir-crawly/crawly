@@ -17,10 +17,13 @@ defmodule Crawly.Manager do
 
     base_url = get_base_url(hd(urls))
 
-    # Register a worker for a given spider
-    # this is a hackish way of doing things. TODO: make register API
-    Crawly.RequestsStorage.store(spider_name, %Crawly.Request{url: hd(urls)})
+    Crawly.RequestsStorage.start_worker(spider_name)
 
+    # Store start requests
+    requests = Enum.map(urls, fn url ->  %Crawly.Request{url: url} end)
+    Crawly.RequestsStorage.store(spider_name, requests)
+
+    # Start workers
     num_workers =
       Application.get_env(:crawly, :concurrent_requests_per_domain, 1)
 

@@ -37,6 +37,10 @@ defmodule Crawly.RequestsStorage do
     GenServer.call(__MODULE__, {:stats, spider_name})
   end
 
+  def start_worker(spider_name) do
+    GenServer.call(__MODULE__, {:start_worker, spider_name})
+  end
+
   def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -48,24 +52,16 @@ defmodule Crawly.RequestsStorage do
   def handle_call({:store, {spider_name, requests}}, _from, state) do
     %{workers: workers} = state
 
-    # Start the requests storage worker if it not started yet
-    {worker_pid, new_workers} =
+    msg =
       case Map.get(workers, spider_name) do
         nil ->
-          {:ok, pid} =
-            DynamicSupervisor.start_child(
-              Crawly.RequestsStorage.WorkersSup,
-              {Crawly.RequestsStorage.Worker, spider_name}
-            )
-
-          {pid, Map.put(workers, spider_name, pid)}
+          {:error, :storage_worker_not_running}
 
         pid ->
-          {pid, workers}
+          Crawly.RequestsStorage.Worker.store(pid, requests)
       end
 
-    Crawly.RequestsStorage.Worker.store(worker_pid, requests)
-    {:reply, :ok, %RequestsStorage{state | workers: new_workers}}
+    {:reply, msg, state}
   end
 
   def handle_call({:pop, spider_name}, _from, state = %{workers: workers}) do
@@ -90,6 +86,25 @@ defmodule Crawly.RequestsStorage do
         pid ->
           Crawly.RequestsStorage.Worker.stats(pid)
       end
+
     {:reply, msg, state}
+  end
+
+  def handle_call({:start_worker, spider_name}, _from, state) do
+    {msg, new_workers} =
+      case Map.get(state.workers, spider_name) do
+        nil ->
+          {:ok, pid} =
+            DynamicSupervisor.start_child(
+              Crawly.RequestsStorage.WorkersSup,
+              {Crawly.RequestsStorage.Worker, spider_name}
+            )
+
+          {:ok, Map.put(state.workers, spider_name, pid)}
+
+        _ ->
+          {{:error, :already_started}, state.workers}
+      end
+    {:reply, msg, %{state | workers: new_workers}}
   end
 end
