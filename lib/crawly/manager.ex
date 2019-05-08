@@ -26,7 +26,7 @@ defmodule Crawly.Manager do
 
     # Start workers
     num_workers =
-      Application.get_env(:crawly, :concurrent_requests_per_domain, 1)
+      Application.get_env(:crawly, :concurrent_requests_per_domain, 4)
 
     base_url = get_base_url(hd(urls))
     worker_pids =

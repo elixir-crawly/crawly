@@ -2,7 +2,7 @@ defmodule Crawly.Pipelines.Validate do
   require Logger
 
   def run(item, state) do
-    fields = Application.get_env(:crawly, :item)
+    fields = Application.get_env(:crawly, :item, [])
 
     case Enum.all?(fields, fn key -> Map.has_key?(item, key) end) do
       false ->
