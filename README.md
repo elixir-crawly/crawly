@@ -5,6 +5,17 @@
 1. Start crawler:
 `Crawly.EngineSup.start_spider(BlogEsl)`
 
+** API **
+
+1. Start crawler:
+curl -v localhost:4001/spiders/<SpiderName>/schedule
+2. Stop crawler
+curl -v localhost:4001/spiders/<SpiderName>/schedule
+3. Scheduled requests:
+curl -v localhost:4001/spiders/BlogEsl/scheduled-requests
+4. Scraped Items:
+curl -v localhost:4001/spiders/BlogEsl/scraped-items
+
 **Tasks**
 
 ***General***

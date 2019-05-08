@@ -29,7 +29,8 @@ defmodule Crawly.Mixfile do
       {:floki, "~> 0.20.0"},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
-      {:gollum, path: "/Users/olegtarasenko/repos/gollum"}
+      {:gollum, path: "/Users/olegtarasenko/repos/gollum"},
+      {:plug_cowboy, "~> 2.0"}
     ]
   end
 end

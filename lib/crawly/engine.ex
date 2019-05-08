@@ -30,27 +30,28 @@ defmodule Crawly.Engine do
   end
 
   def handle_call(:running_spiders, _from, state) do
-    running_spiders = state.started_spiders
-    msg =
-      case Enum.count(running_spiders) do
-        0 ->
-          "No spiders are currently running"
-        _ ->
-          "Following spiders are running currently: #{inspect(running_spiders)}"
-      end
-    {:reply, msg, state}
+    {:reply, state.started_spiders, state}
   end
 
   def handle_call({:start_spider, spider_name}, _form, state) do
-    {msg, pid} =
+    result =
       case Map.get(state.started_spiders, spider_name) do
         nil ->
           Crawly.EngineSup.start_spider(spider_name)
 
-        pid ->
-          {{:error, :spider_already_started}, pid}
+        _ ->
+          {:error, :spider_already_started}
       end
-    new_started_spiders = Map.put(state.started_spiders, spider_name, pid)
+
+    {msg, new_started_spiders} =
+      case result do
+        {:ok, pid} ->
+          {:ok, Map.put(state.started_spiders, spider_name, pid)}
+
+        {:error, _} = err ->
+          {err, state.started_spiders}
+      end
+
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
@@ -58,7 +59,8 @@ defmodule Crawly.Engine do
     {msg, new_started_spiders} =
       case Map.pop(state.started_spiders, spider_name) do
         {nil, _} ->
-          {{:error, :spider_not_running}, state.started_spiders}
+          {:error, :spider_not_running}
+
         {pid, new_started_spiders} ->
           Crawly.EngineSup.stop_spider(pid)
           {:ok, new_started_spiders}
