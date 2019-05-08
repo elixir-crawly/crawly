@@ -4,6 +4,8 @@ defmodule Crawly.Manager do
   """
   require Logger
 
+  @timeout 5000
+
   use GenServer
 
   def start_link(spider_name) do
@@ -39,7 +41,16 @@ defmodule Crawly.Manager do
       "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
     )
 
-    {:ok, %{name: spider_name}}
+    tref = Process.send_after(self(), :operations, @timeout)
+    {:ok, %{name: spider_name, tref: tref}}
+  end
+
+  def handle_info(:operations, state) do
+    Process.cancel_timer(state.tref)
+
+    tref = Process.send_after(self(), :operations, @timeout)
+    Logger.info("Processing..")
+    {:noreply, %{state | tref: tref}}
   end
 
   defp get_base_url(url) do
