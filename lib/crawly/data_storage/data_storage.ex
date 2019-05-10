@@ -23,7 +23,6 @@ defmodule Crawly.DataStorage do
   end
 
   def store(spider, item) do
-    Logger.info("Stored item is: #{inspect(item)}")
     GenServer.call(__MODULE__, {:store, spider, item})
   end
 

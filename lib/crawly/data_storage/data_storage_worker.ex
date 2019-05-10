@@ -13,7 +13,6 @@ defmodule Crawly.DataStorage.Worker do
   def stats(pid), do: GenServer.call(pid, :stats)
 
   def store(pid, item) do
-    Logger.info("Storing item: #{inspect(pid)}/#{inspect(item)}")
     GenServer.cast(pid, {:store, item})
   end
 
@@ -21,10 +20,11 @@ defmodule Crawly.DataStorage.Worker do
     base_path = Application.get_env(:crawly, :base_store_path, "/tmp/")
 
     {:ok, fd} =
-      File.open("#{base_path}#{inspect(spider_name)}.json", [
+      File.open("#{base_path}#{inspect(spider_name)}.jl", [
         :binary,
         :write,
-        :delayed_write
+        :delayed_write,
+        :utf8
       ])
 
     {:ok, %Worker{fd: fd}}
@@ -40,7 +40,7 @@ defmodule Crawly.DataStorage.Worker do
 
         {new_item, new_state} ->
           IO.write(state.fd, Poison.encode!(new_item))
-
+          IO.write(state.fd, "\n")
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
 
