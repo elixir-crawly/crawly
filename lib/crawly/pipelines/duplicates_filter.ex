@@ -2,7 +2,8 @@ defmodule Crawly.Pipelines.DuplicatesFilter do
   require Logger
 
   def run(item, state) do
-    item_id = Map.get(item, :item_id)
+    item_id = Application.get_env(:crawly, :item_id)
+    item_id = Map.get(item, item_id)
 
     case item_id do
       nil ->
