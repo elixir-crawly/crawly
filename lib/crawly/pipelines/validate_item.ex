@@ -4,16 +4,28 @@ defmodule Crawly.Pipelines.Validate do
   def run(item, state) do
     fields = Application.get_env(:crawly, :item, [])
 
-    case Enum.all?(fields, fn key -> Map.has_key?(item, key) end) do
-      false ->
+    validation_result =
+      Enum.map(fields, fn field ->
+        case Map.get(item, field) do
+          val when val == nil or val == :undefined or val == "" ->
+            :invalid
+
+          _ ->
+            :valid
+        end
+      end)
+      |> Enum.uniq()
+
+    case validation_result do
+      [:valid] ->
+        {item, state}
+
+      _ ->
         Logger.info(
           "Dropping item: #{inspect(item)}. Reason: missing required fields"
         )
 
         {false, state}
-
-      _ ->
-        {item, state}
     end
   end
 end
