@@ -39,7 +39,7 @@ defmodule Crawly.DataStorage.Worker do
           new_state
 
         {new_item, new_state} ->
-          IO.write(state.fd, Poison.encode!(new_item))
+          IO.write(state.fd, new_item)
           IO.write(state.fd, "\n")
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
