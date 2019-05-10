@@ -17,7 +17,7 @@ defmodule Crawly.RequestsStorage do
 
   use GenServer
 
-  defstruct workers: %{}
+  defstruct workers: %{}, pid_spiders: %{}
 
   alias Crawly.RequestsStorage
 
@@ -91,7 +91,7 @@ defmodule Crawly.RequestsStorage do
   end
 
   def handle_call({:start_worker, spider_name}, _from, state) do
-    {msg, new_workers} =
+    {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
           {:ok, pid} =
@@ -100,11 +100,33 @@ defmodule Crawly.RequestsStorage do
               {Crawly.RequestsStorage.Worker, spider_name}
             )
 
-          {:ok, Map.put(state.workers, spider_name, pid)}
+          Process.monitor(pid)
+
+          new_workers = Map.put(state.workers, spider_name, pid)
+          new_spider_pids = Map.put(state.pid_spiders, pid, spider_name)
+
+          new_state = %{
+            state
+            | workers: new_workers,
+              pid_spiders: new_spider_pids
+          }
+
+          {{:ok, pid}, new_state}
 
         _ ->
           {{:error, :already_started}, state.workers}
       end
-    {:reply, msg, %{state | workers: new_workers}}
+
+    {:reply, msg, new_state}
+  end
+
+  # Clean up worker
+  def handle_info({:DOWN, _ref, :process, pid, _}, state) do
+    spider_name = Map.get(state.pid_spiders, pid)
+    new_pid_spiders = Map.delete(state.pid_spiders, pid)
+    new_workers = Map.delete(state.workers, spider_name)
+    new_state =  %{state | workers: new_workers, pid_spiders: new_pid_spiders}
+
+    {:noreply, new_state}
   end
 end

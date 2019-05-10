@@ -18,7 +18,6 @@ defmodule Crawly.Worker do
   end
 
   def init([spider_name, base_url]) do
-    IO.puts("Init worker called...")
     Process.send_after(self(), :work, @default_backoff)
 
     state = %{
