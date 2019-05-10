@@ -37,6 +37,7 @@ defmodule Crawly.API.Router do
 
     msg =
       case result do
+        {:error, :not_found} -> "Not found"
         {:error, :spider_not_running} -> "Spider is not running"
         :ok -> "Stopped!"
       end
