@@ -4,7 +4,7 @@ defmodule Crawly.Manager do
   """
   require Logger
 
-  @timeout 5000
+  @timeout 30000
 
   use GenServer
 
@@ -17,8 +17,10 @@ defmodule Crawly.Manager do
   def init(spider_name) do
     [start_urls: urls] = spider_name.init()
 
-    Crawly.DataStorage.start_worker(spider_name)
-    Crawly.RequestsStorage.start_worker(spider_name)
+    {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
+    Process.link(data_storage_pid)
+    {:ok, request_storage_pid} = Crawly.RequestsStorage.start_worker(spider_name)
+    Process.link(request_storage_pid)
 
     # Store start requests
     requests = Enum.map(urls, fn url ->  %Crawly.Request{url: url} end)
@@ -49,7 +51,7 @@ defmodule Crawly.Manager do
     Process.cancel_timer(state.tref)
 
     tref = Process.send_after(self(), :operations, @timeout)
-    Logger.info("Processing..")
+    Logger.info("Operational request..")
     {:noreply, %{state | tref: tref}}
   end
 

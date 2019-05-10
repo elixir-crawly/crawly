@@ -59,7 +59,7 @@ defmodule Crawly.Engine do
     {msg, new_started_spiders} =
       case Map.pop(state.started_spiders, spider_name) do
         {nil, _} ->
-          {:error, :spider_not_running}
+          {{:error, :spider_not_running}, state.started_spiders}
 
         {pid, new_started_spiders} ->
           Crawly.EngineSup.stop_spider(pid)
