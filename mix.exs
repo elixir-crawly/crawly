@@ -30,7 +30,8 @@ defmodule Crawly.Mixfile do
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
       {:gollum, path: "/Users/olegtarasenko/repos/gollum"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:epipe, "~> 1.0"}
     ]
   end
 end

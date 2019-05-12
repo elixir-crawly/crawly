@@ -40,34 +40,66 @@ defmodule Crawly.Worker do
           backoff * 2
 
         request ->
-          {:ok, response} =
-            HTTPoison.get(request.url, request.headers, request.options)
 
-          spider_response = spider_name.parse_item(response)
-          requests = Map.get(spider_response, :requests, [])
-          items = Map.get(spider_response, :items, [])
+          functions = [
+            {:get_response, &get_response/1},
+            {:parse_item, &parse_item/1},
+            {:process_parsed_item, &process_parsed_item/1}]
 
-
-          follow_redirect = Application.get_env(:crawly, :follow_redirect, false)
-
-          # Process all requests one by one
-          Enum.each(requests, fn request ->
-            request = request
-            |> Map.put(:prev_response, response)
-            |> Map.put(:options, [{:follow_redirect, follow_redirect}])
-
-            Crawly.RequestsStorage.store(spider_name, request)
-          end)
-
-          # Process all items one by one
-          Enum.each(items, fn item ->
-            Crawly.DataStorage.store(spider_name, item)
-          end)
-
+          :epipe.run(functions, {request, spider_name})
           @default_backoff
       end
 
     Process.send_after(self(), :work, new_backoff)
     {:noreply, %{state | backoff: new_backoff}}
+  end
+
+  defp get_response({request, spider_name}) do
+    case HTTPoison.get(request.url, request.headers, request.options) do
+      {:ok, response} ->
+        {:ok, {response, spider_name}}
+      {:error, _reason} = response -> response
+    end
+  end
+
+  defp parse_item({response, spider_name}) do
+    try do
+      parsed_response = spider_name.parse_item(response)
+      {:ok, {parsed_response, response, spider_name}}
+    catch
+      error, reason ->
+        Logger.error(
+          "Could not parse item, error: #{inspect(error)}, reason: #{
+            inspect(reason)
+          }"
+        )
+
+        {:error, reason}
+    end
+  end
+
+  defp process_parsed_item({parsed_item, response, spider_name}) do
+     requests = Map.get(parsed_item, :requests, [])
+     items = Map.get(parsed_item, :items, [])
+
+     follow_redirect =
+       Application.get_env(:crawly, :follow_redirect, false)
+
+     # Process all requests one by one
+     Enum.each(requests, fn request ->
+       request =
+         request
+         |> Map.put(:prev_response, response)
+         |> Map.put(:options, [{:follow_redirect, follow_redirect}])
+
+       Crawly.RequestsStorage.store(spider_name, request)
+     end)
+
+     # Process all items one by one
+     Enum.each(items, fn item ->
+       Crawly.DataStorage.store(spider_name, item)
+     end)
+
+     {:ok, :done}
   end
 end
