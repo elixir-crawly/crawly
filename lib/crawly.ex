@@ -12,7 +12,9 @@ defmodule Crawly do
       :world
 
   """
-  def hello do
-    :world
+
+  def fetch(url, headers \\ [], options \\ []) do
+    HTTPoison.get(url, headers, options)
   end
+
 end
