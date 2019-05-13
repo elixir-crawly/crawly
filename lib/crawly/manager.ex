@@ -4,7 +4,7 @@ defmodule Crawly.Manager do
   """
   require Logger
 
-  @timeout 5_000
+  @timeout 30_000
 
   use GenServer
 
@@ -44,26 +44,37 @@ defmodule Crawly.Manager do
     )
 
     tref = Process.send_after(self(), :operations, @timeout)
-    {:ok, %{name: spider_name, tref: tref}}
+    {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
   end
 
   def handle_info(:operations, state) do
-    Process.cancel_timer(state.tref)
-
     Logger.info("Manager operations...")
+    Process.cancel_timer(state.tref)
 
     # Close spider if required items count was reached.
     items_count = Crawly.DataStorage.stats(state.name)
-    Logger.info("Seen items count #{items_count}")
     case Application.get_env(:crawly, :closespider_itemcount) do
       :undefined -> :ignoring
-      cnt when cnt > items_count ->
+      cnt when cnt < items_count ->
         Logger.info("Stopping #{inspect(state.name)}, closespider_itemcount achieved")
         Crawly.Engine.stop_spider(state.name)
+      _ ->
+        :ignoring
     end
+
+    prev_scraped_cnt = state.prev_scraped_cnt
+    case Application.get_env(:crawly, :closespider_timeout) do
+      :undefined -> :ignoring
+      cnt when cnt > (items_count - prev_scraped_cnt) ->
+        Logger.info("Stopping #{inspect(state.name)}, itemcount timeout achieved")
+        Crawly.Engine.stop_spider(state.name)
+      _ ->
+        :ignoring
+    end
+
     tref = Process.send_after(self(), :operations, @timeout)
 
-    {:noreply, %{state | tref: tref}}
+    {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
   end
 
   defp get_base_url(url) do
