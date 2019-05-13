@@ -1,6 +1,9 @@
 defmodule Crawly.Pipelines.Validate do
+  @behaviour Crawly.Pipeline
+
   require Logger
 
+  @impl Crawly.Pipeline
   def run(item, state) do
     fields = Application.get_env(:crawly, :item, [])
 

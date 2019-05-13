@@ -1,6 +1,9 @@
 defmodule Crawly.Pipelines.JSONEncoder do
+  @behaviour Crawly.Pipeline
+
   require Logger
 
+  @impl Crawly.Pipeline
   def run(item, state) do
     case Poison.encode(item) do
       {:ok, new_item} ->
