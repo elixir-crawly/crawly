@@ -35,6 +35,7 @@ config :crawly,
   base_store_path: "/tmp/",
   pipelines: [Crawly.Pipelines.Validate],
   follow_redirect: true,
+  closespider_itemcount: 20,
   item: [:body, :title, :url],
   concurrent_requests_per_domain: 16,
   user_agents: [
