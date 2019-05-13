@@ -3,13 +3,11 @@ defmodule Crawly.Mixfile do
 
   def project do
     [
-
-
-
       app: :crawly,
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
+      elixirc_options: [warnings_as_errors: true],
       deps: deps()
     ]
   end
@@ -32,8 +30,9 @@ defmodule Crawly.Mixfile do
       {:gollum, path: "/Users/olegtarasenko/repos/gollum"},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
-      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false}
-
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:earmark, "~> 1.2", only: :dev},
+      {:ex_doc, "~> 0.19", only: :dev}
     ]
   end
 end
