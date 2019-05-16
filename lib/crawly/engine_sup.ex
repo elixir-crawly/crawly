@@ -1,4 +1,7 @@
 defmodule Crawly.EngineSup do
+  @moduledoc """
+  Engine supervisor responsible for spider subtrees
+  """
   use DynamicSupervisor
 
   def start_link do

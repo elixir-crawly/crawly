@@ -11,7 +11,8 @@ defmodule Crawly.Pipelines.Validate do
     fields = Application.get_env(:crawly, :item, [])
 
     validation_result =
-      Enum.map(fields, fn field ->
+      fields
+      |> Enum.map(fn field ->
         case Map.get(item, field) do
           val when val == nil or val == :undefined or val == "" ->
             :invalid
