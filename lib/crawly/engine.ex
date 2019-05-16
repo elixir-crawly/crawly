@@ -1,7 +1,8 @@
 defmodule Crawly.Engine do
   @moduledoc """
+  Crawly Engine - process responsible for starting and stopping spiders.
 
-  Engine module
+  Stores all currently running spiders.
   """
   require Logger
 

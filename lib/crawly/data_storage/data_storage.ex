@@ -1,16 +1,27 @@
 defmodule Crawly.DataStorage do
   @moduledoc """
-  URLS Storage, a module responsible for storing urls for crawling
-  """
+  Data Storage, is a module responsible for storing crawled items.
+  On the high level it's possible to represent the architecture of items
+  storage this way:
 
-  @doc """
-  Storing URL
 
-  ## Examples
-
-      iex> Crawly.URLStorage.store_item
-      :ok
-
+                 ┌──────────────────┐
+                 │                  │             ┌------------------┐
+                 │   DataStorage    <─────────────┤ From crawlers1,2 │
+                 │                  │             └------------------┘
+                 └─────────┬────────┘
+                           │
+                           │
+                           │
+                           │
+              ┌────────────▼─────────────────┐
+              │                              │
+              │                              │
+              │                              │
+  ┌───────────▼──────────┐       ┌───────────▼──────────┐
+  │  DataStorageWorker1  │       │   DataStorageWorker2 │
+  │      (Crawler1)      │       │      (Crawler2)      │
+  └──────────────────────┘       └──────────────────────┘
   """
   require Logger
 
@@ -22,9 +33,11 @@ defmodule Crawly.DataStorage do
     GenServer.call(__MODULE__, {:start_worker, spider_name})
   end
 
+  @spec store(atom(), map()) :: :ok
   def store(spider, item) do
     GenServer.call(__MODULE__, {:store, spider, item})
   end
+
 
   def stats(spider) do
     GenServer.call(__MODULE__, {:stats, spider})

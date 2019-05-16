@@ -1,4 +1,13 @@
 defmodule Crawly.Pipelines.DuplicatesFilter do
+  @moduledoc """
+  Filters out duplicated items (helps to avoid storing duplicates)
+
+  This pipeline uses Crawly.DataStorageWorker process state in order to store
+  ids of already seen items. For now they are stored only in memory.
+
+  The field responsible for identifying duplicates is specified using
+  :crawly.item_id setting.
+  """
   @behaviour Crawly.Pipeline
 
   require Logger

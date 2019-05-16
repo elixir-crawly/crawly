@@ -1,4 +1,7 @@
 defmodule Crawly.Middlewares.UniqueRequest do
+  @moduledoc """
+  Avoid scheduling requests for the same pages.
+  """
   require Logger
 
   def run(request, state) do

@@ -1,18 +1,29 @@
 defmodule Crawly.RequestsStorage do
   @moduledoc """
-  URLS Storage, a module responsible for storing urls for crawling
+  Request storage, a module responsible for storing urls for crawling
+
+                 ┌──────────────────┐
+                 │                  │             ┌------------------┐
+                 │ RequestsStorage  <─────────────┤ From crawlers1,2 │
+                 │                  │             └------------------┘
+                 └─────────┬────────┘
+                           │
+                           │
+                           │
+                           │
+              ┌────────────▼─────────────────┐
+              │                              │
+              │                              │
+              │                              │
+  ┌───────────▼──────────┐       ┌───────────▼──────────┐
+  │RequestsStorageWorker1│       │RequestsStorageWorker2│
+  │      (Crawler1)      │       │      (Crawler2)      │
+  └──────────────────────┘       └──────────────────────┘
+
+  All requests are going through one RequestsStorage process, which
+  quickly finds the actual worker, which finally stores the request
+  afterwords.
   """
-
-  @doc """
-  Storing URL
-
-  ## Examples
-
-      iex> Crawly.URLStorage.store_url
-      :ok
-
-  """
-
   require Logger
 
   use GenServer
@@ -21,22 +32,51 @@ defmodule Crawly.RequestsStorage do
 
   alias Crawly.RequestsStorage
 
+  @doc """
+  Store requests in related child worker
+  """
+  @spec store(spider_name, requests) :: :ok
+        when spider_name: atom(),
+             requests: [Crawly.Request.t()]
   def store(spider_name, requests) when is_list(requests) do
     GenServer.call(__MODULE__, {:store, {spider_name, requests}})
   end
 
+  @doc """
+  Store request in related child worker
+  """
+  @spec store(spider_name, request) :: :ok
+        when spider_name: atom(),
+             request: Crawly.Request.t()
   def store(spider_name, request) do
     store(spider_name, [request])
   end
 
+  @doc """
+  Pop a request out of requests storage
+  """
+  @spec pop(spider_name) :: Crawly.Request.t()
+        when spider_name: atom()
   def pop(spider_name) do
     GenServer.call(__MODULE__, {:pop, spider_name})
   end
 
+  @doc """
+  Get statistics from the requests storage
+  """
+  @spec stats(spider_name) :: result
+        when spider_name: atom(),
+             result: {:stored_requests, non_neg_integer()}
   def stats(spider_name) do
     GenServer.call(__MODULE__, {:stats, spider_name})
   end
 
+  @doc """
+  Starts a worker for a given spider
+  """
+  @spec start_worker(spider_name) :: result
+        when spider_name: atom(),
+             result: {:ok, pid()} | {:error, :already_started}
   def start_worker(spider_name) do
     GenServer.call(__MODULE__, {:start_worker, spider_name})
   end
@@ -125,7 +165,7 @@ defmodule Crawly.RequestsStorage do
     spider_name = Map.get(state.pid_spiders, pid)
     new_pid_spiders = Map.delete(state.pid_spiders, pid)
     new_workers = Map.delete(state.workers, spider_name)
-    new_state =  %{state | workers: new_workers, pid_spiders: new_pid_spiders}
+    new_state = %{state | workers: new_workers, pid_spiders: new_pid_spiders}
 
     {:noreply, new_state}
   end

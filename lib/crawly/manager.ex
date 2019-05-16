@@ -1,6 +1,29 @@
 defmodule Crawly.Manager do
   @moduledoc """
-  Manager module
+  Crawler manager module
+
+  This module is responsible for spawning all processes related to
+  a given Crawler.
+
+  The manager spawns the following processes tree.
+  ┌────────────────┐        ┌───────────────────┐
+  │ Crawly.Manager ├────────> Crawly.ManagerSup │
+  └────────────────┘        └─────────┬─────────┘
+           │                          |
+           │                          |
+           ┌──────────────────────────┤
+           │                          │
+           │                          │
+  ┌────────▼───────┐        ┌─────────▼───────┐
+  │    Worker1     │        │    Worker2      │
+  └────────┬───────┘        └────────┬────────┘
+           │                         │
+           │                         │
+           │                         │
+           │                         │
+  ┌────────▼─────────┐    ┌──────────▼───────────┐
+  │Crawly.DataStorage│    │Crawly.RequestsStorage│
+  └──────────────────┘    └──────────────────────┘
   """
   require Logger
 
@@ -9,33 +32,38 @@ defmodule Crawly.Manager do
   use GenServer
 
   def start_link(spider_name) do
-    IO.puts("Starting manger with given name: #{inspect(spider_name)}")
-
+    Logger.info("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
   end
 
   def init(spider_name) do
+    # Getting spider start urls
     [start_urls: urls] = spider_name.init()
 
+    # Start DataStorage worker
     {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
     Process.link(data_storage_pid)
-    {:ok, request_storage_pid} = Crawly.RequestsStorage.start_worker(spider_name)
+
+    # Start RequestsWorker for a given spider
+    {:ok, request_storage_pid} =
+      Crawly.RequestsStorage.start_worker(spider_name)
+
     Process.link(request_storage_pid)
 
     # Store start requests
-    requests = Enum.map(urls, fn url ->  %Crawly.Request{url: url} end)
-    Crawly.RequestsStorage.store(spider_name, requests)
+    requests = Enum.map(urls, fn url -> %Crawly.Request{url: url} end)
+
+    :ok = Crawly.RequestsStorage.store(spider_name, requests)
 
     # Start workers
     num_workers =
       Application.get_env(:crawly, :concurrent_requests_per_domain, 4)
 
-    base_url = get_base_url(hd(urls))
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
         DynamicSupervisor.start_child(
           spider_name,
-          {Crawly.Worker, [spider_name, base_url]}
+          {Crawly.Worker, [spider_name]}
         )
       end)
 
@@ -43,31 +71,46 @@ defmodule Crawly.Manager do
       "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
     )
 
+    # Schedule basic service operations for given spider manager
     tref = Process.send_after(self(), :operations, @timeout)
     {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
   end
 
   def handle_info(:operations, state) do
-    Logger.info("Manager operations...")
     Process.cancel_timer(state.tref)
 
     # Close spider if required items count was reached.
     items_count = Crawly.DataStorage.stats(state.name)
+
     case Application.get_env(:crawly, :closespider_itemcount) do
-      :undefined -> :ignoring
+      :undefined ->
+        :ignoring
+
       cnt when cnt < items_count ->
-        Logger.info("Stopping #{inspect(state.name)}, closespider_itemcount achieved")
+        Logger.info(
+          "Stopping #{inspect(state.name)}, closespider_itemcount achieved"
+        )
+
         Crawly.Engine.stop_spider(state.name)
+
       _ ->
         :ignoring
     end
 
+    # Close spider in case if it's not scraping itms fast enough
     prev_scraped_cnt = state.prev_scraped_cnt
+
     case Application.get_env(:crawly, :closespider_timeout) do
-      :undefined -> :ignoring
-      cnt when cnt > (items_count - prev_scraped_cnt) ->
-        Logger.info("Stopping #{inspect(state.name)}, itemcount timeout achieved")
+      :undefined ->
+        :ignoring
+
+      cnt when cnt > items_count - prev_scraped_cnt ->
+        Logger.info(
+          "Stopping #{inspect(state.name)}, itemcount timeout achieved"
+        )
+
         Crawly.Engine.stop_spider(state.name)
+
       _ ->
         :ignoring
     end
@@ -75,10 +118,5 @@ defmodule Crawly.Manager do
     tref = Process.send_after(self(), :operations, @timeout)
 
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
-  end
-
-  defp get_base_url(url) do
-    struct = URI.parse(url)
-    "#{struct.scheme}://#{struct.host}"
   end
 end

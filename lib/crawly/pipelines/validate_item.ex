@@ -1,4 +1,7 @@
 defmodule Crawly.Pipelines.Validate do
+  @moduledoc """
+  Ensure that scraped item contains all fields defined in config: item.
+  """
   @behaviour Crawly.Pipeline
 
   require Logger

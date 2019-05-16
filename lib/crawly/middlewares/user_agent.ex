@@ -1,4 +1,10 @@
 defmodule Crawly.Middlewares.UserAgent do
+  @moduledoc """
+  Set/Rotate user agents for crawling. The user agents are read from
+  :crawly, :user_agents sessions.
+
+  The default value for the user agent is: Crawly Bot 1.0
+  """
   require Logger
 
   def run(request, state) do

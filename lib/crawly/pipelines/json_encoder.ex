@@ -1,4 +1,7 @@
 defmodule Crawly.Pipelines.JSONEncoder do
+  @moduledoc """
+  Encodes a given item (map) into JSON
+  """
   @behaviour Crawly.Pipeline
 
   require Logger

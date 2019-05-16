@@ -1,4 +1,8 @@
 defmodule Crawly.API.Router do
+  @moduledoc """
+  Crawly HTTP API. Allows to schedule/stop/get_stats
+  of all running spiders.
+  """
   use Plug.Router
 
   plug(:match)

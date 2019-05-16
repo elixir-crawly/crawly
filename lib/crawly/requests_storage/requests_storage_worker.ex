@@ -1,42 +1,58 @@
 defmodule Crawly.RequestsStorage.Worker do
   @moduledoc """
-  URLS Storage, a module responsible for storing urls for crawling
+  Requests Storage, is a module responsible for storing requests for a given
+  spider.
+
+  Automatically filters out already seen requests (uses `fingerprints` approach
+  to detect already visited pages).
+
+  Pipes all requests through a list of middlewares, which do pre-processing of
+  all requests before storing them
   """
-
-  @doc """
-  Storing URL
-
-  ## Examples
-
-      iex> Crawly.URLStorage.store_url
-      :ok
-
-  """
-
   require Logger
 
   use GenServer
 
-  defstruct requests: [], count: 0, seen_fingerprints: [], spider_name: nil
+  defstruct requests: [], count: 0, spider_name: nil
 
   alias Crawly.RequestsStorage.Worker
 
+  @doc """
+  Store requests
+  """
+  @spec store(spider_name, requests) :: :ok
+        when spider_name: atom(),
+             requests: [Crawly.Request.t()]
   def store(pid, requests) when is_list(requests) do
     Enum.each(requests, fn request -> store(pid, request) end)
   end
 
+  @doc """
+  Store individual request request
+  """
+  @spec store(spider_name, request) :: :ok
+        when spider_name: atom(),
+             request: Crawly.Request.t()
   def store(pid, request), do: GenServer.call(pid, {:store, request})
 
+  @doc """
+  Pop a request out of requests storage
+  """
+  @spec pop(pid()) :: Crawly.Request.t()
   def pop(pid) do
     GenServer.call(pid, :pop)
   end
 
+  @doc """
+  Get statistics from the requests storage
+  """
+  @spec stats(pid()) :: {:stored_requests, non_neg_integer()}
   def stats(pid) do
     GenServer.call(pid, :stats)
   end
 
   def start_link(spider_name) do
-    Logger.info("Starting requests storage worker for #{spider_name}...")
+    Logger.debug("Starting requests storage worker for #{spider_name}...")
 
     GenServer.start_link(__MODULE__, spider_name)
   end
@@ -47,6 +63,9 @@ defmodule Crawly.RequestsStorage.Worker do
 
   # Store the given request
   def handle_call({:store, request}, _from, state) do
+
+    # Define a list of middlewares which are used by default to process incoming
+    # requests
     default_middlewares = [
       Crawly.Middlewares.DomainFilter,
       Crawly.Middlewares.UniqueRequest,

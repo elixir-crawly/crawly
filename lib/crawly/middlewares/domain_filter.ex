@@ -1,4 +1,9 @@
 defmodule Crawly.Middlewares.DomainFilter do
+  @moduledoc """
+  Filters out requests which are going outside of the crawled domain
+  """
+
+  @behaviour Crawly.Pipeline
   require Logger
 
   def run(request, state) do

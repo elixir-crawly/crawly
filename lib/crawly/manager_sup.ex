@@ -1,4 +1,7 @@
 defmodule Crawly.ManagerSup do
+  @moduledoc """
+  A supervisor module used to spawn Crawler trees
+  """
   use Supervisor
 
   def start_link(spider_name) do
@@ -9,7 +12,10 @@ defmodule Crawly.ManagerSup do
   def init(spider_name) do
 
     children = [
+      # This supervisor is used to spawn Worker processes
       {DynamicSupervisor, strategy: :one_for_one, name: spider_name},
+
+      # Starts spider manager process
       {Crawly.Manager, spider_name}
     ]
 
