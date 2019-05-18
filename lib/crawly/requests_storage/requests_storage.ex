@@ -35,9 +35,10 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Store requests in related child worker
   """
-  @spec store(spider_name, requests) :: :ok
+  @spec store(spider_name, requests) :: result
         when spider_name: atom(),
-             requests: [Crawly.Request.t()]
+             requests: [Crawly.Request.t()],
+             result: :ok | {:error, :storage_worker_not_running}
   def store(spider_name, requests) when is_list(requests) do
     GenServer.call(__MODULE__, {:store, {spider_name, requests}})
   end
@@ -55,8 +56,12 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Pop a request out of requests storage
   """
-  @spec pop(spider_name) :: Crawly.Request.t()
-        when spider_name: atom()
+  @spec pop(spider_name) :: result
+        when spider_name: atom(),
+             result:
+               nil
+               | Crawly.Request.t()
+               | {:error, :storage_worker_not_running}
   def pop(spider_name) do
     GenServer.call(__MODULE__, {:pop, spider_name})
   end
@@ -66,7 +71,9 @@ defmodule Crawly.RequestsStorage do
   """
   @spec stats(spider_name) :: result
         when spider_name: atom(),
-             result: {:stored_requests, non_neg_integer()}
+             result:
+               {:stored_requests, non_neg_integer()}
+               | {:error, :storage_worker_not_running}
   def stats(spider_name) do
     GenServer.call(__MODULE__, {:stats, spider_name})
   end
@@ -108,7 +115,7 @@ defmodule Crawly.RequestsStorage do
     resp =
       case Map.get(workers, spider_name) do
         nil ->
-          {:error, :no_worker_registered}
+          {:error, :storage_worker_not_running}
 
         pid ->
           Crawly.RequestsStorage.Worker.pop(pid)

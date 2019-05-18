@@ -32,7 +32,8 @@ defmodule Crawly.Mixfile do
       {:epipe, "~> 1.0"},
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.2", only: :dev},
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:meck, "~> 0.8.13", only: :test}
     ]
   end
 end

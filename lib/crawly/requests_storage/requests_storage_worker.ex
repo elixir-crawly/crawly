@@ -38,7 +38,7 @@ defmodule Crawly.RequestsStorage.Worker do
   @doc """
   Pop a request out of requests storage
   """
-  @spec pop(pid()) :: Crawly.Request.t()
+  @spec pop(pid()) :: Crawly.Request.t() | nil
   def pop(pid) do
     GenServer.call(pid, :pop)
   end

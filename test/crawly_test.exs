@@ -3,6 +3,6 @@ defmodule CrawlyTest do
   doctest Crawly
 
   test "greets the world" do
-    assert Crawly.hello() == :world
+    assert :test == :test
   end
 end
