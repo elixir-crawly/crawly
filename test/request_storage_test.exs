@@ -13,7 +13,7 @@ defmodule RequestStorageTest do
     IO.puts("This is a setup callback for #{inspect(self())}")
 
     on_exit(fn ->
-      :ok = stop_process(pid)
+      :ok = TestUtils.stop_process(pid)
     end)
 
     {:ok, %{crawler: :test_spider}}
@@ -79,7 +79,7 @@ defmodule RequestStorageTest do
     assert Enum.count(state.pid_spiders) == 2
     assert Enum.count(state.workers) == 2
 
-    stop_process(pid)
+    TestUtils.stop_process(pid)
 
     state = :sys.get_state(Process.whereis(Crawly.RequestsStorage))
     assert Enum.count(state.pid_spiders) == 1
@@ -112,24 +112,5 @@ defmodule RequestStorageTest do
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
     {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
     assert 0 == num
-  end
-
-  defp stop_process(pid) do
-    :erlang.exit(pid, :shutdown)
-    wait_pid(pid)
-    :ok
-  end
-
-  defp wait_pid(pid, timeout \\ 5_000) do
-    :erlang.monitor(:process, pid)
-
-    result =
-      receive do
-        {:DOWN, _, _, ^pid, reason} -> {:ok, reason}
-      after
-        timeout -> timeout
-      end
-
-    result
   end
 end
