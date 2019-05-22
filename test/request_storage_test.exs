@@ -1,5 +1,5 @@
 defmodule RequestStorageTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup_all do
     :meck.new(:test_spider, [:non_strict])
@@ -10,10 +10,14 @@ defmodule RequestStorageTest do
   setup do
     {:ok, pid} = Crawly.RequestsStorage.start_worker(:test_spider)
 
-    IO.puts("This is a setup callback for #{inspect(self())}")
-
     on_exit(fn ->
-      :ok = TestUtils.stop_process(pid)
+      :ok =
+        DynamicSupervisor.terminate_child(
+          Crawly.RequestsStorage.WorkersSup,
+          pid
+        )
+
+      # :ok = Crawly.RequestsStorage.WorkerSup.terminate_child(pid)
     end)
 
     {:ok, %{crawler: :test_spider}}
@@ -73,7 +77,7 @@ defmodule RequestStorageTest do
     assert 1 == num
   end
 
-  test "Stopped workers are removed from request storage state", context do
+  test "Stopped workers are removed from request storage state", _context do
     {:ok, pid} = Crawly.RequestsStorage.start_worker(:other)
     state = :sys.get_state(Process.whereis(Crawly.RequestsStorage))
     assert Enum.count(state.pid_spiders) == 2

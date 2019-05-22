@@ -62,3 +62,5 @@ config :crawly,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.JSONEncoder
   ]
+
+ import_config "#{Mix.env}.exs"

@@ -20,3 +20,26 @@ defmodule TestUtils do
   end
 
 end
+
+defmodule TestSpider do
+  def base_url() do
+    "https://www.example.com"
+  end
+
+  def init() do
+    [
+      start_urls: ["https://www.example.com/blog.html"]
+    ]
+  end
+
+  def parse_item(_response) do
+    path = Enum.random(1..100)
+    %Crawly.ParsedItem{
+      :items => [
+        %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
+      ],
+      :requests => [
+        Crawly.Utils.request_from_url("https://www.example.com/#{path}")]
+    }
+  end
+end

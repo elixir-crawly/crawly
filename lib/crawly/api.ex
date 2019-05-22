@@ -56,7 +56,7 @@ defmodule Crawly.API.Router do
     msg =
       case result do
         {:error, :storage_worker_not_running} -> "Spider is not running"
-        _ -> "Scheduled requests: #{inspect(result)}"
+        _ -> "#{inspect(result)}"
       end
 
     send_resp(conn, 200, msg)

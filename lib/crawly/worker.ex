@@ -46,6 +46,7 @@ defmodule Crawly.Worker do
       end
 
     Process.send_after(self(), :work, new_backoff)
+
     {:noreply, %{state | backoff: new_backoff}}
   end
 

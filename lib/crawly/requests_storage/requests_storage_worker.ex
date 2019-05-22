@@ -63,7 +63,7 @@ defmodule Crawly.RequestsStorage.Worker do
 
   # Store the given request
   def handle_call({:store, request}, _from, state) do
-
+    IO.puts("Requests store called: #{inspect(request)}")
     # Define a list of middlewares which are used by default to process incoming
     # requests
     default_middlewares = [

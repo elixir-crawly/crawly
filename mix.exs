@@ -6,6 +6,8 @@ defmodule Crawly.Mixfile do
       app: :crawly,
       version: "0.1.0",
       elixir: "~> 1.5",
+      test_coverage: [tool: ExCoveralls],
+
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [warnings_as_errors: true],
@@ -36,7 +38,9 @@ defmodule Crawly.Mixfile do
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:meck, "~> 0.8.13", only: :test}
+      {:meck, "~> 0.8.13", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
+
     ]
   end
 end

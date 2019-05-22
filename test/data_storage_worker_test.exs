@@ -1,12 +1,12 @@
 defmodule DataStorageWorkerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup do
     name = :test_crawler
     {:ok, pid} = Crawly.DataStorage.start_worker(name)
 
     on_exit(fn ->
-      :ok = TestUtils.stop_process(pid)
+      :ok = DynamicSupervisor.terminate_child(Crawly.DataStorage.WorkersSup, pid)
     end)
 
     {:ok, %{crawler: name}}

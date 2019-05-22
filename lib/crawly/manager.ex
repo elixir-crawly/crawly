@@ -72,7 +72,7 @@ defmodule Crawly.Manager do
     )
 
     # Schedule basic service operations for given spider manager
-    tref = Process.send_after(self(), :operations, @timeout)
+    tref = Process.send_after(self(), :operations, get_timeout())
     {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
   end
 
@@ -80,13 +80,14 @@ defmodule Crawly.Manager do
     Process.cancel_timer(state.tref)
 
     # Close spider if required items count was reached.
-    items_count = Crawly.DataStorage.stats(state.name)
+    {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
 
     case Application.get_env(:crawly, :closespider_itemcount) do
       :undefined ->
         :ignoring
 
       cnt when cnt < items_count ->
+
         Logger.info(
           "Stopping #{inspect(state.name)}, closespider_itemcount achieved"
         )
@@ -115,8 +116,12 @@ defmodule Crawly.Manager do
         :ignoring
     end
 
-    tref = Process.send_after(self(), :operations, @timeout)
+    tref = Process.send_after(self(), :operations, get_timeout())
 
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
+  end
+
+  defp get_timeout() do
+    Application.get_env(:crawly, :manager_operations_timeout, @timeout)
   end
 end
