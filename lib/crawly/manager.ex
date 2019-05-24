@@ -82,10 +82,7 @@ defmodule Crawly.Manager do
     # Close spider if required items count was reached.
     {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
 
-    case Application.get_env(:crawly, :closespider_itemcount) do
-      :undefined ->
-        :ignoring
-
+    case Application.get_env(:crawly, :closespider_itemcount, 1000) do
       cnt when cnt < items_count ->
 
         Logger.info(

@@ -55,8 +55,7 @@ defmodule Crawly.DataStorage.Worker do
           new_state
 
         {new_item, new_state} ->
-          IO.write(state.fd, new_item)
-          IO.write(state.fd, "\n")
+          do_write_item(state.fd, new_item)
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
 
@@ -65,5 +64,22 @@ defmodule Crawly.DataStorage.Worker do
 
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_items, state.stored_items}, state}
+  end
+
+  defp do_write_item(fd, item) do
+    try do
+      IO.write(fd, Kernel.inspect(item))
+      IO.write(fd, "\n")
+
+      Logger.debug(fn -> "Scraped #{inspect(item)}" end)
+    catch
+      error, reason ->
+        stacktrace = :erlang.get_stacktrace()
+        Logger.error(
+          "Could not write item: #{inspect(error)}, reason: #{
+            inspect(reason)}, stacktrace: #{inspect(stacktrace)}
+          "
+        )
+    end
   end
 end
