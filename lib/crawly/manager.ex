@@ -82,6 +82,8 @@ defmodule Crawly.Manager do
     # Close spider if required items count was reached.
     {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
 
+    Logger.info("Current crawl speed is: #{items_count * 2}")
+
     case Application.get_env(:crawly, :closespider_itemcount, 1000) do
       cnt when cnt < items_count ->
 
