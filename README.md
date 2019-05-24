@@ -1,47 +1,31 @@
 # Crawly
 
-**Commands**
+# Overview
+---
 
-1. Start crawler:
-`Crawly.EngineSup.start_spider(BlogEsl)`
+Crawly is an application framework for crawling web sites and
+extracting structured data which can be used for a wide range of
+useful applications, like data mining, information processing or
+historical archival.
 
-** API **
+# Requirements
+---
 
-1. Start crawler:
-curl -v localhost:4001/spiders/<SpiderName>/schedule
-2. Stop crawler
-curl -v localhost:4001/spiders/<SpiderName>/schedule
-3. Scheduled requests:
-curl -v localhost:4001/spiders/BlogEsl/scheduled-requests
-4. Scraped Items:
-curl -v localhost:4001/spiders/BlogEsl/scraped-items
+1. Elixir  "~> 1.4"
+2. Works on Linux, Windows, OS X and BSD
 
-**Tasks**
+# Install
+---
 
-***General***
-Listen to robots.txt
-Throttle
-Stopspider signal
-Read parameters from settings...
+1. Generate an new Elixir project: `mix new <project_name> --sup`
+2. Add Crawly to you mix.exs file
+    ```elixir
+    def deps do
+        [{:crawly, "~> 0.1"}]
+    end
+    ```
+3. Fetch crawly: `mix deps.get`
 
-***URL storage***
-1. Persistant fingerprints for duplicates filtering...
-2. Migrate fingerprints to maps
 
-***Data storage***
-1. Define url id field;
-2. Store id in data_store state (as map)
-3. Pass the worker state to pipeline;
-4. Do filtering
-5. Update state...
-
-*** Request middlewares ***
-1. Filter out requests for other domains +
-2. Filter out requests via robots.txt
-3. User agent rotation middleware
-
-1. How to close fd?
-
-3. Support -o option to pipe data filename
-Item definition
-Pipelines
+# Documentation
+---
