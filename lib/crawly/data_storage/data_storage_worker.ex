@@ -30,6 +30,7 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def init(spider_name: spider_name) do
+    Process.flag(:trap_exit, true)
 
     # Specify a path where items are stored on filesystem
     base_path = Application.get_env(:crawly, :base_store_path, "/tmp/")
@@ -55,7 +56,7 @@ defmodule Crawly.DataStorage.Worker do
           new_state
 
         {new_item, new_state} ->
-          do_write_item(state.fd, new_item)
+          write_item(state.fd, new_item)
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
 
@@ -66,9 +67,22 @@ defmodule Crawly.DataStorage.Worker do
     {:reply, {:stored_items, state.stored_items}, state}
   end
 
+  def handle_info({:'EXIT', _from, _reason}, state) do
+    File.close(state.fd)
+    {:stop, :normal, state}
+  end
+
+  defp write_item(fd, item) when is_binary(item) do
+    do_write_item(fd, item)
+  end
+
+  defp write_item(fd, item) do
+    do_write_item(fd, Kernel.inspect(item))
+  end
+
   defp do_write_item(fd, item) do
     try do
-      IO.write(fd, Kernel.inspect(item))
+      IO.write(fd, item)
       IO.write(fd, "\n")
 
       Logger.debug(fn -> "Scraped #{inspect(item)}" end)

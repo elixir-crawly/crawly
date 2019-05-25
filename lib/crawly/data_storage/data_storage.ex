@@ -75,14 +75,19 @@ defmodule Crawly.DataStorage do
   end
 
   def handle_call({:start_worker, spider_name}, _from, state) do
-
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
           {:ok, pid} =
             DynamicSupervisor.start_child(
               Crawly.DataStorage.WorkersSup,
-              {Crawly.DataStorage.Worker, [spider_name: spider_name]}
+              %{
+                id: :undefined,
+                restart: :temporary,
+                start:
+                  {Crawly.DataStorage.Worker, :start_link,
+                   [[spider_name: spider_name]]}
+              }
             )
 
           Process.monitor(pid)

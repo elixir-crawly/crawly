@@ -144,7 +144,11 @@ defmodule Crawly.RequestsStorage do
           {:ok, pid} =
             DynamicSupervisor.start_child(
               Crawly.RequestsStorage.WorkersSup,
-              {Crawly.RequestsStorage.Worker, spider_name}
+              %{
+                id: :undefined,
+                restart: :temporary,
+                start: {Crawly.RequestsStorage.Worker, :start_link, [spider_name]}
+              }
             )
 
           Process.monitor(pid)

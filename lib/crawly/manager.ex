@@ -27,7 +27,7 @@ defmodule Crawly.Manager do
   """
   require Logger
 
-  @timeout 30_000
+  @timeout 60_000
 
   use GenServer
 
@@ -82,11 +82,11 @@ defmodule Crawly.Manager do
     # Close spider if required items count was reached.
     {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
 
-    Logger.info("Current crawl speed is: #{items_count * 2}")
+    delta = items_count - state.prev_scraped_cnt
+    Logger.info("Current crawl speed is: #{delta} items/min")
 
     case Application.get_env(:crawly, :closespider_itemcount, 1000) do
       cnt when cnt < items_count ->
-
         Logger.info(
           "Stopping #{inspect(state.name)}, closespider_itemcount achieved"
         )
@@ -98,13 +98,11 @@ defmodule Crawly.Manager do
     end
 
     # Close spider in case if it's not scraping itms fast enough
-    prev_scraped_cnt = state.prev_scraped_cnt
-
     case Application.get_env(:crawly, :closespider_timeout) do
       :undefined ->
         :ignoring
 
-      cnt when cnt > items_count - prev_scraped_cnt ->
+      cnt when cnt > delta ->
         Logger.info(
           "Stopping #{inspect(state.name)}, itemcount timeout achieved"
         )

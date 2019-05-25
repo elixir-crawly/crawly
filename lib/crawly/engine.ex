@@ -64,6 +64,7 @@ defmodule Crawly.Engine do
 
         {pid, new_started_spiders} ->
           Crawly.EngineSup.stop_spider(pid)
+
           {:ok, new_started_spiders}
       end
 
