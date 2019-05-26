@@ -4,7 +4,7 @@ config :crawly,
   manager_operations_timeout: 30_000,
 
   # The path where items are stored
-  base_store_path: "/tmp/blogs/",
+  base_store_path: "/tmp/",
   # User agents which are going to be used with requests
   user_agents: [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
