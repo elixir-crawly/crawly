@@ -32,7 +32,7 @@ defmodule Crawly.Mixfile do
       {:floki, "~> 0.20.0"},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
-      {:gollum, path: "/Users/olegtarasenko/repos/gollum"},
+      {:gollum, git: "https://github.com/oltarasenko/gollum.git", tag: "0.1"},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
