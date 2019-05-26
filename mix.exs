@@ -5,9 +5,12 @@ defmodule Crawly.Mixfile do
     [
       app: :crawly,
       version: "0.1.0",
-      elixir: "~> 1.5",
+      name: "Crawly",
+      source_url: "https://github.com/oltarasenko/crawly",
+      elixir: "~> 1.7",
+      description: description(),
+      package: package(),
       test_coverage: [tool: ExCoveralls],
-
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [warnings_as_errors: true],
@@ -25,6 +28,25 @@ defmodule Crawly.Mixfile do
     ]
   end
 
+  defp description() do
+    "high-level web crawling & scraping framework for Elixir."
+  end
+
+  defp package() do
+    [
+      # This option is only needed when you don't want to use the OTP application name
+      name: "crawly",
+      # These are the default files included in the package
+      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
+                license* CHANGELOG* changelog* src),
+      licenses: ["Apache 2.0"],
+      links: %{
+        "GitHub" => "https://github.com/oltarasenko/crawly",
+        "Docs" => " https://oltarasenko.github.io/crawly/"
+      }
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -39,8 +61,7 @@ defmodule Crawly.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.19", only: :dev},
       {:meck, "~> 0.8.13", only: :test},
-      {:excoveralls, "~> 0.10", only: :test},
-
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 end
