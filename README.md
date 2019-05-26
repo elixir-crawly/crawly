@@ -1,5 +1,5 @@
 # Crawly
-
+[![Coverage Status](https://coveralls.io/repos/github/oltarasenko/crawly/badge.svg?branch=coveralls)](https://coveralls.io/github/oltarasenko/crawly?branch=coveralls)
 # Overview
 
 Crawly is an application framework for crawling web sites and
