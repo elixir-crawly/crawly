@@ -36,13 +36,10 @@ defmodule Crawly.Mixfile do
     [
       # This option is only needed when you don't want to use the OTP application name
       name: "crawly",
-      # These are the default files included in the package
-      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
-                license* CHANGELOG* changelog* src),
       licenses: ["Apache 2.0"],
       links: %{
         "GitHub" => "https://github.com/oltarasenko/crawly",
-        "Docs" => " https://oltarasenko.github.io/crawly/"
+        "Docs" => "https://oltarasenko.github.io/crawly/"
       }
     ]
   end
@@ -54,12 +51,12 @@ defmodule Crawly.Mixfile do
       {:floki, "~> 0.20.0"},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
-      {:gollum, git: "https://github.com/oltarasenko/gollum.git", tag: "0.1"},
+      {:new_gollum, "~> 0.3.0"},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
-      {:ex_doc, "~> 0.19", only: :dev},
       {:meck, "~> 0.8.13", only: :test},
       {:excoveralls, "~> 0.10", only: :test}
     ]
