@@ -26,3 +26,6 @@ historical archival.
 
 
 # Documentation
+
+Documentation is available online at
+https://oltarasenko.github.io/crawly/#/  and in the docs directory.
