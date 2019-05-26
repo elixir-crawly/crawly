@@ -8,3 +8,15 @@ env:
   - MIX_ENV=test
 
 script: mix coveralls.travis
+
+deploy:
+  provider: script
+
+  script: >-
+     mix deps.get &&
+     mix hex.config username "$HEX_USERNAME" &&
+     mix hex.config key "$HEX_KEY" &&
+     mix hex.docs
+     mix hex.publish
+  on:
+    tags: true
