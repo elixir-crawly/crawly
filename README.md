@@ -29,3 +29,7 @@ historical archival.
 
 Documentation is available online at
 https://oltarasenko.github.io/crawly/#/  and in the docs directory.
+
+# Tutorial
+
+The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
