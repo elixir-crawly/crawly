@@ -33,3 +33,7 @@ https://oltarasenko.github.io/crawly/#/  and in the docs directory.
 # Tutorial
 
 The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
+
+# Example projects
+
+1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
