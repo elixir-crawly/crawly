@@ -78,9 +78,11 @@ defmodule Crawly.Worker do
     catch
       error, reason ->
         stacktrace = :erlang.get_stacktrace()
+
         Logger.error(
           "Could not parse item, error: #{inspect(error)}, reason: #{
-            inspect(reason)}, stacktrace: #{inspect(stacktrace)}
+            inspect(reason)
+          }, stacktrace: #{inspect(stacktrace)}
           "
         )
 
@@ -97,14 +99,24 @@ defmodule Crawly.Worker do
     requests = Map.get(parsed_item, :requests, [])
     items = Map.get(parsed_item, :items, [])
 
-    follow_redirect = Application.get_env(:crawly, :follow_redirect, false)
+    # Reading HTTP client options
+    options = [Application.get_env(:crawly, :follow_redirect, false)]
+
+    options =
+      case Application.get_env(:crawly, :proxy, false) do
+        false ->
+          options
+
+        proxy ->
+          options ++ [{:proxy, proxy}]
+      end
 
     # Process all requests one by one
     Enum.each(requests, fn request ->
       request =
         request
         |> Map.put(:prev_response, response)
-        |> Map.put(:options, [{:follow_redirect, follow_redirect}])
+        |> Map.put(:options, options)
 
       Crawly.RequestsStorage.store(spider_name, request)
     end)

@@ -821,6 +821,48 @@ default: 4
 The maximum number of concurrent (ie. simultaneous) requests that will
 be performed by the Crawly workers.
 
+### using crawly with proxy
+
+Now it's possible to direct all Crawly's requests through a proxy,
+it's possible to set proxy using the proxy value of Crawly config, for example:
+```
+config :crawly,
+    proxy: "<proxy_host>:<proxy_port>",
+    ```
+
+Example usage:
+```
+iex(3)> Crawly.fetch("http://httpbin.org/ip")
+{:ok,
+ %HTTPoison.Response{
+   body: "{\n  \"origin\": \"101.4.136.34, 101.4.136.34\"\n}\n",
+   headers: [
+     {"Server", "nginx/1.7.10"},
+     {"Date", "Sat, 03 Aug 2019 18:57:20 GMT"},
+     {"Content-Type", "application/json"},
+     {"Content-Length", "45"},
+     {"Connection", "keep-alive"},
+     {"Access-Control-Allow-Credentials", "true"},
+     {"Access-Control-Allow-Origin", "*"},
+     {"Referrer-Policy", "no-referrer-when-downgrade"},
+     {"X-Content-Type-Options", "nosniff"},
+     {"X-Frame-Options", "DENY"},
+     {"X-XSS-Protection", "1; mode=block"}
+   ],
+   request: %HTTPoison.Request{
+     body: "",
+     headers: [],
+     method: :get,
+     options: [false, {:proxy, "101.4.136.34:81"}],
+     params: %{},
+     url: "http://httpbin.org/ip"
+   },
+   request_url: "http://httpbin.org/ip",
+   status_code: 200
+ }}
+```
+
+
 # HTTP API
 ---
 
@@ -855,6 +897,7 @@ curl -v localhost:4001/spiders
 curl -v localhost:4001/spiders/<spider_name>/scheduled-requests
 curl -v localhost:4001/spiders/<spider_name>/scraped-items
 ```
+
 
 # Extending Crawly
 ---
