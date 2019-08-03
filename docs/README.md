@@ -778,6 +778,33 @@ Defines a list of pipelines responsible for pre processing all scraped
 items. All items not passing any of the pipelines are dropped. If
 unset all items are stored without any modifications.
 
+Example configuration of item pipelines:
+```
+config :crawly,
+  pipelines: [
+    Crawly.Pipelines.Validate,
+    Crawly.Pipelines.DuplicatesFilter,
+    Crawly.Pipelines.JSONEncoder
+    ]
+    ```
+
+#### CSVEncoder pipeline
+
+It's possible to export data in CSV format, if the pipelines are
+defined in the following way:
+```
+config :crawly,
+  pipelines: [
+    Crawly.Pipelines.Validate,
+    Crawly.Pipelines.DuplicatesFilter,
+    Crawly.Pipelines.CSVEncoder
+    ],
+    output_format: "csv"
+    ```
+
+** NOTE: It's required to set output format to csv for the CSVEncoder pipeline
+
+
 ### middlewares :: [module()]
 
 default:  [
