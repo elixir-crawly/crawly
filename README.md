@@ -38,3 +38,4 @@ The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
 
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
 2. E-commerce websites: https://github.com/oltarasenko/products-advisor
+3. Car shops: https://github.com/oltarasenko/crawly-cars
