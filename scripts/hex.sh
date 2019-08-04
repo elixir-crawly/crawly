@@ -7,6 +7,7 @@ echo '{api_key, <<"'${API_KEY}'">>}.' > ~/.hex/hex.config
 
 MIX_ENV=dev mix deps.get
 
-MIX_ENV=dev mix hex.publish --yes
+MIX_ENV=dev mix hex.publish package --yes
+MIX_ENV=dev mix hex.publish docs --yes
 MIX_ENV=dev mix clean
 MIX_ENV=dev mix deps.clean --all
