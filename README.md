@@ -19,7 +19,7 @@ historical archival.
 2. Add Crawly to you mix.exs file
     ```elixir
     def deps do
-        [{:crawly, "~> 0.1"}]
+        [{:crawly, "~> 0.3.0"}]
     end
     ```
 3. Fetch crawly: `mix deps.get`
@@ -33,6 +33,7 @@ https://oltarasenko.github.io/crawly/#/  and in the docs directory.
 # Tutorial
 
 The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
+
 
 # Example projects
 
