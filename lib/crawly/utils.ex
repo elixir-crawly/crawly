@@ -8,9 +8,13 @@ defmodule Crawly.Utils do
   A helper function which returns a Request structure for the given URL
   """
   @spec request_from_url(binary()) :: Crawly.Request.t()
-  def request_from_url(url) do
-    %Crawly.Request{url: url, headers: []}
-  end
+  def request_from_url(url), do: %Crawly.Request{url: url, headers: []}
+
+  @doc """
+  A helper function which converts a list of URLS into a requests list.
+  """
+  @spec requests_from_urls([binary()]) :: [Crawly.Request.t()]
+  def requests_from_urls(urls), do: Enum.map(urls, &request_from_url/1)
 
   @doc """
   Pipeline/Middleware helper
