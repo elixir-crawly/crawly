@@ -17,6 +17,14 @@ defmodule Crawly.Utils do
   def requests_from_urls(urls), do: Enum.map(urls, &request_from_url/1)
 
   @doc """
+  A helper function which joins relative url with a base URL
+  """
+  @spec build_absolute_url(binary(), binary()) :: binary()
+  def build_absolute_url(url, base_url) do
+    URI.merge(base_url, url) |> to_string()
+  end
+
+  @doc """
   Pipeline/Middleware helper
 
   Executes a given list of pipelines on the given item, mimics filtermap
