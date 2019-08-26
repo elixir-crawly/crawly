@@ -113,6 +113,17 @@ https://oltarasenko.github.io/crawly/#/  and in the docs directory.
 
 The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
 
+# Roadmap
+1. [ ] Cookies support
+2. [ ] XPath support
+3. [ ] Pluggable HTTP client
+4. [ ] Project generators (spiders)
+5. [ ] Retries support
+6. [ ] UI for jobs management
+
+# We are looking for contributors
+
+We would gladly accept your contributions! 
 
 # Example projects
 
