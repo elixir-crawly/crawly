@@ -125,6 +125,9 @@ The crawly tutorial: https://oltarasenko.github.io/crawly/#/?id=crawly-tutorial
 
 We would gladly accept your contributions! 
 
+# Articles
+1. Blog post on Erlang Solutions website: https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html
+
 # Example projects
 
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
