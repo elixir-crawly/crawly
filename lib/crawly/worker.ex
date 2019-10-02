@@ -40,8 +40,19 @@ defmodule Crawly.Worker do
             {:process_parsed_item, &process_parsed_item/1}
           ]
 
-          :epipe.run(functions, {request, spider_name})
-          @default_backoff
+          case :epipe.run(functions, {request, spider_name}) do
+            {:error, _step, reason, _step_state} ->
+              # TODO: Add retry logic
+              Logger.error(
+                fn ->
+                  "Crawly worker could not process the request to #{inspect(request.url)}
+                  reason: #{inspect(reason)}"
+                end)
+              @default_backoff
+            {:ok, _result} ->
+              @default_backoff
+          end
+
       end
 
     Process.send_after(self(), :work, new_backoff)
@@ -112,19 +123,25 @@ defmodule Crawly.Worker do
       end
 
     # Process all requests one by one
-    Enum.each(requests, fn request ->
-      request =
-        request
-        |> Map.put(:prev_response, response)
-        |> Map.put(:options, options)
+    Enum.each(
+      requests,
+      fn request ->
+        request =
+          request
+          |> Map.put(:prev_response, response)
+          |> Map.put(:options, options)
 
-      Crawly.RequestsStorage.store(spider_name, request)
-    end)
+        Crawly.RequestsStorage.store(spider_name, request)
+      end
+    )
 
     # Process all items one by one
-    Enum.each(items, fn item ->
-      Crawly.DataStorage.store(spider_name, item)
-    end)
+    Enum.each(
+      items,
+      fn item ->
+        Crawly.DataStorage.store(spider_name, item)
+      end
+    )
 
     {:ok, :done}
   end
