@@ -26,8 +26,8 @@ historical archival.
 
 # Quickstart
 
-In this section we will show how to bootstrap the small project and to setup
-Crawly for a proper data extraction.
+In this section we will show how to bootstrap a small project and to setup
+Crawly for proper data extraction.
 
 1. Create a new Elixir project: `mix new crawly_example --sup`
 2. Add Crawly to the dependencies (mix.exs file):
@@ -72,7 +72,7 @@ EOF
 ```
 
 5. Configure Crawly:
-By default Crawly does not require any configuration. But obviusely you will need
+By default Crawly does not require any configuration. But obviously you will need
 a configuration for fine tuning the Crawls:
 
 ```elixir

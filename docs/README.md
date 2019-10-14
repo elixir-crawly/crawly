@@ -66,7 +66,7 @@ defmodule Esl do
 
     url = response.request_url
 
-    %Crawly.Parseditem{
+    %Crawly.ParsedItem{
       :requests => requests,
       :items => [%{title: title, author: author, time: time, url: url}]
     }
@@ -89,9 +89,7 @@ filesystem containing the following information about blog posts:
 {"url":"https://www.erlang-solutions.com/blog/railway-oriented-development-with-erlang.html","title":"Railway oriented development with Erlang","time":"2018-06-13","author":"by Oleg Tarasenko"}
 {"url":"https://www.erlang-solutions.com/blog/scaling-reliably-during-the-world-s-biggest-sports-events.html","title":"Scaling reliably during the World’s biggest sports events","time":"2018-06-21","author":"by Erlang Solutions"}
 {"url":"https://www.erlang-solutions.com/blog/escalus-4-0-0-faster-and-more-extensive-xmpp-testing.html","title":"Escalus 4.0.0: faster and more extensive XMPP testing","time":"2018-05-22","author":"by Konrad Zemek"}
-{"url":"https://www.erlang-solutions.com/blog/mongooseim-3-1-inbox-got-better-testing-got-easier.html","title":"MongooseIM 3.1 -
-Inbox got better, testing got easier","time":"2018-07-25","author":"by
-Piotr Nosek"}
+{"url":"https://www.erlang-solutions.com/blog/mongooseim-3-1-inbox-got-better-testing-got-easier.html","title":"MongooseIM 3.1 - Inbox got better, testing got easier","time":"2018-07-25","author":"by Piotr Nosek"}
 ....
 ```
 
@@ -118,7 +116,7 @@ requests to follow and items extracted from the given page, all
 following requests are going to be processed by the same `parse_item` function.
 
 Crawly is fully asynchronous. Once the requests are scheduled, they
-are picked up by separate workers and are executed in parralel. This
+are picked up by separate workers and are executed in parallel. This
 also means that other requests can keep going even if some request
 fails or an error happens while handling it.
 
@@ -127,7 +125,7 @@ While this enables you to do very fast crawls (sending multiple
 concurrent requests at the same time, in a fault-tolerant way) Crawly
 also gives you control over the politeness of the crawl through a few
 settings. You can do things like setting a download delay between each
-request, limiting amount of concurrent requests per domain or
+request, limiting the amount of concurrent requests per domain or
 respecting robots.txt rules
 
 ```
@@ -140,18 +138,18 @@ example).
 ## What else?
 
 You’ve seen how to extract and store items from a website using
-Crawly, but this is just the basic example. Crawly provides a lot of
+Crawly, but this is just a basic example. Crawly provides a lot of
 powerful features for making scraping easy and efficient, such as:
 
-1. Flexible requets spoofing (for example user-agents rotation,
-cookies management(this feature is planned))
-2. Items validation, using pipelines approach
-3. Filtering already seen requests and items
-4. Filter out all requests which are comming to other domains
-5. Robots.txt enforcement
-6. Concurrency control
-7. HTTP API for controlling crawlers
-8. Interactive console, which allows to create and debug spiders
+1. Flexible request spoofing (for example user-agents rotation,
+cookies management (this feature is planned.))
+2. Items validation, using pipelines approach.
+3. Filtering already seen requests and items.
+4. Filter out all requests which targeted at other domains.
+5. Robots.txt enforcement.
+6. Concurrency control.
+7. HTTP API for controlling crawlers.
+8. Interactive console, which allows you to create and debug spiders more easily.
 
 # Ethical aspects of crawling
 ---
@@ -160,23 +158,23 @@ It's important to be polite, when doing a web crawling. You should
 avoid cases when your spiders are putting harm on the scrapped
 websites. As it's mentioned here: https://blog.scrapinghub.com/2016/08/25/how-to-crawl-the-web-politely-with-scrapy#comments-listing
 
-1. A polite crawler respects robots.txt
-2. A polite crawler never degrades a website’s performance
-3. A polite crawler identifies its creator with contact information
+1. A polite crawler respects robots.txt.
+2. A polite crawler never degrades a website’s performance.
+3. A polite crawler identifies its creator with contact information.
 4. A polite crawler is not a pain in the buttocks of system
-administrators
+administrators.
 
 # Installation guide
 ---
 
-Crawly requires Elixir v1.4 and higher. In order to make a Crawly
+Crawly requires Elixir v1.7 or higher. In order to make a Crawly
 project execute the following steps:
 
 1. Generate an new Elixir project: `mix new <project_name> --sup`
 2. Add Crawly to you mix.exs file
     ```elixir
     def deps do
-        [{:crawly, "~> 0.1"}]
+        [{:crawly, "~> 0.5.0"}]
     end
     ```
 3. Fetch crawly: `mix deps.get`
@@ -192,9 +190,9 @@ We are going to scrape `https://www.homebase.co.uk`, a website that
 contains products of different types.
 
 This tutorial will walk you through these tasks:
-1. Creating a new Crawly project
-2. Writing a spider to crawl a site and extract data
-3. Exporting the scraped data
+1. Creating a new Crawly project.
+2. Writing a spider to crawl a site and extract data.
+3. Exporting the scraped data.
 
 Crawly is written in Elixir. If you’re new to the language you might
 want to start by getting an idea of what the language is like, to get
@@ -233,9 +231,9 @@ Switch to the project folder: `cd ./tutorial` and update the mix.exs
 file with the following code:
 ```elixir
     def deps do
-        [{:crawly, "~> 0.1"}]
+        [{:crawly, "~> 0.5.0"}]
     end
-    ```
+```
 Now run `mix deps.get`
 
 
@@ -285,7 +283,7 @@ Crawler will begin to crawl from. Subsequent requests will be
 generated from these initial urls.
 
 3. parse_item(): function which will be called to handle response
-downloaded by Crawly. It must return the `Crawly.ParsedItem` sturcture.
+downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
 
 
 ## How to run our spider
@@ -336,7 +334,7 @@ request passing the response as argument.
 
 In our case we have not defined any data to be returned by the
 `parse_item` callback. And in our the Crawly worker processes
-(processes responsible for downloading requests) did not have a work
+(processes responsible for downloading requests) did not have work
 to do. And in the cases like that, they will slow down progressively,
 until the switch off (which happened because the Spider was not
 extracting items fast enough).
@@ -393,7 +391,7 @@ You will see something like:
    request_url: "https://www.homebase.co.uk/our-range/tools",
    status_code: 200
  }}
- ```
+```
 
 Using the shell, you can try selecting elements using Floki with the
 response. Lets say that we want to extract all product categories links from the
@@ -418,16 +416,16 @@ Floki.attribute("href")
 ```
 
 The result of running the command above is a list of elements which
-contain herf attribute of links selected with
-`a.category-block-heading__title` css selector. These URLs can will be
+contain href attribute of links selected with
+`a.category-block-heading__title` css selector. These URLs will be
 used in order to feed Crawly with requests to follow.
 
 In order to find the proper CSS selectors to use, you might find
-useful opening the target page from the shell in your web browse. You
+useful opening the target page from the shell in your web browser. You
 can use your browser developer tools to inspect the HTML and come up
 with a selector.
 
-Now lets navigate to one of the homebase's product pages and extract
+Now let's navigate to one of the Homebase product pages and extract
 data from it.
 
 ```
@@ -436,20 +434,20 @@ Crawly.fetch("https://www.homebase.co.uk/4-tier-heavy-duty-shelving-unit_p375180
 
 ```
 
-Extract `title` with:
+Extract the `title` with:
 ```
 response.body |> Floki.find(".page-title h1") |> Floki.text()
 "4 Tier Heavy Duty Shelving Unit"
 ```
 
-Extract `SKU` with:
+Extract the `SKU` with:
 
 ```
 response.body |> Floki.find(".product-header-heading span") |> Floki.text
 "SKU:  375180"
 ```
 
-Extract `price` with:
+Extract the `price` with:
 ```
 response.body |> Floki.find(".price-value [itemprop=priceCurrency]") |> Floki.text
 "£75"
@@ -479,7 +477,7 @@ defmodule Homebase do
 
   @impl Crawly.Spider
   def parse_item(response) do
-    # Extract product categories URLs
+    # Extract product category URLs
     product_categories =
       response.body
       |> Floki.find("div.product-list-footer a")
@@ -523,10 +521,8 @@ end
 
 If you run this spider, it will output the extracted data with the log:
 ```
-17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386",
-title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
-17:23:43.432 [debug] Scraped %{price: "£3.99", sku: "SKU:  486384",
-title: "Bon Safety EN20471 Hi viz Yellow Vest, size L"}
+17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386", title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
+17:23:43.432 [debug] Scraped %{price: "£3.99", sku: "SKU:  486384", title: "Bon Safety EN20471 Hi viz Yellow Vest, size L"}
 17:23:42.389 [debug] Scraped %{price: "£5.25", sku: "SKU:  414464", title: "Toughbuilt 24in Wall Organizer"}
 ```
 
@@ -570,14 +566,14 @@ for a particular site.
 For spiders, the scraping cycle goes through something like this:
 
 You start by generating the initial Requests to crawl the first URLs,
-and use a callback function used e called with the response downloaded
+and use a callback function called with the response downloaded
 from those requests.
 
 In the callback function, you parse the response (web page) and return
 a ` %Crawly.ParsedItem{}` struct. This struct should contain new
 requests to follow and items to be stored.
 
-In callback functions, you parse the page contents, typically using
+In the callback functions, you parse the page contents, typically using
 Floki (but you can also use any other library you prefer) and generate
 items with the parsed data.
 
@@ -592,12 +588,12 @@ All items are processed sequentially and are processed by Item pipelines.
 
 ### Behaviour functions
 
-In order to make a working web crawler, all behaviour callbacks needs
+In order to make a working web crawler, all the behaviour callbacks need
 to be implemented.
 
 `init()` - a part of the Crawly.Spider behaviour. This function should
-return a KVList which contains `start_urls` list, which defines the
-starting requests made by Crawly.
+return a KVList which contains a `start_urls` entry with a list, which defines
+the starting requests made by Crawly.
 
 `base_url()` - defines a base_url of the given Spider. This function
 is used in order to filter out all requests which are going outside of
@@ -614,7 +610,7 @@ Crawly uses Request and Response objects for crawling web sites.
 Typically, Request objects are generated in the spiders and pass
 across the system until they reach the Crawly.Worker process, which
 executes the request and returns a Response object which travels back
-to the spider that issued the request. The requests objects are being
+to the spider that issued the request. The Request objects are being
 modified by the selected Middlewares, before hitting the worker.
 
 The request is defined as the following structure:
@@ -627,7 +623,7 @@ The request is defined as the following structure:
     }
 
 @type header() :: {key(), value()}
-  ```
+```
 
 Where:
 1. url - is the url of the request
@@ -659,7 +655,7 @@ The parsed item is being processed by Crawly.Worker process, which
 sends all requests to the `Crawly.RequestsStorage` process,
 responsible for pre-processing requests and storing them for the
 future execution, all items are being sent to `Crawly.DataStorage`
-process, which is responsible for pre-processing item and storing it
+process, which is responsible for pre-processing items and storing them
 on disk.
 
 For now only one Storage backend is supported (writing on disc). But
@@ -682,13 +678,13 @@ At this point Crawly includes the following request middlewares:
 2. ` Crawly.Middlewares.RobotsTxt` - this middleware ensures that
 Crawly respects the robots.txt defined by the target website.
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that
-crawly would not schedule the same URL(request) multiple time.
+crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a
-   User Agent http header. Allows to rotate UserAgents, if the last
+   User Agent HTTP header. Allows to rotate UserAgents, if the last
    one is defined as a list.
 
 A list of request middlewares which are going to be used with a given
-project are defined in the project settings.
+project is defined in the project settings.
 
 ## Item pipelines
 
@@ -704,7 +700,7 @@ are dropped.
 2.  `Crawly.Pipelines.DuplicatesFilter` - filters out items which are
 already stored the system.
 3. `Crawly.Pipelines.JSONEncoder`- converts items into JSON format (so
-they are stored in JSON)
+they are stored in JSON.)
 
 The list of item pipelines used with a given project is defined in the
 project settings.
@@ -739,44 +735,44 @@ config :crawly,
 
 default: "/tmp"
 
-Defines the path where items are stored on the filesystem. This setting
-is used by Crawly.DataStorageWorker process.
+Defines the path where items are stored in the filesystem. This setting
+is used by the Crawly.DataStorageWorker process.
 
 ### user_agents :: list()
 
 default: ["Crawly Bot 1.0"]
 
 Defines a user agent string for Crawly requests. This setting is used
-by `Crawly.Middlewares.UserAgent` middleware. In case if the list has
-more than one item, all requests will be executed with a randomly
-picked (from the supplied list) user agent string.
+by the `Crawly.Middlewares.UserAgent` middleware. When the list has more than one
+item, all requests will be executed, each with a user agent string chosen
+randomly from the supplied list.
 
 ### item :: [atom()]
 
 default: []
 
-Defines a list of required fields for the item. In case if all default
-fields are not added to the following item (or if the values of
-required fields are "" or nil) the item will be dropped. This setting
-is used by ` Crawly.Pipelines.Validate` pipeline
+Defines a list of required fields for the item. When none of the default
+fields are added to the following item (or if the values of
+required fields are "" or nil), the item will be dropped. This setting
+is used by the `Crawly.Pipelines.Validate` pipeline
 
 ### item_id :: atom()
 
 default: nil
 
-Defines a field which will be used in order to identify if product is
-duplicate or not. In most of the ecommerce websites the desired id
-field is SKU. This setting is used in
-`Crawly.Pipelines.DuplicatesFilter` pipeline. If unset the related
+Defines a field which will be used in order to identify if an item is
+a duplicate or not. In most of the ecommerce websites the desired id
+field is the SKU. This setting is used in
+the `Crawly.Pipelines.DuplicatesFilter` pipeline. If unset, the related
 middleware is effectively disabled.
 
 ### pipelines :: [module()]
 
 default: []
 
-Defines a list of pipelines responsible for pre processing all scraped
+Defines a list of pipelines responsible for pre processing all the scraped
 items. All items not passing any of the pipelines are dropped. If
-unset all items are stored without any modifications.
+unset, all items are stored without any modifications.
 
 Example configuration of item pipelines:
 ```
@@ -786,7 +782,7 @@ config :crawly,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.JSONEncoder
     ]
-    ```
+```
 
 #### CSVEncoder pipeline
 
@@ -799,11 +795,11 @@ config :crawly,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.CSVEncoder
     ],
-    output_format: "csv"
-    ```
+  output_format: "csv"
+```
 
-** NOTE: It's required to set output format to csv for the CSVEncoder pipeline
-
+**NOTE**: It's required to set output format to csv for the CSVEncoder pipeline
+to work.
 
 ### middlewares :: [module()]
 
@@ -833,13 +829,13 @@ default: nil
 
 Defines a minimal amount of items which needs to be scraped by the
 spider within the given timeframe (30s). If the limit is not reached
-by the spider - it's being closed.
+by the spider - it will be stopped.
 
 ### follow_redirects :: boolean()
 
 default: false
 
-Defines is Crawly spider is supposed to follow HTTP redirects.
+Defines is Crawly spider is supposed to follow HTTP redirects or not.
 
 ### concurrent_requests_per_domain :: pos_integer()
 
@@ -848,14 +844,14 @@ default: 4
 The maximum number of concurrent (ie. simultaneous) requests that will
 be performed by the Crawly workers.
 
-### using crawly with proxy
+### using crawly with a proxy
 
 Now it's possible to direct all Crawly's requests through a proxy,
 it's possible to set proxy using the proxy value of Crawly config, for example:
 ```
 config :crawly,
     proxy: "<proxy_host>:<proxy_port>",
-    ```
+```
 
 Example usage:
 ```
