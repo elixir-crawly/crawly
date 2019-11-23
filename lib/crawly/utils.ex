@@ -21,7 +21,8 @@ defmodule Crawly.Utils do
   """
   @spec build_absolute_url(binary(), binary()) :: binary()
   def build_absolute_url(url, base_url) do
-    URI.merge(base_url, url) |> to_string()
+    URI.merge(base_url, url)
+    |> to_string()
   end
 
   @doc """
@@ -29,7 +30,12 @@ defmodule Crawly.Utils do
   """
   @spec build_absolute_urls([binary()], binary()) :: [binary()]
   def build_absolute_urls(urls, base_url) do
-    Enum.map(urls, fn url -> URI.merge(base_url, url) |> to_string() end)
+    Enum.map(
+      urls,
+      fn url ->
+        URI.merge(base_url, url)
+        |> to_string() end
+    )
   end
 
   @doc """
@@ -76,5 +82,21 @@ defmodule Crawly.Utils do
       end
 
     pipe(pipelines, new_item, new_state)
+  end
+
+  @doc """
+  Convert a list into a CSV values. [title, url] -> "title,url"
+  """
+  @spec list_to_csv(headers, item) :: binary()
+        when headers: [],
+             item: map()
+  def list_to_csv(headers, item) do
+    Enum.reduce(
+      headers, "",
+      fn
+        header, "" -> "#{inspect(Map.get(item, header, ""))}"
+        header, acc -> acc <> "," <> "#{inspect(Map.get(item, header, ""))}"
+      end
+    )
   end
 end

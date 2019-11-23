@@ -728,7 +728,7 @@ config :crawly,
   # Item definition
   item: [:title, :author, :time, :url],
   # Identifier which is used to filter out duplicates
-  item_id: :title,
+  item_id: :title
 ```
 
 ### base_store_path :: binary()

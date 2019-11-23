@@ -10,17 +10,8 @@ defmodule Crawly.Pipelines.CSVEncoder do
       :undefined ->
         {false, state}
 
-      fields ->
-        new_item =
-          Enum.reduce(fields, "", fn
-            field, "" ->
-              "#{inspect(Map.get(item, field, ""))}"
-
-            field, acc ->
-              acc <> "," <> "#{inspect(Map.get(item, field, ""))}"
-          end)
-
-        {new_item, state}
+      headers ->
+        {Crawly.Utils.list_to_csv(headers, item), state}
     end
   end
 end

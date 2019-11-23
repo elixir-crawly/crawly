@@ -32,8 +32,6 @@ use Mix.Config
 config :crawly, Crawly.Worker, client: HTTPoison
 
 config :crawly,
-  # The path where items are stored
-  base_store_path: "/tmp/",
   # User agents which are going to be used with requests
   user_agents: [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
@@ -47,6 +45,7 @@ config :crawly,
   # Stop spider after scraping certain amount of items
   closespider_itemcount: 500,
   # Stop spider if it does crawl fast enough
+  storage_backend: Crawly.DataStorage.FileStorageBackend,
   closespider_timeout: 20,
   concurrent_requests_per_domain: 5,
   follow_redirects: true,
@@ -60,7 +59,12 @@ config :crawly,
   pipelines: [
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.JSONEncoder
+    Crawly.Pipelines.CSVEncoder
   ]
 
- import_config "#{Mix.env}.exs"
+config :crawly, Crawly.DataStorage.FileStorageBackend,
+  folder: "/tmp",
+  include_headers: false,
+  extension: "jl"
+
+import_config "#{Mix.env}.exs"

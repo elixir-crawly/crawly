@@ -15,7 +15,7 @@ defmodule Crawly.DataStorage.Worker do
 
   use GenServer
 
-  defstruct fd: nil, stored_items: 0
+  defstruct io_device: nil, stored_items: 0, backend: nil
 
   def start_link(spider_name: spider_name) do
     GenServer.start_link(__MODULE__, spider_name: spider_name)
@@ -32,42 +32,18 @@ defmodule Crawly.DataStorage.Worker do
   def init(spider_name: spider_name) do
     Process.flag(:trap_exit, true)
 
-    # Specify a path where items are stored on filesystem
-    base_path = Application.get_env(:crawly, :base_store_path, "/tmp/")
+    # Picking a storage backend
+    storage_backend = Application.get_env(
+      :crawly,
+      :storage_backend,
+      Crawly.DataStorage.FileStorageBackend
+    )
 
-    format = Application.get_env(:crawly, :output_format, "jl")
-
-    # Open file descriptor to write items
-    {:ok, fd} =
-      File.open("#{base_path}#{inspect(spider_name)}.#{format}", [
-        :binary,
-        :write,
-        :delayed_write,
-        :utf8
-      ])
-
-    case format do
-      "csv" ->
-        # Special case. Need to insert headers.
-        item =
-          Enum.reduce(Application.get_env(:crawly, :item), "", fn
-            field, "" ->
-              "#{inspect(field)}"
-
-            field, acc ->
-              acc <> "," <> "#{inspect(field)}"
-          end)
-
-        write_item(fd, item)
-
-      _other ->
-        :ok
-    end
-
-    {:ok, %Worker{fd: fd}}
+    {:ok, io_device} = storage_backend.init(spider_name)
+    {:ok, %Worker{io_device: io_device, backend: storage_backend}}
   end
 
-  def handle_cast({:store, item}, state) do
+  def handle_cast({:store, item}, %{backend: storage_backend} = state) do
     pipelines = Application.get_env(:crawly, :pipelines, [])
 
     state =
@@ -76,10 +52,12 @@ defmodule Crawly.DataStorage.Worker do
           new_state
 
         {new_item, new_state} ->
-          write_item(state.fd, new_item)
+          :ok = storage_backend.write(
+            state.io_device,
+            new_item
+          )
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
-
     {:noreply, state}
   end
 
@@ -88,34 +66,7 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def handle_info({:EXIT, _from, _reason}, state) do
-    File.close(state.fd)
     {:stop, :normal, state}
   end
 
-  defp write_item(fd, item) when is_binary(item) do
-    do_write_item(fd, item)
-  end
-
-  defp write_item(fd, item) do
-    do_write_item(fd, Kernel.inspect(item))
-  end
-
-  defp do_write_item(fd, item) do
-    try do
-      IO.write(fd, item)
-      IO.write(fd, "\n")
-
-      Logger.debug(fn -> "Scraped #{inspect(item)}" end)
-    catch
-      error, reason ->
-        stacktrace = :erlang.get_stacktrace()
-
-        Logger.error(
-          "Could not write item: #{inspect(error)}, reason: #{inspect(reason)}, stacktrace: #{
-            inspect(stacktrace)
-          }
-          "
-        )
-    end
-  end
 end
