@@ -65,6 +65,6 @@ config :crawly,
 config :crawly, Crawly.DataStorage.FileStorageBackend,
   folder: "/tmp",
   include_headers: false,
-  extension: "jl"
+  extension: "csv"
 
 import_config "#{Mix.env}.exs"

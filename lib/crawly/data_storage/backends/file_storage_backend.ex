@@ -57,7 +57,7 @@ defmodule Crawly.DataStorage.FileStorageBackend do
   end
 
   @doc """
-  Implements a write callback for a JLFileStorageBackend
+  Implements the write callback for storage backend
   """
   @spec write(io, item) :: :ok when
           io: File.io_device(),
