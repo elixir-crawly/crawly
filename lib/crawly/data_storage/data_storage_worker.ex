@@ -6,16 +6,15 @@ defmodule Crawly.DataStorage.Worker do
   All pipelines are using the state of this process for their internal needs
   (persistancy).
 
-  For example, it might be useful to include:
-  1) DuplicatesFilter pipeline (it filters out already seen items)
-  2) JSONEncoder pipeline (it converts items to JSON)
+  The DataStorage.Worker will not write anything to a filesystem. Instead it
+  would expect that pipelines are going to do that work.
   """
   alias Crawly.DataStorage.Worker
   require Logger
 
   use GenServer
 
-  defstruct fd: nil, stored_items: 0
+  defstruct stored_items: 0, spider_name: nil
 
   def start_link(spider_name: spider_name) do
     GenServer.start_link(__MODULE__, spider_name: spider_name)
@@ -30,41 +29,7 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def init(spider_name: spider_name) do
-    Process.flag(:trap_exit, true)
-
-    # Specify a path where items are stored on filesystem
-    base_path = Application.get_env(:crawly, :base_store_path, "/tmp/")
-
-    format = Application.get_env(:crawly, :output_format, "jl")
-
-    # Open file descriptor to write items
-    {:ok, fd} =
-      File.open("#{base_path}#{inspect(spider_name)}.#{format}", [
-        :binary,
-        :write,
-        :delayed_write,
-        :utf8
-      ])
-
-    case format do
-      "csv" ->
-        # Special case. Need to insert headers.
-        item =
-          Enum.reduce(Application.get_env(:crawly, :item), "", fn
-            field, "" ->
-              "#{inspect(field)}"
-
-            field, acc ->
-              acc <> "," <> "#{inspect(field)}"
-          end)
-
-        write_item(fd, item)
-
-      _other ->
-        :ok
-    end
-
-    {:ok, %Worker{fd: fd}}
+    {:ok, %Worker{spider_name: spider_name}}
   end
 
   def handle_cast({:store, item}, state) do
@@ -75,8 +40,7 @@ defmodule Crawly.DataStorage.Worker do
         {false, new_state} ->
           new_state
 
-        {new_item, new_state} ->
-          write_item(state.fd, new_item)
+        {_new_item, new_state} ->
           %Worker{new_state | stored_items: state.stored_items + 1}
       end
 
@@ -85,37 +49,5 @@ defmodule Crawly.DataStorage.Worker do
 
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_items, state.stored_items}, state}
-  end
-
-  def handle_info({:EXIT, _from, _reason}, state) do
-    File.close(state.fd)
-    {:stop, :normal, state}
-  end
-
-  defp write_item(fd, item) when is_binary(item) do
-    do_write_item(fd, item)
-  end
-
-  defp write_item(fd, item) do
-    do_write_item(fd, Kernel.inspect(item))
-  end
-
-  defp do_write_item(fd, item) do
-    try do
-      IO.write(fd, item)
-      IO.write(fd, "\n")
-
-      Logger.debug(fn -> "Scraped #{inspect(item)}" end)
-    catch
-      error, reason ->
-        stacktrace = :erlang.get_stacktrace()
-
-        Logger.error(
-          "Could not write item: #{inspect(error)}, reason: #{inspect(reason)}, stacktrace: #{
-            inspect(stacktrace)
-          }
-          "
-        )
-    end
   end
 end
