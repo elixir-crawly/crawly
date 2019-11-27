@@ -699,8 +699,9 @@ the required fields. All items which don't have all required fields
 are dropped.
 2.  `Crawly.Pipelines.DuplicatesFilter` - filters out items which are
 already stored the system.
-3. `Crawly.Pipelines.JSONEncoder`- converts items into JSON format (so
-they are stored in JSON.)
+3. `Crawly.Pipelines.JSONEncoder`- converts items into JSON format.
+4. `Crawly.Pipelines.CSVEncoder`- converts items into CSV format.
+5. `Crawly.Pipelines.WriteToFile`- Writes information to a given file.
 
 The list of item pipelines used with a given project is defined in the
 project settings.
@@ -728,10 +729,10 @@ config :crawly,
   # Item definition
   item: [:title, :author, :time, :url],
   # Identifier which is used to filter out duplicates
-  item_id: :title,
+  item_id: :title
 ```
 
-### base_store_path :: binary()
+### base_store_path :: binary() [DEPRECATED in 0.6.6]
 
 default: "/tmp"
 
@@ -780,7 +781,8 @@ config :crawly,
   pipelines: [
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.JSONEncoder
+    Crawly.Pipelines.JSONEncoder,
+    Crawly.Pipelines.WriteToFile
     ]
 ```
 
@@ -793,13 +795,47 @@ config :crawly,
   pipelines: [
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.CSVEncoder
-    ],
-  output_format: "csv"
+    Crawly.Pipelines.CSVEncoder,
+    Crawly.Pipelines.WriteToFile
+    ]
 ```
 
-**NOTE**: It's required to set output format to csv for the CSVEncoder pipeline
-to work.
+**NOTE**: Set the file extension config for `WriteToFile` to "csv"
+
+#### JSONEncoder pipeline
+
+It's possible to export data in CSV format, if the pipelines are
+defined in the following way:
+```
+config :crawly,
+  pipelines: [
+    Crawly.Pipelines.Validate,
+    Crawly.Pipelines.DuplicatesFilter,
+    Crawly.Pipelines.JSONEncoder,
+    Crawly.Pipelines.WriteToFile
+    ]
+```
+
+**NOTE**: Set the file extension config for `WriteToFile` to "jl"
+
+#### WriteToFile pipeline
+
+Writes a given item to a file.
+```
+config :crawly,
+  pipelines: [
+    ...
+    Crawly.Pipelines.JSONEncoder,
+    Crawly.Pipelines.WriteToFile
+    ]
+
+config :crawly, Crawly.Pipelines.WriteToFile,
+  folder: "/tmp",
+  extension: "jl"
+
+```
+
+**NOTE**: Set the file extension config for `WriteToFile` to "jl"
 
 ### middlewares :: [module()]
 
