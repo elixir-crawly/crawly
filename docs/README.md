@@ -811,7 +811,7 @@ config :crawly,
   pipelines: [
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.CSVJSONEncoderEncoder,
+    Crawly.Pipelines.JSONEncoder,
     Crawly.Pipelines.WriteToFile
     ]
 ```
