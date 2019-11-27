@@ -4,7 +4,7 @@ defmodule Crawly.Mixfile do
   def project do
     [
       app: :crawly,
-      version: "0.5.0",
+      version: "0.6.0",
       name: "Crawly",
       source_url: "https://github.com/oltarasenko/crawly",
       elixir: "~> 1.7",
