@@ -61,7 +61,7 @@ config :crawly,
     Crawly.Pipelines.JSONEncoder
   ]
 
-config :crawly, Crawly.Pipelines.FileStoragePipeline,
+config :crawly, Crawly.Pipelines.WriteToFile,
   folder: "/tmp",
   extension: "jl"
 
