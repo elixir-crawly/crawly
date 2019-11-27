@@ -732,7 +732,7 @@ config :crawly,
   item_id: :title
 ```
 
-### base_store_path :: binary() [DEPRECATED in 0.6.6]
+### base_store_path :: binary() [DEPRECATED in 0.6.0]
 
 default: "/tmp"
 
@@ -782,7 +782,7 @@ config :crawly,
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.JSONEncoder,
-    Crawly.Pipelines.WriteToFile
+    Crawly.Pipelines.WriteToFile [NEW IN 0.6.0]
     ]
 ```
 
@@ -796,7 +796,7 @@ config :crawly,
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.CSVEncoder,
-    Crawly.Pipelines.WriteToFile
+    Crawly.Pipelines.WriteToFile [NEW IN 0.6.0]
     ]
 ```
 
@@ -812,7 +812,7 @@ config :crawly,
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.JSONEncoder,
-    Crawly.Pipelines.WriteToFile
+    Crawly.Pipelines.WriteToFile [NEW IN 0.6.0]
     ]
 ```
 
