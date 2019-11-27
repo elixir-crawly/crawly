@@ -729,10 +729,10 @@ config :crawly,
   # Item definition
   item: [:title, :author, :time, :url],
   # Identifier which is used to filter out duplicates
-  item_id: :title,
+  item_id: :title
 ```
 
-### base_store_path :: binary()
+### base_store_path :: binary() [DEPRECATED in 0.6.6]
 
 default: "/tmp"
 
@@ -797,8 +797,7 @@ config :crawly,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.CSVEncoder,
     Crawly.Pipelines.WriteToFile
-    ],
-  output_format: "csv"
+    ]
 ```
 
 **NOTE**: Set the file extension config for `WriteToFile` to "csv"
@@ -814,8 +813,7 @@ config :crawly,
     Crawly.Pipelines.DuplicatesFilter,
     Crawly.Pipelines.CSVJSONEncoderEncoder,
     Crawly.Pipelines.WriteToFile
-    ],
-  output_format: "csv"
+    ]
 ```
 
 **NOTE**: Set the file extension config for `WriteToFile` to "jl"
