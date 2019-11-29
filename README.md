@@ -19,7 +19,7 @@ historical archival.
 2. Add Crawly to you mix.exs file
     ```elixir
     def deps do
-        [{:crawly, "~> 0.5.0"}]
+        [{:crawly, "~> 0.6.0"}]
     end
     ```
 3. Fetch crawly: `mix deps.get`
@@ -34,7 +34,7 @@ Crawly for proper data extraction.
 ```elixir
 defp deps do
     [
-      {:crawly, "~> 0.5.0"}
+      {:crawly, "~> 0.6.0"}
     ]
 end
 ```
