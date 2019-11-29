@@ -102,7 +102,7 @@ config :crawly,
  - `iex -S mix`
  - `Crawly.Engine.start_spider(EslSpider)`
 
-7. Results can be seen in: `cat /tmp/EslSpider.jl`
+7. Results can be seen in: `cat /tmp/EslSpider.csv`
 
 
 # Documentation
