@@ -92,7 +92,8 @@ config :crawly,
   pipelines: [
     Crawly.Pipelines.Validate,
     Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.CSVEncoder
+    Crawly.Pipelines.CSVEncoder,
+    Crawly.Pipelines.WriteToFile
   ]
 ```
 
