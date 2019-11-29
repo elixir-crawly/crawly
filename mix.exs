@@ -48,7 +48,6 @@ defmodule Crawly.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 1.4"},
-      {:floki, "~> 0.20.0"},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
       {:new_gollum, "~> 0.3.0"},
