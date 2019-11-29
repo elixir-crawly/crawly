@@ -14,7 +14,7 @@ defmodule Crawly.DataStorage.Worker do
 
   use GenServer
 
-  defstruct stored_items: 0, spider_name: nil
+  defstruct stored_items: 0, spider_name: nil, pipeline: nil
 
   def start_link(spider_name: spider_name) do
     GenServer.start_link(__MODULE__, spider_name: spider_name)
@@ -29,14 +29,17 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def init(spider_name: spider_name) do
-    {:ok, %Worker{spider_name: spider_name}}
+
+    pipeline = pipeline_from_config(spider_name)
+
+    {:ok, %Worker{spider_name: spider_name, pipeline: pipeline}}
   end
 
   def handle_cast({:store, item}, state) do
-    pipelines = Application.get_env(:crawly, :pipelines, [])
-
+    %{ pipeline: pipeline } = state
+    
     state =
-      case Crawly.Utils.pipe(pipelines, item, state) do
+      case Crawly.Utils.pipe(pipeline, item, state) do
         {false, new_state} ->
           new_state
 
@@ -50,4 +53,16 @@ defmodule Crawly.DataStorage.Worker do
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_items, state.stored_items}, state}
   end
+
+  defp pipeline_from_config(spider_name) do
+    pipeline_from_config_entry(Application.get_env(:crawly, :pipelines, []), spider_name) || []
+  end
+
+  defp pipeline_from_config_entry(%{} = mappings, spider_name) do
+    case mappings |> Map.get(spider_name) || mappings |> Map.get(:default) do
+      nil -> []
+      list when is_list(list) -> list
+    end
+  end
+  defp pipeline_from_config_entry(list, _spider_name) when is_list(list), do: list
 end
