@@ -13,7 +13,13 @@ defmodule Pipelines.ValidateTest do
     author: nil
   }
 
-  test "ValidateItem item with required fields are not dropped, item returned unchanged" do
+  setup do
+    on_exit(fn ->
+      Application.put_env(:crawly, :item, nil)
+    end)
+  end
+
+  test "Returns item unchanged when has required fields" do
     Application.put_env(:crawly, :item, [:title, :author])
     pipelines = [Crawly.Pipelines.Validate]
     item = @valid
@@ -23,7 +29,7 @@ defmodule Pipelines.ValidateTest do
     assert item == @valid
   end
 
-  test "ValidateItem items with missing required fields are dropped" do
+  test "Drops items when missing required fields" do
     Application.put_env(:crawly, :item, [:title, :author])
     pipelines = [Crawly.Pipelines.Validate]
     item = @invalid_missing
@@ -32,7 +38,7 @@ defmodule Pipelines.ValidateTest do
     {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
 
-  test "ValidateItem required item fields with nil are dropped" do
+  test "Drops items when required fields are equal to nil" do
     Application.put_env(:crawly, :item, [:title, :author])
     pipelines = [Crawly.Pipelines.Validate]
     item = @invalid_nil

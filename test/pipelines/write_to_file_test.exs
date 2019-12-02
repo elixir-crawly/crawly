@@ -4,7 +4,14 @@ defmodule Pipelines.WriteToFileTest do
   # creates a string with a unique timestamp
   @binary "some binary to write to the csv #{:os.system_time(:seconds)}"
 
-  test "WriteToFile writes a given item to a file", _context do
+  setup do
+    on_exit(fn ->
+      Application.put_env(:crawly, :folder, nil)
+      Application.put_env(:crawly, :extension, nil)
+    end)
+  end
+
+  test "Writes a given item to a file", _context do
     Application.put_env(:crawly, Crawly.Pipelines.WriteToFile,
       folder: "/tmp",
       extension: "csv"

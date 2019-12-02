@@ -2,8 +2,13 @@ defmodule Pipelines.DuplicatesFilterTest do
   use ExUnit.Case, async: false
 
   @valid %{data: [%{some: "nested_data"}], id: "my_id"}
+  setup do
+    on_exit(fn ->
+      Application.put_env(:crawly, :item_id, nil)
+    end)
+  end
 
-  test "DuplicatesFilter prevents drops duplicate items with the same item_id value" do
+  test "Drops duplicate items with the same item_id value" do
     Application.put_env(:crawly, :item_id, :id)
     pipelines = [Crawly.Pipelines.DuplicatesFilter]
     item = @valid
@@ -20,7 +25,7 @@ defmodule Pipelines.DuplicatesFilterTest do
     assert {false, state} = Crawly.Utils.pipe(pipelines, item, state)
   end
 
-  test "DuplicatesFilter is inactive when item_id is not set" do
+  test "Inactive when item_id is not set" do
     pipelines = [Crawly.Pipelines.DuplicatesFilter]
     item = @valid
     state = %{}

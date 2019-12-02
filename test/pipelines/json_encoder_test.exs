@@ -3,7 +3,7 @@ defmodule Pipelines.JSONEncoderTest do
 
   @valid %{data: [%{some: "nested_data"}]}
 
-  test "JSONEncoder converts a given map to a json string" do
+  test "Converts a given map to a json string" do
     pipelines = [Crawly.Pipelines.JSONEncoder]
     item = @valid
     state = %{}
