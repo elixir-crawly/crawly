@@ -4,7 +4,7 @@ defmodule Pipelines.CSVEncoderTest do
   @valid %{first: "some", second: "data"}
   setup do
     on_exit(fn ->
-      Application.put_env(:crawly, :item, nil)
+      Application.put_env(:crawly, :item, [:title, :author, :time, :url])
     end)
   end
 

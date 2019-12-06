@@ -4,7 +4,7 @@ defmodule Pipelines.DuplicatesFilterTest do
   @valid %{data: [%{some: "nested_data"}], id: "my_id"}
   setup do
     on_exit(fn ->
-      Application.put_env(:crawly, :item_id, nil)
+      Application.put_env(:crawly, :item_id, :title)
     end)
   end
 
