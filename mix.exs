@@ -1,10 +1,12 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
+  @version "0.7.0-dev"
+
   def project do
     [
       app: :crawly,
-      version: "0.6.0",
+      version: @version,
       name: "Crawly",
       source_url: "https://github.com/oltarasenko/crawly",
       elixir: "~> 1.7",
@@ -13,6 +15,7 @@ defmodule Crawly.Mixfile do
       test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
+      docs: docs(),
       elixirc_options: [warnings_as_errors: true],
       deps: deps()
     ]
@@ -60,4 +63,34 @@ defmodule Crawly.Mixfile do
       {:excoveralls, "~> 0.10", only: :test}
     ]
   end
+
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      logo: "documentation/assets/logo.png",
+      extra_section: "documentation",
+      main: "quickstart",
+#      assets: "guides/assets",
+      formatters: ["html", "epub"],
+#      groups_for_modules: groups_for_modules(),
+      extras: extras(),
+#      groups_for_extras: groups_for_extras()
+    ]
+  end
+
+  defp extras do
+    [
+      "documentation/quickstart.md",
+      "documentation/introduction.md",
+      "documentation/ethical_aspects.md",
+      "documentation/installation_guide.md",
+      "documentation/tutorial.md",
+      "documentation/basic_concepts.md",
+      "documentation/settings.md",
+      "documentation/http_api.md",
+
+    ]
+  end
+
+
 end

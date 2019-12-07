@@ -1,4 +1,4 @@
-# Crawly into
+# Crawly intro
 ---
 
 Crawly is an application framework for crawling web sites and
