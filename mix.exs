@@ -1,10 +1,12 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
+  @version "0.7.0-dev"
+
   def project do
     [
       app: :crawly,
-      version: "0.6.0",
+      version: @version,
       name: "Crawly",
       source_url: "https://github.com/oltarasenko/crawly",
       elixir: "~> 1.7",
@@ -13,6 +15,7 @@ defmodule Crawly.Mixfile do
       test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
+      docs: docs(),
       elixirc_options: [warnings_as_errors: true],
       deps: deps()
     ]
@@ -58,6 +61,53 @@ defmodule Crawly.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.8.13", only: :test},
       {:excoveralls, "~> 0.10", only: :test}
+    ]
+  end
+
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      logo: "documentation/assets/logo.png",
+      extra_section: "documentation",
+      main: "introduction",
+      #      assets: "guides/assets",
+      formatters: ["html"],
+      groups_for_modules: [
+        "Building Spiders": [
+          Crawly.Response,
+          Crawly.Request,
+          Crawly.Spider,
+          Crawly.ParsedItem
+        ],
+        "Middlewares and Pipelines": ~r"Crawly\.(Pipeline|Middlewares)(.*)",
+        "Under the Hood": [
+          Crawly.Engine,
+          Crawly.Manager,
+          Crawly.Worker,
+          Crawly.DataStorage,
+          Crawly.DataStorage.Worker,
+          Crawly.RequestsStorage,
+          Crawly.RequestsStorage.Worker
+        ]
+      ],
+      extras: extras(),
+      nest_modules_by_prefix: [
+        Crawly.Middlewares,
+        Crawly.Pipelines
+      ]
+      #      groups_for_extras: groups_for_extras()
+    ]
+  end
+
+  defp extras do
+    [
+      "documentation/introduction.md",
+      "documentation/quickstart.md",
+      "documentation/tutorial.md",
+      "documentation/basic_concepts.md",
+      "documentation/configuration.md",
+      "documentation/http_api.md",
+      "documentation/ethical_aspects.md"
     ]
   end
 end
