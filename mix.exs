@@ -70,11 +70,33 @@ defmodule Crawly.Mixfile do
       logo: "documentation/assets/logo.png",
       extra_section: "documentation",
       main: "quickstart",
-#      assets: "guides/assets",
-      formatters: ["html", "epub"],
-#      groups_for_modules: groups_for_modules(),
-      extras: extras(),
-#      groups_for_extras: groups_for_extras()
+      #      assets: "guides/assets",
+      formatters: ["html"],
+      groups_for_modules: [
+        "Engine Level": [Crawly, Crawly.Engine, Crawly.EngineSup],
+        "Spider Management Level": [
+          Crawly.Manager,
+          Crawly.ManagerSup,
+          Crawly.Worker,
+          Crawly.DataStorage,
+          Crawly.DataStorage.Worker,
+          Crawly.RequestsStorage,
+          Crawly.RequestsStorage.Worker
+        ],
+        "Requests and Responses": [
+          Crawly.Response,
+          Crawly.Request
+        ],
+        "Middlewares and Pipelines": ~r"Crawly\.(Pipeline|Middlewares)(.*)",
+        "Spider Implementation": [
+          Crawly.Spider,
+          Crawly.ParsedItem
+        ],
+        "HTTP API": [Crawly.API.Router],
+        Utility: [Crawly.Utils]
+      ],
+      extras: extras()
+      #      groups_for_extras: groups_for_extras()
     ]
   end
 
@@ -87,10 +109,7 @@ defmodule Crawly.Mixfile do
       "documentation/tutorial.md",
       "documentation/basic_concepts.md",
       "documentation/settings.md",
-      "documentation/http_api.md",
-
+      "documentation/http_api.md"
     ]
   end
-
-
 end
