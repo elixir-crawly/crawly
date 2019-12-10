@@ -1,79 +1,79 @@
 # Quickstart
 
-In this section we will show how to bootstrap a small project and to setup
-Crawly for proper data extraction.
+---
 
-1. Create a new Elixir project: `mix new crawly_example --sup`
-2. Add Crawly to the dependencies (mix.exs file):
-```elixir
-defp deps do
-    [
-      {:crawly, "~> 0.6.0"}
-    ]
-end
-```
-3. Fetch dependencies: `mix deps.get`
-4. Define Crawling rules (Spider)
-```elixir
-cat > lib/crawly_example/esl_spider.ex << EOF
-defmodule EslSpider do
-  @behaviour Crawly.Spider
-  alias Crawly.Utils
+Goals:
 
-  @impl Crawly.Spider
-  def base_url(), do: "https://www.erlang-solutions.com"
+- Scrape the Erlang Solutions blog for articles, and scrape the article titles.
+- Perform pagination to see more blog posts.
 
-  @impl Crawly.Spider
-  def init(), do: [start_urls: ["https://www.erlang-solutions.com/blog.html"]]
+1. Add Crawly as a dependencies:
+   ```elixir
+   # mix.exs
+   defp deps do
+       [
+         {:crawly, "~> 0.6.0"}
+       ]
+   end
+   ```
+2. Fetch dependencies: `$ mix deps.get`
+3. Create a spider
 
-  @impl Crawly.Spider
-  def parse_item(response) do
-    hrefs = response.body |> Floki.find("a.more") |> Floki.attribute("href")
+   ```elixir
+   # lib/crawly_example/esl_spider.ex
+   defmodule EslSpider do
+     @behaviour Crawly.Spider
+     alias Crawly.Utils
 
-    requests =
-      Utils.build_absolute_urls(hrefs, base_url())
-      |> Utils.requests_from_urls()
+     @impl Crawly.Spider
+     def base_url(), do: "https://www.erlang-solutions.com"
 
-    title = response.body |> Floki.find("article.blog_post h1") |> Floki.text()
+     @impl Crawly.Spider
+     def init(), do: [start_urls: ["https://www.erlang-solutions.com/blog.html"]]
 
-    %{
-      :requests => requests,
-      :items => [%{title: title, url: response.request_url}]
-    }
-  end
-end
-EOF
-```
+     @impl Crawly.Spider
+     def parse_item(response) do
+       hrefs = response.body |> Floki.find("a.more") |> Floki.attribute("href")
 
-5. Configure Crawly:
-By default Crawly does not require any configuration. But obviously you will need
-a configuration for fine tuning the Crawls:
+       requests =
+         Utils.build_absolute_urls(hrefs, base_url())
+         |> Utils.requests_from_urls()
 
-```elixir
-config :crawly,
-  closespider_timeout: 10,
-  concurrent_requests_per_domain: 8,
-  follow_redirects: true,
-  closespider_itemcount: 1000,
-  output_format: "csv",
-  item: [:title, :url],
-  item_id: :title,
-  middlewares: [
-    Crawly.Middlewares.DomainFilter,
-    Crawly.Middlewares.UniqueRequest,
-    Crawly.Middlewares.UserAgent
-  ],
-  pipelines: [
-    Crawly.Pipelines.Validate,
-    Crawly.Pipelines.DuplicatesFilter,
-    Crawly.Pipelines.CSVEncoder,
-    Crawly.Pipelines.WriteToFile
-  ]
-```
+       title = response.body |> Floki.find("article.blog_post h1") |> Floki.text()
 
+       %{
+         :requests => requests,
+         :items => [%{title: title, url: response.request_url}]
+       }
+     end
+   end
+   ```
 
-6. Start the Crawl:
- - `iex -S mix`
- - `Crawly.Engine.start_spider(EslSpider)`
-
-7. Results can be seen in: `cat /tmp/EslSpider.csv`
+4. Configure Crawly
+   - By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
+   ```elixir
+   # in config.exs
+   config :crawly,
+     closespider_timeout: 10,
+     concurrent_requests_per_domain: 8,
+     follow_redirects: true,
+     closespider_itemcount: 1000,
+     output_format: "csv",
+     item: [:title, :url],
+     item_id: :title,
+     middlewares: [
+       Crawly.Middlewares.DomainFilter,
+       Crawly.Middlewares.UniqueRequest,
+       Crawly.Middlewares.UserAgent
+     ],
+     pipelines: [
+       Crawly.Pipelines.Validate,
+       Crawly.Pipelines.DuplicatesFilter,
+       Crawly.Pipelines.CSVEncoder,
+       Crawly.Pipelines.WriteToFile
+     ]
+   ```
+5. Start the Crawl:
+   - `$ iex -S mix`
+   - `iex(1)> Crawly.Engine.start_spider(EslSpider)`
+6. Results can be seen with: `$ cat /tmp/EslSpider.csv`

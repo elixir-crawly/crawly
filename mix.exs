@@ -69,47 +69,45 @@ defmodule Crawly.Mixfile do
       source_ref: "v#{@version}",
       logo: "documentation/assets/logo.png",
       extra_section: "documentation",
-      main: "quickstart",
+      main: "introduction",
       #      assets: "guides/assets",
       formatters: ["html"],
       groups_for_modules: [
-        "Engine Level": [Crawly, Crawly.Engine, Crawly.EngineSup],
-        "Spider Management Level": [
+        "Building Spiders": [
+          Crawly.Response,
+          Crawly.Request,
+          Crawly.Spider,
+          Crawly.ParsedItem
+        ],
+        "Middlewares and Pipelines": ~r"Crawly\.(Pipeline|Middlewares)(.*)",
+        "Under the Hood": [
+          Crawly.Engine,
           Crawly.Manager,
-          Crawly.ManagerSup,
           Crawly.Worker,
           Crawly.DataStorage,
           Crawly.DataStorage.Worker,
           Crawly.RequestsStorage,
           Crawly.RequestsStorage.Worker
-        ],
-        "Requests and Responses": [
-          Crawly.Response,
-          Crawly.Request
-        ],
-        "Middlewares and Pipelines": ~r"Crawly\.(Pipeline|Middlewares)(.*)",
-        "Spider Implementation": [
-          Crawly.Spider,
-          Crawly.ParsedItem
-        ],
-        "HTTP API": [Crawly.API.Router],
-        Utility: [Crawly.Utils]
+        ]
       ],
-      extras: extras()
+      extras: extras(),
+      nest_modules_by_prefix: [
+        Crawly.Middlewares,
+        Crawly.Pipelines
+      ]
       #      groups_for_extras: groups_for_extras()
     ]
   end
 
   defp extras do
     [
-      "documentation/quickstart.md",
       "documentation/introduction.md",
-      "documentation/ethical_aspects.md",
-      "documentation/installation_guide.md",
+      "documentation/quickstart.md",
       "documentation/tutorial.md",
       "documentation/basic_concepts.md",
-      "documentation/settings.md",
-      "documentation/http_api.md"
+      "documentation/configuration.md",
+      "documentation/http_api.md",
+      "documentation/ethical_aspects.md"
     ]
   end
 end

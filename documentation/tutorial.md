@@ -1,4 +1,5 @@
-# Crawly tutorial
+# Tutorial
+
 ---
 
 In this tutorial, we’ll assume that Elixir is already installed on
@@ -9,6 +10,7 @@ We are going to scrape `https://www.homebase.co.uk`, a website that
 contains products of different types.
 
 This tutorial will walk you through these tasks:
+
 1. Creating a new Crawly project.
 2. Writing a spider to crawl a site and extract data.
 3. Exporting the scraped data.
@@ -27,9 +29,10 @@ Before you start crawling, you will have to set up a new Crawly
 project. Enter a directory where you’d like to store your code and
 run:
 
-```mix new tutorial --sup```
+`mix new tutorial --sup`
 
 This will create a tutorial directory with the following contents:
+
 ```bash
 tutorial
 ├── README.md
@@ -48,13 +51,14 @@ tutorial
 
 Switch to the project folder: `cd ./tutorial` and update the mix.exs
 file with the following code:
+
 ```elixir
     def deps do
         [{:crawly, "~> 0.5.0"}]
     end
 ```
-Now run `mix deps.get`
 
+Now run `mix deps.get`
 
 ## Our first spider
 
@@ -93,17 +97,16 @@ As you can see, our Spider implements the Spider behaviour and defines
 some functions:
 
 1. base_url: method which returns base_urls for the given Spider, used in
-order to filter out all irrelevant requests. In our case we don't want
-our crawler to follow links going to social media sites and other
-partner sites (which are not related to the homebase website themselves)
+   order to filter out all irrelevant requests. In our case we don't want
+   our crawler to follow links going to social media sites and other
+   partner sites (which are not related to the homebase website themselves)
 
 2. init(): must return a KW list which contains start_urls list which
-Crawler will begin to crawl from. Subsequent requests will be
-generated from these initial urls.
+   Crawler will begin to crawl from. Subsequent requests will be
+   generated from these initial urls.
 
 3. parse_item(): function which will be called to handle response
-downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
-
+   downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
 
 ## How to run our spider
 
@@ -111,28 +114,28 @@ To put our spider to work, go to the project’s top level directory and
 run:
 
 1. iex -S mix - It will start the Elixir application which we have
-created, and will open interactive console
+   created, and will open interactive console
 2. Execute the following command in the opened Elixir console:
-```Crawly.Engine.start_spider(Homebase)```
+   `Crawly.Engine.start_spider(Homebase)`
 
 You will get an output similar to this:
 
- ```elixir
+```elixir
 iex(2)> Crawly.Engine.start_spider(Homebase)
 
 15:03:47.134 [info]  Starting the manager for Elixir.Homebase
 
 =PROGRESS REPORT==== 23-May-2019::15:03:47 ===
-          supervisor: {<0.415.0>,'Elixir.Crawly.ManagerSup'}
-             started: [{pid,<0.416.0>},
-                       {id,'Elixir.Homebase'},
-                       {mfargs,
-                           {'Elixir.DynamicSupervisor',start_link,
-                               [[{strategy,one_for_one},
-                                 {name,'Elixir.Homebase'}]]}},
-                       {restart_type,permanent},
-                       {shutdown,infinity},
-                       {child_type,supervisor}]
+         supervisor: {<0.415.0>,'Elixir.Crawly.ManagerSup'}
+            started: [{pid,<0.416.0>},
+                      {id,'Elixir.Homebase'},
+                      {mfargs,
+                          {'Elixir.DynamicSupervisor',start_link,
+                              [[{strategy,one_for_one},
+                                {name,'Elixir.Homebase'}]]}},
+                      {restart_type,permanent},
+                      {shutdown,infinity},
+                      {child_type,supervisor}]
 
 15:03:47.137 [debug] Starting requests storage worker for
 Elixir.Homebase..
@@ -254,6 +257,7 @@ Crawly.fetch("https://www.homebase.co.uk/4-tier-heavy-duty-shelving-unit_p375180
 ```
 
 Extract the `title` with:
+
 ```
 response.body |> Floki.find(".page-title h1") |> Floki.text()
 "4 Tier Heavy Duty Shelving Unit"
@@ -267,6 +271,7 @@ response.body |> Floki.find(".product-header-heading span") |> Floki.text
 ```
 
 Extract the `price` with:
+
 ```
 response.body |> Floki.find(".price-value [itemprop=priceCurrency]") |> Floki.text
 "£75"
@@ -339,6 +344,7 @@ end
 ```
 
 If you run this spider, it will output the extracted data with the log:
+
 ```
 17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386", title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
 17:23:43.432 [debug] Scraped %{price: "£3.99", sku: "SKU:  486384", title: "Bon Safety EN20471 Hi viz Yellow Vest, size L"}
@@ -346,11 +352,13 @@ If you run this spider, it will output the extracted data with the log:
 ```
 
 Also you will see messages like:
+
 ```
 17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xxl_p275608, as it's already processed
 17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-l_p275605, as it's already processed
 17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xl_p275607, as it's already processed
 ```
+
 That's because Crawly filters out requests which it has already
 visited during the current run.
 
@@ -360,7 +368,6 @@ You might wonder where is the resulting data is located by default?
 Well the default location of the scraped data is under the /tmp
 folder. This can be controlled by the `base_store_path` variable in
 the Crawly configuration (`:crawly`, `:base_store_path`).
-
 
 ## Next steps
 

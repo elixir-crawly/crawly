@@ -1,19 +1,26 @@
-# Crawly intro
+# Crawly
+
 ---
 
-Crawly is an application framework for crawling web sites and
-extracting structured data which can be used for a wide range of
-useful applications, like data mining, information processing or
-historical archival.
+Crawly is a web crawling framework, written in Elixir.
+
+## Installation
+
+Crawly requires Elixir v1.7 or higher.
+
+1. Add Crawly to you mix.exs file
+   ```elixir
+   def deps do
+       [{:crawly, "~> 0.6.0"}]
+   end
+   ```
+2. Update your dependencies with `mix deps.get`
 
 ## Walk-through of an example spider
 
-In order to show you what Crawly brings to the table, we’ll walk you
-through an example of a Crawly spider using the simplest way to run a spider.
+In order to show you what Crawly brings to the table, we’ll walk you through an example of a Crawly spider using the simplest way to run a spider.
 
-Here’s the code for a spider that scrapes blog posts from the Erlang
-Solutions blog:  https://www.erlang-solutions.com/blog.html,
-following the pagination:
+Here’s the code for a spider that scrapes blog posts from the Erlang Solutions blog: https://www.erlang-solutions.com/blog.html, following the pagination:
 
 ```elixir
 defmodule Esl do
@@ -81,8 +88,7 @@ end
 Put this code into your project and run it using the Crawly REST API:
 `curl -v localhost:4001/spiders/Esl/schedule`
 
-When it finishes you will get the ESL.jl file stored on your
-filesystem containing the following information about blog posts:
+When it finishes you will get the ESL.jl file stored on your filesystem containing the following information about blog posts:
 
 ```json
 {"url":"https://www.erlang-solutions.com/blog/erlang-trace-files-in-wireshark.html","title":"Erlang trace files in Wireshark","time":"2018-06-07","author":"by Magnus Henoch"}
@@ -96,53 +102,36 @@ filesystem containing the following information about blog posts:
 ## What just happened?
 
 When you ran the curl command:
-```curl -v localhost:4001/spiders/Esl/schedule```
+`curl -v localhost:4001/spiders/Esl/schedule`
 
-Crawly runs a spider ESL, Crawly looked for a Spider definition inside
-it and ran it through its crawler engine.
+Crawly runs a spider ESL, Crawly looked for a Spider definition inside it and ran it through its crawler engine.
 
-The crawl started by making requests to the URLs defined in the
-start_urls attribute of the spider's init, and called the default
-callback method `parse_item`, passing the response object as an
-argument. In the parse callback, we loop:
-1. Look through all pagination the elements using a Floki Selector and
-extract absolute URLs to follow. URLS are converted into Requests,
-using
-`Crawly.Utils.request_from_url()` function
+The crawl started by making requests to the URLs defined in the start_urls attribute of the spider's init, and called the default callback method `parse_item`, passing the response object as an argument.
+
+In the parse callback, we loop:
+
+1. Look through all pagination the elements using a Floki Selector and extract absolute URLs to follow. URLS are converted into Requests, using `Crawly.Utils.request_from_url()` function
 2. Extract item(s) (items are defined in separate modules, and this part
-will be covered later on)
-3. Return a Crawly.ParsedItem structure which is containing new
-requests to follow and items extracted from the given page, all
-following requests are going to be processed by the same `parse_item` function.
+   will be covered later on)
+3. Return a Crawly.ParsedItem structure which is containing new requests to follow and items extracted from the given page, all following requests are going to be processed by the same `parse_item` function.
 
 Crawly is fully asynchronous. Once the requests are scheduled, they
 are picked up by separate workers and are executed in parallel. This
 also means that other requests can keep going even if some request
 fails or an error happens while handling it.
 
-
-While this enables you to do very fast crawls (sending multiple
-concurrent requests at the same time, in a fault-tolerant way) Crawly
-also gives you control over the politeness of the crawl through a few
-settings. You can do things like setting a download delay between each
-request, limiting the amount of concurrent requests per domain or
-respecting robots.txt rules
+While this enables you to do very fast crawls (sending multiple concurrent requests at the same time, in a fault-tolerant way) Crawly also gives you control over the politeness of the crawl through a few settings. You can do things like setting a download delay between each request, limiting the amount of concurrent requests per domain or respecting robots.txt rules
 
 ```
-This is using JSON export to generate the JSON lines file, but you can
-easily extend it to change the export format (XML or CSV, for
-example).
+This is using JSON export to generate the JSON lines file, but you can easily extend it to change the export format (XML or CSV, for example).
 
 ```
 
 ## What else?
 
-You’ve seen how to extract and store items from a website using
-Crawly, but this is just a basic example. Crawly provides a lot of
-powerful features for making scraping easy and efficient, such as:
+You’ve seen how to extract and store items from a website using Crawly, but this is just a basic example. Crawly provides a lot of powerful features for making scraping easy and efficient, such as:
 
-1. Flexible request spoofing (for example user-agents rotation,
-cookies management (this feature is planned.))
+1. Flexible request spoofing (for example user-agents rotation, cookies management (this feature is planned.))
 2. Items validation, using pipelines approach.
 3. Filtering already seen requests and items.
 4. Filter out all requests which targeted at other domains.

@@ -1,7 +1,6 @@
 defmodule Crawly.EngineSup do
-  @moduledoc """
-  Engine supervisor responsible for spider subtrees
-  """
+  # Engine supervisor responsible for spider subtrees
+  @moduledoc false
   use DynamicSupervisor
 
   def start_link do
@@ -26,6 +25,7 @@ defmodule Crawly.EngineSup do
         false ->
           {:error, "Spider: #{inspect(spider_name)} was not defined"}
       end
+
     result
   end
 
