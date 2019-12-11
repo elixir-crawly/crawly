@@ -90,6 +90,10 @@ List of built-in middlewares:
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
 
+### Creating a Custom Request Middleware
+
+TODO
+
 ## Item Pipelines
 
 Crawly is using a concept of pipelines when it comes to processing of the elements sent to the system. In this section we will cover the topic of item pipelines - a tool which is used in order to pre-process items before storing them in the storage.
@@ -103,3 +107,31 @@ At this point Crawly includes the following Item pipelines:
 5.  `Crawly.Pipelines.WriteToFile`- Writes information to a given file.
 
 The list of item pipelines used with a given project is defined in the project settings.
+
+### Creating a Custom Item Pipeline
+
+An item pipeline follows the `Crawly.Pipeline` behaviour. As such, when creating your custom pipeline, it will need to implement the required callback `c:Crawly.Pipeline.run\2`.
+
+> **Note**: [PR #31](https://github.com/oltarasenko/crawly/pull/31) aims to allow tuple-based option declaration, similar to how a `GenServer` is declared ina supervision tree.
+
+The `c:Crawly.Pipeline.run\2` callback receives the processed item, `item` from the previous pipeline module as the first argument. The second argument, `state`, is a map containing information such as spider which the item originated from (under the `:spider_name` key), and may optionally store pipeline information.
+
+When storing information in the `state` map, ensure that the state is namespaced with the pipeline name, so as to avoid key clashing. For example, to store state from `MyEctoPipeline`, store the state on the key `:my_ecto_pipeline_my_state`.
+
+#### Example - Ecto Storage Pipeline
+
+```elxiir
+defmodule MyApp.MyEctoPipeline do
+  @impl Crawly.Pipeline
+  def run(item, state) do
+    case MyApp.insert_with_ecto(item) do
+      {:ok, _} ->
+        # insert successful, carry on with pipeline
+        {item, state}
+      {:error, _} ->
+        # insert not successful, drop from pipeline
+        {false, state}
+    end
+  end
+end
+```
