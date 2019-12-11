@@ -13,10 +13,16 @@ defmodule Crawly.Engine do
 
   defstruct started_spiders: %{}
 
+  @spec start_spider(module()) ::
+          {:ok, started_spiders()}
+          | {:error, :spider_already_started}
+          | {:error, :atom}
   def start_spider(spider_name) do
     GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
+  @spec stop_spider(module()) ::
+          {:ok, started_spiders()} | {:error, :spider_not_running}
   def stop_spider(spider_name) do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
