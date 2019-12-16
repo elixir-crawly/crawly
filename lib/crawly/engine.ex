@@ -8,16 +8,26 @@ defmodule Crawly.Engine do
 
   use GenServer
 
+  @type t :: %__MODULE__{started_spiders: started_spiders()}
+  @type started_spiders() :: %{optional(module()) => identifier()}
+
   defstruct started_spiders: %{}
 
+  @spec start_spider(module()) ::
+          :ok
+          | {:error, :spider_already_started}
+          | {:error, :atom}
   def start_spider(spider_name) do
     GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
+  @spec stop_spider(module()) ::
+          :ok | {:error, :spider_not_running}
   def stop_spider(spider_name) do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 
+  @spec running_spiders() :: started_spiders()
   def running_spiders() do
     GenServer.call(__MODULE__, :running_spiders)
   end
@@ -26,6 +36,7 @@ defmodule Crawly.Engine do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @spec init(any) :: {:ok, __MODULE__.t()}
   def init(_args) do
     {:ok, %Crawly.Engine{}}
   end
