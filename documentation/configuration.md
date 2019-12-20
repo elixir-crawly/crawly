@@ -92,11 +92,6 @@ default: nil
 
 Defines a minimal amount of items which needs to be scraped by the spider within the given timeframe (30s). If the limit is not reached by the spider - it will be stopped.
 
-### follow_redirects :: boolean()
-
-default: false
-
-Defines is Crawly spider is supposed to follow HTTP redirects or not.
 
 ### concurrent_requests_per_domain :: pos_integer()
 
@@ -104,12 +99,14 @@ default: 4
 
 The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
 
-### proxy :: binary()
+### httpoison_options :: []
 
-Requests can be directed through a proxy. It will set the proxy option for the request.
-It's possible to set proxy using the proxy value of Crawly config, for example:
+Defines a default set of options used with HTTPoison client. For example:
 
-```
-config :crawly,
-    proxy: "<proxy_host>:<proxy_port>",
+```$elixir
+  httpoison_options: [
+    {:follow_redirects, true},
+    {:proxy, "host:port"}
+  ]
+
 ```

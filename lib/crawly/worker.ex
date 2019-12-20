@@ -111,16 +111,7 @@ defmodule Crawly.Worker do
     items = Map.get(parsed_item, :items, [])
 
     # Reading HTTP client options
-    options = [Application.get_env(:crawly, :follow_redirect, false)]
-
-    options =
-      case Application.get_env(:crawly, :proxy, false) do
-        false ->
-          options
-
-        proxy ->
-          options ++ [{:proxy, proxy}]
-      end
+    options = Application.get_env(:crawly, :httpoison_options, [])
 
     # Process all requests one by one
     Enum.each(

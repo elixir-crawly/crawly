@@ -11,17 +11,17 @@ defmodule Crawly do
         when url: binary(),
              headers: [],
              options: []
-  def fetch(url, headers \\ [], options \\ []) do
-    options = [Application.get_env(:crawly, :follow_redirect, false)] ++ options
-
+  def fetch(url, headers \\ [], request_options \\ []) do
+    # Try to use options provided by a fetch function. If nothing is provided
+    # then use options provided by a config.
     options =
-      case Application.get_env(:crawly, :proxy, false) do
-        false ->
-          options
-
-        proxy ->
-          options ++ [{:proxy, proxy}]
+      case request_options do
+        [] ->
+          Application.get_env(:crawly, :httpoison_options, [])
+        _ ->
+          request_options
       end
+
 
     HTTPoison.get(url, headers, options)
   end

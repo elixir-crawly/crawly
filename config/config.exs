@@ -47,6 +47,9 @@ config :crawly,
   # Stop spider if it does crawl fast enough
   closespider_timeout: 20,
   concurrent_requests_per_domain: 5,
+  httpoison_options: [
+    {:follow_redirects, true},
+  ],
   follow_redirects: true,
   # Request middlewares
   middlewares: [
