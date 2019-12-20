@@ -116,11 +116,19 @@ default: 4
 
 The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
 
+
+### max_retries :: pos_integer()
+
+default: 3
+
+Controlls the amount of retries made by the Crawly in order to fetch a successful
+request (the one with HTTP 200 response).
+    
 ### proxy :: binary()
 
 Requests can be directed through a proxy. It will set the proxy option for the request.
 It's possible to set proxy using the proxy value of Crawly config, for example:
-
+        
 ```
 config :crawly,
     proxy: "<proxy_host>:<proxy_port>",

@@ -15,6 +15,7 @@ config :crawly,
   item: [:title, :author, :time, :url],
   # Identifier which is used to filter out duplicates
   item_id: :title,
+  max_retries: 2,
   # Stop spider after scraping certain amount of items
   closespider_itemcount: 100,
   # Stop spider if it does crawl fast enough

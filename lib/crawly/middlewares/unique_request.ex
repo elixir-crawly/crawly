@@ -1,8 +1,14 @@
 defmodule Crawly.Middlewares.UniqueRequest do
   @moduledoc """
-  Avoid scheduling requests for the same pages.
+  Avoid scheduling requests for the same pages. However if retry is requested
+  the request is still allowed.
   """
   require Logger
+
+  # Allow to re-schedule a request if retries are required
+  def run(%Crawly.Request{retries: retries} = request, state) when retries > 0 do
+    {request, state}
+  end
 
   def run(request, state) do
     unique_request_seen_requests =
@@ -30,4 +36,5 @@ defmodule Crawly.Middlewares.UniqueRequest do
         {false, state}
     end
   end
+
 end

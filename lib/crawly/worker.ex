@@ -17,14 +17,18 @@ defmodule Crawly.Worker do
   end
 
   def init([spider_name]) do
-    Process.send_after(self(), :work, @default_backoff)
+    Crawly.Utils.send_after(self(), :work, @default_backoff)
 
     {:ok, %Crawly.Worker{spider_name: spider_name, backoff: @default_backoff}}
   end
 
   def handle_info(:work, state) do
-    %{spider_name: spider_name, backoff: backoff} = state
+    new_backoff = do_work(state.spider_name, state.backoff)
+    Crawly.Utils.send_after(self(), :work, new_backoff)
+    {:noreply, %{state | backoff: new_backoff}}
+  end
 
+  defp do_work(spider_name, backoff) do
     # Get a request from requests storage.
     new_backoff =
       case Crawly.RequestsStorage.pop(spider_name) do
@@ -80,11 +84,12 @@ defmodule Crawly.Worker do
     )
 
     case fetcher.fetch(request, options) do
-      {:ok, response} ->
+      {:ok, %HTTPoison.Response{status_code: 200} = response} ->
         {:ok, {response, spider_name}}
 
-      {:error, _reason} = response ->
-        response
+      non_successful_response ->
+        :ok = maybe_retry_request(spider_name, request)
+        {:error, non_successful_response}
     end
   end
 
@@ -157,5 +162,22 @@ defmodule Crawly.Worker do
     )
 
     {:ok, :done}
+  end
+
+  ## Retry a request if max retries allows to do so
+  defp maybe_retry_request(spider, %Crawly.Request{retries: retries} = request) do
+    max_retires = Application.get_env(:crawly, :max_retries, 3)
+
+    case retries <= max_retires do
+      true ->
+        Logger.info("Request to #{request.url}, is scheduled for retry")
+        :ok = Crawly.RequestsStorage.store(
+          spider,
+          %Crawly.Request{request | retries: retries + 1}
+        )
+      false ->
+        Logger.info("Dropping request to #{request.url}, (max retries)")
+        :ok
+    end
   end
 end

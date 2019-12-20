@@ -33,7 +33,9 @@ defmodule Crawly.RequestsStorage.Worker do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(pid, request), do: GenServer.call(pid, {:store, request})
+  def store(pid, request) do
+    GenServer.call(pid, {:store, request})
+  end
 
   @doc """
   Pop a request out of requests storage

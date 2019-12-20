@@ -104,4 +104,16 @@ defmodule Crawly.Utils do
 
     pipe(pipelines, new_item, new_state)
   end
+
+  @doc """
+  A wrapper over Process.send after
+
+  This wrapper should be used instead of Process.send_after, so it's possible
+  to mock the last one. To avoid race conditions on worker's testing.
+  """
+  @spec send_after(pid(), term(), pos_integer()) :: reference()
+  def send_after(pid, message, timeout) do
+    Process.send_after(pid, message, timeout)
+  end
+
 end
