@@ -32,6 +32,8 @@ use Mix.Config
 config :crawly, Crawly.Worker, client: HTTPoison
 
 config :crawly,
+  fetcher: Crawly.Fetchers.HTTPoisonFetcher,
+
   # User agents which are going to be used with requests
   user_agents: [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",

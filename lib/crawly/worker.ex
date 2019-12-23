@@ -43,12 +43,14 @@ defmodule Crawly.Worker do
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
               # TODO: Add retry logic
-              Logger.error(fn ->
-                "Crawly worker could not process the request to #{
-                  inspect(request.url)
-                }
+              Logger.error(
+                fn ->
+                  "Crawly worker could not process the request to #{
+                    inspect(request.url)
+                  }
                   reason: #{inspect(reason)}"
-              end)
+                end
+              )
 
               @default_backoff
 
@@ -70,8 +72,13 @@ defmodule Crawly.Worker do
   defp get_response({request, spider_name}) do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
     # if not set, log warning for explicit config preferred, get the globally-configured fetcher. Defaults to FwtchWithHTTPoison
+    fetcher = Application.get_env(
+      :crawly,
+      :fetcher,
+      Crawly.Fetchers.HTTPoisonFetcher
+    )
 
-    case HTTPoison.get(request.url, request.headers, request.options) do
+    case fetcher.fetch(request) do
       {:ok, response} ->
         {:ok, {response, spider_name}}
 

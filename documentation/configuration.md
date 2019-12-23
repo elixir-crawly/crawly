@@ -125,3 +125,10 @@ It's possible to set proxy using the proxy value of Crawly config, for example:
 config :crawly,
     proxy: "<proxy_host>:<proxy_port>",
 ```
+
+### fetcher :: atom()
+
+default: Crawly.Fetchers.HTTPoisonFetcher 
+
+Allows to specify a custom HTTP client which will be performing request to the crawl
+target.
