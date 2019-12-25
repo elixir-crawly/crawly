@@ -35,19 +35,32 @@ defmodule Crawly.Utils do
   @doc """
   Pipeline/Middleware helper
 
-  Executes a given list of pipelines on the given item, mimics filtermap
-  behavior (but probably in a more complex way). Takes an item and state  and
-  passes it through a list of modules which implements a pipeline behavior,
-  executing the pipeline's run.
+  Executes a given list of pipelines on the given item, mimics filtermap behavior.
+  Takes an item and state and passes it through a list of modules which implements a pipeline behavior, executing the pipeline's `c:Crawly.Pipeline.run/3` function.
 
-  The pipe function must return boolean (false) or updated item.
-  In case if false is returned the item is not being processed by all descendant
-  pipelines, and dropped.
+  The pipe function must either return a boolean (`false`), or an updated item.
 
-  In case if a given pipeline crashes for the given item, it's result are being
-  ignored, and the item is being processed by all other descendant pipelines.
+  If `false` is returned by a pipeline, the item is dropped. It will not be processed by any descendant pipelines.
+
+  In case of a pipeline crash, the pipeline will be skipped and the item will be passed on to descendant pipelines.
 
   The state variable is used to persist the information accross multiple items.
+
+  ### Usage in Tests
+
+  The `Crawly.Utils.pipe/3` helper can be used in pipeline testing to simulate a set of middlewares/pipelines.
+
+  Internally, this function is used for both middlewares and pipelines. Hence, you can use it for testing modules that implement the `Crawly.Pipeline` behaviour.
+
+  For example, one can test that a given item is manipulated by a pipeline as so:
+  ```elixir
+  item = %{my: "item"}
+  state = %{}
+  pipelines = [ MyCustomPipelineOrMiddleware ]
+  {new_item, new_state} = Crawly.Utils.pipe(pipelines, item, state)
+
+  ```
+
   """
   @spec pipe(pipelines, item, state) :: result
         when pipelines: [Crawly.Pipeline.t()],
@@ -60,16 +73,30 @@ defmodule Crawly.Utils do
   def pipe(_, false, state), do: {false, state}
 
   def pipe([pipeline | pipelines], item, state) do
+    {module, args} =
+      case pipeline do
+        {module, args} ->
+          {module, args}
+
+        {module} ->
+          {module, nil}
+
+        module ->
+          {module, nil}
+      end
+
     {new_item, new_state} =
       try do
-        {new_item, new_state} = pipeline.run(item, state)
-        {new_item, new_state}
+        case args do
+          nil -> module.run(item, state)
+          _ -> module.run(item, state, args)
+        end
       catch
         error, reason ->
           Logger.error(
-            "Pipeline crash: #{pipeline}, error: #{inspect(error)}, reason: #{
+            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{
               inspect(reason)
-            }"
+            }, args: #{inspect(args)}"
           )
 
           {item, state}

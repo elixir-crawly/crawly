@@ -58,19 +58,16 @@ Goals:
      concurrent_requests_per_domain: 8,
      follow_redirects: true,
      closespider_itemcount: 1000,
-     output_format: "csv",
-     item: [:title, :url],
-     item_id: :title,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
        Crawly.Middlewares.UniqueRequest,
        Crawly.Middlewares.UserAgent
      ],
      pipelines: [
-       Crawly.Pipelines.Validate,
-       Crawly.Pipelines.DuplicatesFilter,
-       Crawly.Pipelines.CSVEncoder,
-       Crawly.Pipelines.WriteToFile
+       {Crawly.Pipelines.Validate, fields: [:title, :url]},
+       {Crawly.Pipelines.DuplicatesFilter, item_id: :title },
+       {Crawly.Pipelines.CSVEncoder, fields: [:title, :url}],
+       {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp" }
      ]
    ```
 5. Start the Crawl:

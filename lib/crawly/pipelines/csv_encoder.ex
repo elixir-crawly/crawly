@@ -1,13 +1,33 @@
 defmodule Crawly.Pipelines.CSVEncoder do
   @moduledoc """
-  Encodes a given item (map) into CSV
+  Encodes a given item (map) into CSV. Does not flatten nested maps.
+  ### Options
+  If no fields are given, the item is dropped from the pipeline.
+  - `:fields`, required: The fields to extract out from the scraped item. Falls back to the global config `:item`.
+
+  ### Example Usage
+    iex> item = %{my: "first", other: "second", ignore: "this_field"}
+    iex> Crawly.Pipelines.CSVEncoder.run(item, %{}, fields: [:my, :other])
+    {"first,second", %{}}
   """
   @behaviour Crawly.Pipeline
+  require Logger
 
   @impl Crawly.Pipeline
-  def run(item, state) do
-    case Application.get_env(:crawly, :item) do
+  @spec run(map, map, fields: list(atom)) ::
+          {false, state :: map} | {csv_line :: String.t(), state :: map}
+  def run(item, state, opts \\ []) do
+    opts = Enum.into(opts, %{fields: nil})
+    fields = Map.get(opts, :fields) || Application.get_env(:crawly, :item)
+
+    case fields do
       :undefined ->
+        # only for when both tuple and global config is not provided
+
+        Logger.info(
+          "Dropping item: #{inspect(item)}. Reason: No fields declared for CSVEncoder"
+        )
+
         {false, state}
 
       fields ->

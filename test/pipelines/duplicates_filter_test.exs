@@ -8,9 +8,25 @@ defmodule Pipelines.DuplicatesFilterTest do
     end)
   end
 
-  test "Drops duplicate items with the same item_id value" do
+  test "Drops duplicate items with the same item_id value through global config" do
     Application.put_env(:crawly, :item_id, :id)
     pipelines = [Crawly.Pipelines.DuplicatesFilter]
+    item = @valid
+    state = %{}
+
+    {item, state} = Crawly.Utils.pipe(pipelines, item, state)
+
+    # filter state is updated
+    assert %{"my_id" => true} = state.duplicates_filter
+    # unchanged
+    assert item == @valid
+
+    # run again with same item and updated state should drop the item
+    assert {false, state} = Crawly.Utils.pipe(pipelines, item, state)
+  end
+
+  test "Drops duplicate items with the same item_id value through tuple config" do
+    pipelines = [{Crawly.Pipelines.DuplicatesFilter, item_id: :id}]
     item = @valid
     state = %{}
 
