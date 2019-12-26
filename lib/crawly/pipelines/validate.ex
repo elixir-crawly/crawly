@@ -1,14 +1,33 @@
 defmodule Crawly.Pipelines.Validate do
   @moduledoc """
-  Ensure that scraped item contains all fields defined in config: item.
+  Ensure that scraped item contains a set of required fields.
+
+  ### Options
+  If the fields to check are not provided, the pipeline does nothing.
+  - `:fields`, required: The list of required fields. Fallsback to global config `:item`.
+
+  ### Example Declaration
+  ```
+  pipelines: [
+    {Crawly.Pipelines.Validate, fields: [:id, :url, :date]}
+  ]
+  ```
+
+  ### Example Usage
+  ```
+  # Drops the scraped item that does not have the required fields
+  iex> Validate.run(%{my: "field"}, %{}, fields: [:id])
+  {false, %{}}
+  ```
   """
   @behaviour Crawly.Pipeline
 
   require Logger
 
   @impl Crawly.Pipeline
-  def run(item, state) do
-    fields = Application.get_env(:crawly, :item, [])
+  def run(item, state, opts \\ []) do
+    opts = Enum.into(opts, %{fields: nil})
+    fields = Map.get(opts, :fields) || Application.get_env(:crawly, :item, [])
 
     validation_result =
       fields

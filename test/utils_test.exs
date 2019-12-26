@@ -1,6 +1,12 @@
 defmodule UtilsTest do
   use ExUnit.Case
 
+  setup do
+    on_exit(fn -> :meck.unload() end)
+
+    :ok
+  end
+
   test "Request from url" do
     requests = Crawly.Utils.request_from_url("https://test.com")
     assert requests == %Crawly.Request{url: "https://test.com", headers: []}
@@ -29,5 +35,56 @@ defmodule UtilsTest do
     result = Crawly.Utils.build_absolute_urls(paths, "http://example.com")
 
     assert result == ["http://example.com/path1", "http://example.com/path2"]
+  end
+
+  test "pipe with args" do
+    # make mock pipeline
+    :meck.new(FakePipeline, [:non_strict])
+
+    :meck.expect(
+      FakePipeline,
+      :run,
+      fn item, state, args ->
+        {item, Map.put(state, :args, args)}
+      end
+    )
+
+    :meck.expect(
+      FakePipeline,
+      :run,
+      fn item, state ->
+        {item, state}
+      end
+    )
+
+    {_item, state} =
+      Crawly.Utils.pipe([{FakePipeline, my: "arg"}], %{my: "item"}, %{})
+
+    assert state.args == [my: "arg"]
+  end
+
+  test "pipe without args" do
+    # make mock pipeline
+    :meck.new(FakePipeline, [:non_strict])
+
+    :meck.expect(
+      FakePipeline,
+      :run,
+      fn item, state, args ->
+        {item, %{state | args: args}}
+      end
+    )
+
+    :meck.expect(
+      FakePipeline,
+      :run,
+      fn item, state ->
+        {item, state}
+      end
+    )
+
+    {_item, state} = Crawly.Utils.pipe([FakePipeline], %{my: "item"}, %{})
+
+    assert Map.has_key?(state, :args) == false
   end
 end

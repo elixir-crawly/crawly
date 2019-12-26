@@ -7,8 +7,31 @@ defmodule Crawly.Pipelines.WriteToFile do
   2. Performs the write operation
   3. File descriptor is reused by passing it through the pipeline state with `:write_to_file_fd`
 
-  Note: `File.close` is not necessary due to the file descriptor being automatically closed upon the end of a the parent process.
-  Refer to https://github.com/oltarasenko/crawly/pull/19#discussion_r350599526 for relevant discussion.
+  > Note: `File.close` is not necessary due to the file descriptor being automatically closed upon the end of a the parent process.
+  >
+  > Refer to https://github.com/oltarasenko/crawly/pull/19#discussion_r350599526 for relevant discussion.
+
+  ### Options
+  In the absence of tuple-based options being passed, the pipeline will fallback onto the config of `:crawly`, `Crawly.Pipelines.WriteToFile`, for the `:folder` and `:extension` keys
+
+  - `:folder`, optional. The folder in which the file will be created. Defaults to system temp folder.
+  - `:extension`, optional. The file extension in which the file will be created with. Defaults to `jl`.
+
+  ### Example Declaration
+  ```
+  pipelines: [
+    Crawly.Pipelines.JSONEncoder,
+    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
+  ]
+  ```
+  ### Example Output
+
+  ```
+  iex> item = %{my: "item"}
+  iex> WriteToFile.run(item, %{}, folder: "/tmp", extension: "csv")
+  { %{my: "item"} , %{write_to_file_fd: #PID<0.123.0>} }
+  ```
+
   """
 
   @behaviour Crawly.Pipeline
@@ -16,30 +39,48 @@ defmodule Crawly.Pipelines.WriteToFile do
   require Logger
 
   @impl Crawly.Pipeline
-  def run(item, %{write_to_file_fd: fd} = state) do
+  @spec run(
+          item :: any,
+          state :: %{
+            optional(:write_to_file_fd) => pid | {:file_descriptor, atom, any}
+          },
+          opts :: [folder: String.t(), extension: String.t()]
+        ) ::
+          {item :: any,
+           state :: %{write_to_file_fd: pid | {:file_descriptor, atom, any}}}
+  def run(item, state, opts \\ [])
+
+  def run(item, %{write_to_file_fd: fd} = state, _opts) do
     :ok = write(fd, item)
     {item, state}
   end
 
   # No active FD
-  def run(item, state) do
-    fd = open_fd(state.spider_name)
-    :ok = write(fd, item)
-    {item, Map.put(state, :write_to_file_fd, fd)}
-  end
+  def run(item, state, opts) do
+    opts = Enum.into(opts, %{folder: nil, extension: nil})
 
-  defp open_fd(spider_name) do
-    config =
+    global_config =
       Application.get_env(
         :crawly,
         Crawly.Pipelines.WriteToFile,
         Keyword.new()
       )
 
-    folder = Keyword.get(config, :folder, System.tmp_dir!())
-    extension = Keyword.get(config, :extension, "jl")
+    folder =
+      Map.get(opts, :folder) ||
+        Keyword.get(global_config, :folder, System.tmp_dir!())
 
-    filename = "#{inspect(spider_name)}.#{extension}"
+    extension =
+      Map.get(opts, :extension) ||
+        Keyword.get(global_config, :extension, "jl")
+
+    fd = open_fd(state.spider_name, folder, extension)
+    :ok = write(fd, item)
+    {item, Map.put(state, :write_to_file_fd, fd)}
+  end
+
+  defp open_fd(spider_name, folder, extension) do
+    filename = "#{inspect(spider_name)}.#{inspect(extension)}"
     # Open file descriptor to write items
     {:ok, io_device} =
       File.open(

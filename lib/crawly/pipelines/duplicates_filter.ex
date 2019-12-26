@@ -1,29 +1,50 @@
 defmodule Crawly.Pipelines.DuplicatesFilter do
   @moduledoc """
-  Filters out duplicated items (helps to avoid storing duplicates)
+  Filters out duplicated items based on the provided `item_id`.
 
-  This pipeline uses Crawly.DataStorageWorker process state in order to store
-  ids of already seen items. For now they are stored only in memory.
+  Stores identifier values in state under the `:duplicates_filter` key.
 
-  The field responsible for identifying duplicates is specified using
-  :crawly.item_id setting.
+  ### Options
+  If item unique identifier is not provided, this pipeline does nothing.
+  - `:item_id`, required: Designates a field to be used to check for duplicates. Falls back to global config `:item_id`.
+
+  ### Example Usage
+    ```
+    iex> item = %{my: "item"}
+    iex> {_unchanged, new_state} = DuplicatesFilter.run(first, %{}, item_id: :my)
+
+    # Rerunning the item through the pipeline will drop the item
+    iex> DuplicatesFilter.run(first, %{}, item_id: :id)
+    {false, %{
+      duplicates_filter: %{"item" => true}
+    }}
+    ```
   """
   @behaviour Crawly.Pipeline
 
   require Logger
 
   @impl Crawly.Pipeline
-  def run(item, state) do
-    item_id = Application.get_env(:crawly, :item_id)
+  @spec run(map, map, item_id: atom) ::
+          {false, state :: map}
+          | {item :: map,
+             state :: %{duplicates_filter: %{required(String.t()) => boolean}}}
+  def run(item, state, opts \\ []) do
+    opts = Enum.into(opts, %{item_id: nil})
+
+    item_id = Map.get(opts, :item_id) || Application.get_env(:crawly, :item_id)
+
     item_id = Map.get(item, item_id)
 
     case item_id do
       nil ->
         Logger.info(
-          "Duplicates filter pipeline is inactive, item_id field is required
-          to make it operational"
+          "Duplicates filter pipeline is inactive, item_id option is required
+          to make it operational."
         )
+
         {item, state}
+
       _ ->
         do_run(item_id, item, state)
     end

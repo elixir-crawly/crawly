@@ -6,20 +6,24 @@ defmodule Crawly.Middlewares.RobotsTxt do
   crawler can or can't request from your site. This is used mainly to avoid
   overloading a site with requests!
 
-  Please NOTE:
-  The first rule of web crawling is you do not harm the website.
-  The second rule of web crawling is you do NOT harm the website
+  No options are required for this middleware. Any tuple-based configurations options passed will be ignored.
+
+
+  ### Example Declaration
+  ```
+  middlewares: [
+    Crawly.Middlewares.RobotsTxt
+  ]
+  ```
   """
 
   @behaviour Crawly.Pipeline
   require Logger
 
-  def run(request, state) do
+  def run(request, state, _opts \\ []) do
     case Gollum.crawlable?("Crawly", request.url) do
       :uncrawlable ->
-        Logger.debug(
-          "Dropping request: #{request.url} (robots.txt filter)"
-        )
+        Logger.debug("Dropping request: #{request.url} (robots.txt filter)")
 
         {false, state}
 

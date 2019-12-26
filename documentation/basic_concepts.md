@@ -77,28 +77,39 @@ The parsed item is being processed by Crawly.Worker process, which sends all req
 
 For now only one Storage backend is supported (writing on disc). But in future Crawly will also support work with amazon S3, sql and others.
 
+## The `Crawly.Pipeline` Behaviour.
+
+Crawly is using a concept of pipelines when it comes to processing of the elements sent to the system. This is applied to both request and scraped item manipulation. Conceptually, requests go through a series of manipulations, before the response is fetched. The response then goes through another different series of manipulations.
+
+Importantly, the way that requests and responses are manipulated are abstracted into the `Crawly.Pipeline` behaviour. This allows for a modular system for declaring changes. It is also to be noted that Each `Crawly.Pipeline` module, when declared, are applied sequentially through the `Crawly.Utils.pipe/3` function.
+
+### Writing Tests for Custom Pipelines
+
+Modules that implement the `Crawly.Pipeline` behaviour can make use of the `Crawly.Utils.pipe/3` function to test for expected behaviour. Refer to the function documentation for more information and examples.
+
 ## Request Middlewares
 
 These are configured under the `middlewares` option. See [configuration](./configuration.md) for more details.
 
 > **Middleware:** A pipeline module that modifies a request. It implements the `Crawly.Pipeline` behaviour.
 
-List of built-in middlewares:
+Middlewares are able to make changes to the underlying request, a `Crawly.Request` struct. The request, along with any options specified, is then passed to the fetcher (currently `HTTPoison`).
+The available configuration options should correspond to the underlying options of the fetcher in use.
+
+Note that all request configuration options for `HTTPoison`, such as proxy, ssl, etc can be configured through `Crawly.Request.options`.
+
+Built-in middlewares:
 
 1. `Crawly.Middlewares.DomainFilter` - this middleware will disable scheduling for all requests leading outside of the crawled site.
 2. `Crawly.Middlewares.RobotsTxt` - this middleware ensures that Crawly respects the robots.txt defined by the target website.
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
 
-### Creating a Custom Request Middleware
+### Item Pipelines
 
-TODO
+> **Item Pipelines:** a pipeline module that modifies and pre-processes a scraped item.
 
-## Item Pipelines
-
-Crawly is using a concept of pipelines when it comes to processing of the elements sent to the system. In this section we will cover the topic of item pipelines - a tool which is used in order to pre-process items before storing them in the storage.
-
-At this point Crawly includes the following Item pipelines:
+Built-in item pipelines:
 
 1.  `Crawly.Pipelines.Validate` - validates that a given item has all the required fields. All items which don't have all required fields are dropped.
 2.  `Crawly.Pipelines.DuplicatesFilter` - filters out items which are already stored the system.
@@ -108,22 +119,48 @@ At this point Crawly includes the following Item pipelines:
 
 The list of item pipelines used with a given project is defined in the project settings.
 
-### Creating a Custom Item Pipeline
+## Creating a Custom Pipeline Module
 
-An item pipeline follows the `Crawly.Pipeline` behaviour. As such, when creating your custom pipeline, it will need to implement the required callback `c:Crawly.Pipeline.run\2`.
+Both item pipelines and request middlewares follows the `Crawly.Pipeline` behaviour. As such, when creating your custom pipeline, it will need to implement the required callback `c:Crawly.Pipeline.run\3`.
 
-> **Note**: [PR #31](https://github.com/oltarasenko/crawly/pull/31) aims to allow tuple-based option declaration, similar to how a `GenServer` is declared ina supervision tree.
+The `c:Crawly.Pipeline.run\3` callback receives the processed item, `item` from the previous pipeline module as the first argument. The second argument, `state`, is a map containing information such as spider which the item originated from (under the `:spider_name` key), and may optionally store pipeline information. Finally, `opts` is a keyword list containing any tuple-based options.
 
-The `c:Crawly.Pipeline.run\2` callback receives the processed item, `item` from the previous pipeline module as the first argument. The second argument, `state`, is a map containing information such as spider which the item originated from (under the `:spider_name` key), and may optionally store pipeline information.
+### Passing Configuration Options To Your Pipeline
+
+Tuple-based option declaration is supported, similar to how a `GenServer` is declared in a supervision tree. This allows for pipeline reusability for different use cases.
+
+For example, you can pass options in this way through your pipeline declaration:
+
+```elixir
+pipelines: [
+  {MyCustomPipeline, my_option: "value"}
+]
+```
+
+In your pipeline, you will then receive the options passed through the `opts` argument.
+
+```elixir
+defmodule MyCustomPipeline do
+  @impl Crawly.Pipeline
+  def run(item, state, opts) do
+    IO.inspect(opts)        # shows keyword list of  [ my_option: "value" ]
+    # Do something
+  end
+end
+```
+
+### Best Practices
+
+The use of global configs is discouraged, hence one pass options through a tuple-based pipeline declaration where possible.
 
 When storing information in the `state` map, ensure that the state is namespaced with the pipeline name, so as to avoid key clashing. For example, to store state from `MyEctoPipeline`, store the state on the key `:my_ecto_pipeline_my_state`.
 
-#### Example - Ecto Storage Pipeline
+### Item Pipeline Example - Ecto Storage Pipeline
 
-```elxiir
+```elixir
 defmodule MyApp.MyEctoPipeline do
   @impl Crawly.Pipeline
-  def run(item, state) do
+  def run(item, state, _opts \\ []) do
     case MyApp.insert_with_ecto(item) do
       {:ok, _} ->
         # insert successful, carry on with pipeline
@@ -132,6 +169,32 @@ defmodule MyApp.MyEctoPipeline do
         # insert not successful, drop from pipeline
         {false, state}
     end
+  end
+end
+```
+
+### Request Middleware Example - Add a Proxy
+
+Following the [documentation](https://hexdocs.pm/httpoison/HTTPoison.Request.html) for proxy options of a request in `HTTPoison`, we can do the following:
+
+```elixir
+defmodule MyApp.MyProxyMiddleware do
+  @impl Crawly.Pipeline
+  def run(request, state, opts \\ []) do
+    # Set default proxy and proxy_auth to nil
+    opts = Enum.into(opts, %{proxy: nil, proxy_auth: nil})
+
+    case opts.proxy do
+      nil ->
+        # do nothing
+        {request, state}
+      value ->
+        old_options = request.options
+        new_options = [proxy: opts.proxy, proxy_auth: opts.proxy_auth]
+        new_request =  Map.put(request, :options, old_optoins ++ new_options)
+        {new_request, state}
+    end
+
   end
 end
 ```
