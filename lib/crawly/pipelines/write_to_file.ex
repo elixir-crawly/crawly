@@ -80,7 +80,8 @@ defmodule Crawly.Pipelines.WriteToFile do
   end
 
   defp open_fd(spider_name, folder, extension) do
-    filename = "#{inspect(spider_name)}.#{inspect(extension)}"
+    filename = "#{inspect(spider_name)}.#{extension}"
+    
     # Open file descriptor to write items
     {:ok, io_device} =
       File.open(
