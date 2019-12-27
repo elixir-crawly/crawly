@@ -54,7 +54,7 @@ file with the following code:
 
 ```elixir
     def deps do
-        [{:crawly, "~> 0.5.0"}]
+        [{:crawly, "~> 0.7.0"}]
     end
 ```
 

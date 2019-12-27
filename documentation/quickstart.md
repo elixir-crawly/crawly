@@ -12,7 +12,7 @@ Goals:
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.6.0"}
+         {:crawly, "~> 0.7.0"}
        ]
    end
    ```

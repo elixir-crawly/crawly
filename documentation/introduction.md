@@ -11,7 +11,7 @@ Crawly requires Elixir v1.7 or higher.
 1. Add Crawly to you mix.exs file
    ```elixir
    def deps do
-       [{:crawly, "~> 0.6.0"}]
+       [{:crawly, "~> 0.7.0"}]
    end
    ```
 2. Update your dependencies with `mix deps.get`
