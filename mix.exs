@@ -1,7 +1,7 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
-  @version "0.7.0-dev"
+  @version "0.7.0"
 
   def project do
     [
@@ -32,7 +32,7 @@ defmodule Crawly.Mixfile do
   end
 
   defp description() do
-    "high-level web crawling & scraping framework for Elixir."
+    "High-level web crawling & scraping framework for Elixir."
   end
 
   defp package() do
