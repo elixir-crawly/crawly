@@ -23,7 +23,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.6.0"}
+         {:crawly, "~> 0.7.0"}
        ]
    end
    ```
@@ -69,20 +69,17 @@ historical archival.
      concurrent_requests_per_domain: 8,
      follow_redirects: true,
      closespider_itemcount: 1000,
-     output_format: "csv",
-     item: [:title, :url],
-     item_id: :title,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
        Crawly.Middlewares.UniqueRequest,
        Crawly.Middlewares.UserAgent
      ],
      pipelines: [
-       Crawly.Pipelines.Validate,
-       Crawly.Pipelines.DuplicatesFilter,
-       Crawly.Pipelines.CSVEncoder,
-       Crawly.Pipelines.WriteToFile
-     ]
+       {Crawly.Pipelines.Validate, fields: [:url, :title]},
+       {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+       Crawly.Pipelines.JSONEncoder,
+       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.7.0
+      ]
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
@@ -116,4 +113,7 @@ historical archival.
 
 ## Contributors
 
-We would gladly accept your contributions! Please refer to the `Under The Hood` section on [HexDocs](https://hexdocs.pm/crawly/) for modules documentation.
+We would gladly accept your contributions! 
+
+## Documentation
+Please find documentation on the [HexDocs](https://hexdocs.pm/crawly/)
