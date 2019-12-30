@@ -45,14 +45,18 @@ defmodule Crawly.Worker do
               # TODO: Add retry logic
               Logger.error(
                 fn ->
-                  "Crawly worker could not process the request to #{inspect(request.url)}
+                  "Crawly worker could not process the request to #{
+                    inspect(request.url)
+                  }
                   reason: #{inspect(reason)}"
-                end)
+                end
+              )
+
               @default_backoff
+
             {:ok, _result} ->
               @default_backoff
           end
-
       end
 
     Process.send_after(self(), :work, new_backoff)
@@ -66,7 +70,16 @@ defmodule Crawly.Worker do
              response: HTTPoison.Response.t(),
              result: {:ok, response, spider_name} | {:error, term()}
   defp get_response({request, spider_name}) do
-    case HTTPoison.get(request.url, request.headers, request.options) do
+    # check if spider-level fetcher is set. Overrides the globally configured fetcher.
+    # if not set, log warning for explicit config preferred,
+    # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
+    {fetcher, options} = Application.get_env(
+      :crawly,
+      :fetcher,
+      {Crawly.Fetchers.HTTPoisonFetcher, []}
+    )
+
+    case fetcher.fetch(request, options) do
       {:ok, response} ->
         {:ok, {response, spider_name}}
 
