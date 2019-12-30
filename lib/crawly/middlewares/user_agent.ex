@@ -18,19 +18,25 @@ defmodule Crawly.Middlewares.UserAgent do
   """
   require Logger
 
-  def run(request, state, opts \\ []) do
+  def run(request, state, opts \\ %{}) do
     opts = Enum.into(opts, %{user_agents: nil})
+    headers = Crawly.Request.headers(request)
 
-    new_headers = List.keydelete(request.headers, "User-Agent", 0)
-
+    # Getting user agent from a list defined by a middleware
     user_agents =
       Map.get(opts, :user_agents) ||
         Application.get_env(:crawly, :user_agents, ["Crawly Bot 1.0"])
+    ua = {"User-Agent", Enum.random(user_agents)}
 
-    useragent = Enum.random(user_agents)
+    new_headers =
+      case List.keyfind(headers, "User-Agent", 0, nil) do
+        nil ->
+          [ua | headers]
+        _ ->
+          List.keyreplace(headers, "User-Agent", 0, {"User-Agent", ua})
+      end
 
-    new_request =
-      Map.put(request, :headers, [{"User-Agent", useragent} | new_headers])
+    new_request = Crawly.Request.headers(request, new_headers)
 
     {new_request, state}
   end

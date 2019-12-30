@@ -20,10 +20,11 @@ defmodule Crawly.Middlewares.DomainFilter do
   def run(request, state, _opts \\ []) do
     base_url = state.spider_name.base_url()
 
-    case String.contains?(request.url, base_url) do
+    url = Crawly.Request.url(request)
+    case String.contains?(url, base_url) do
       false ->
         Logger.debug(
-          "Dropping request: #{inspect(request.url)} (domain filter)"
+          "Dropping request: #{inspect(url)} (domain filter)"
         )
 
         {false, state}

@@ -5,19 +5,15 @@ defmodule Crawly.Middlewares.UniqueRequest do
   """
   require Logger
 
-  # Allow to re-schedule a request if retries are required
-  def run(%Crawly.Request{retries: retries} = request, state) when retries > 0 do
-    {request, state}
-  end
-
   def run(request, state) do
     unique_request_seen_requests =
       Map.get(state, :unique_request_seen_requests, %{})
 
-    case Map.get(unique_request_seen_requests, request.url) do
+    url = Crawly.Request.url(request)
+    case Map.get(unique_request_seen_requests, url) do
       nil ->
         unique_request_seen_requests =
-          Map.put(unique_request_seen_requests, request.url, true)
+          Map.put(unique_request_seen_requests, url, true)
 
         new_state =
           Map.put(
@@ -30,7 +26,7 @@ defmodule Crawly.Middlewares.UniqueRequest do
 
       _ ->
         Logger.debug(
-          "Dropping request: #{request.url}, as it's already processed"
+          "Dropping request: #{url}, as it's already processed"
         )
 
         {false, state}
