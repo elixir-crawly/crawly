@@ -15,7 +15,11 @@ config :crawly,
   item: [:title, :author, :time, :url],
   # Identifier which is used to filter out duplicates
   item_id: :title,
-  max_retries: 2,
+
+  retry: [
+    {:max_retries, 2},
+    {:ignored_middlewares, [Crawly.Middlewares.UniqueRequest]}
+  ],
   # Stop spider after scraping certain amount of items
   closespider_itemcount: 100,
   # Stop spider if it does crawl fast enough

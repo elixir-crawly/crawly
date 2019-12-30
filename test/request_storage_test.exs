@@ -24,11 +24,7 @@ defmodule RequestStorageTest do
   end
 
   test "Request storage can store requests", context do
-    request = %Crawly.Request{
-      url: "http://example.com",
-      headers: [],
-      options: []
-    }
+    request = Crawly.Request.new("http://example.com")
 
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
     {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
@@ -36,12 +32,7 @@ defmodule RequestStorageTest do
   end
 
   test "Request storage returns request for given spider", context do
-    request = %Crawly.Request{
-      url: "http://example.com",
-      headers: [],
-      options: []
-    }
-
+    request = Crawly.Request.new("http://example.com")
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
 
     returned_request = Crawly.RequestsStorage.pop(context.crawler)
@@ -64,12 +55,7 @@ defmodule RequestStorageTest do
   end
 
   test "Duplicated requests are filtered out", context do
-    request = %Crawly.Request{
-      url: "http://example.com",
-      headers: [],
-      options: []
-    }
-
+    request = Crawly.Request.new("http://example.com")
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
 
@@ -91,11 +77,7 @@ defmodule RequestStorageTest do
   end
 
   test "Outbound requests are filtered out", context do
-    request = %Crawly.Request{
-      url: "http://otherdomain.com",
-      headers: [],
-      options: []
-    }
+    request = Crawly.Request.new("http://otherdomain.com")
 
     :ok = Crawly.RequestsStorage.store(context.crawler, request)
     {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
@@ -103,11 +85,7 @@ defmodule RequestStorageTest do
   end
 
   test "Robots.txt is respected", context do
-    request = %Crawly.Request{
-      url: "http://example.com/filter",
-      headers: [],
-      options: []
-    }
+    request = Crawly.Request.new("http://example.com/filter")
 
     :meck.expect(Gollum, :crawlable?, fn _, "http://example.com/filter" ->
       :uncrawlable

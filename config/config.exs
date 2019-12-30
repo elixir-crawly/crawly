@@ -33,7 +33,9 @@ config :crawly, Crawly.Worker, client: HTTPoison
 
 config :crawly,
   fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},
-  max_retries: 3,
+  retry: [
+    {:max_retries, 3},
+    {:ignored_middlewares, [Crawly.Middlewares.UniqueRequest]}],
   # User agents which are going to be used with requests
   user_agents: [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
@@ -63,8 +65,9 @@ config :crawly,
     Crawly.Pipelines.JSONEncoder
   ]
 
-config :crawly, Crawly.Pipelines.WriteToFile,
-  folder: "/tmp",
-  extension: "jl"
+config :crawly,
+       Crawly.Pipelines.WriteToFile,
+       folder: "/tmp",
+       extension: "jl"
 
- import_config "#{Mix.env}.exs"
+import_config "#{Mix.env}.exs"

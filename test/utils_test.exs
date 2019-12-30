@@ -9,19 +9,21 @@ defmodule UtilsTest do
 
   test "Request from url" do
     requests = Crawly.Utils.request_from_url("https://test.com")
-    assert requests == %Crawly.Request{url: "https://test.com", headers: []}
+    assert requests == Crawly.Request.new("https://test.com")
   end
 
   test "Requests from urls" do
     requests =
-      Crawly.Utils.requests_from_urls([
-        "https://test.com",
-        "https://example.com"
-      ])
+      Crawly.Utils.requests_from_urls(
+        [
+          "https://test.com",
+          "https://example.com"
+        ]
+      )
 
     assert requests == [
-             %Crawly.Request{url: "https://test.com", headers: []},
-             %Crawly.Request{url: "https://example.com", headers: []}
+             Crawly.Request.new("https://test.com"),
+             Crawly.Request.new("https://example.com")
            ]
   end
 

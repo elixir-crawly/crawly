@@ -23,13 +23,13 @@ defmodule Crawly.Request do
   @type retries :: non_neg_integer()
   @type option :: {atom(), binary()}
   @opaque t :: %__MODULE__{
-               url: binary(),
-               headers: [header()],
-               prev_response: %{},
-               retries: 0,
-               middlewares: [],
-               options: [option()]
-             }
+                 url: binary(),
+                 headers: [header()],
+                 prev_response: %{},
+                 retries: 0,
+                 middlewares: [],
+                 options: [option()]
+               }
   ###===========================================================================
   ### API functions
   ###===========================================================================
@@ -41,8 +41,39 @@ defmodule Crawly.Request do
              headers: [term()],
              options: [term()],
              request: Crawly.Request.t()
+
   def new(url, headers \\ [], options \\ []) do
-    %Crawly.Request{url: url, headers: headers, options: options}
+    # Define a list of middlewares which are used by default to process
+    # incoming requests
+    default_middlewares = [
+      Crawly.Middlewares.DomainFilter,
+      Crawly.Middlewares.UniqueRequest,
+      Crawly.Middlewares.RobotsTxt
+    ]
+
+    middlewares =
+      Application.get_env(:crawly, :middlewares, default_middlewares)
+
+    new(url, headers, options, middlewares)
+  end
+
+  @doc """
+  Same as Crawly.Request.new/3 from but allows to specify middlewares as the 4th
+  parameter.
+  """
+  @spec new(url, headers, options, middlewares) :: request
+        when url: binary(),
+             headers: [term()],
+             options: [term()],
+             middlewares: [term()], # TODO: improve typespec here
+             request: Crawly.Request.t()
+  def new(url, headers, options, middlewares) do
+    %Crawly.Request{
+      url: url,
+      headers: headers,
+      options: options,
+      middlewares: middlewares
+    }
   end
 
   @doc """
@@ -115,14 +146,14 @@ defmodule Crawly.Request do
              options_field: binary()
   def options(request, new_options),
       do: %Crawly.Request{request | options: new_options}
-      
+
   @doc """
   Access retries field from Crawly.Request
   """
   @spec retries(request) :: retries_field
         when request: Crawly.Request.t(),
              retries_field: [term()]
-  def retries(request), do: request.headers
+  def retries(request), do: request.retries
 
   @doc """
   Set retries field in Crawly.Request

@@ -101,6 +101,7 @@ defmodule WorkerTest do
       send(context.crawler, :work)
 
       response = receive_mocked_response()
+
       assert response != false
       assert response.retries == 1
 
