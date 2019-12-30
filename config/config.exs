@@ -32,7 +32,7 @@ use Mix.Config
 config :crawly, Crawly.Worker, client: HTTPoison
 
 config :crawly,
-  fetcher: Crawly.Fetchers.HTTPoisonFetcher,
+  fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},
 
   # User agents which are going to be used with requests
   user_agents: [

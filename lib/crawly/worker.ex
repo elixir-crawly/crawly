@@ -71,14 +71,15 @@ defmodule Crawly.Worker do
              result: {:ok, response, spider_name} | {:error, term()}
   defp get_response({request, spider_name}) do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
-    # if not set, log warning for explicit config preferred, get the globally-configured fetcher. Defaults to FwtchWithHTTPoison
-    fetcher = Application.get_env(
+    # if not set, log warning for explicit config preferred,
+    # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
+    {fetcher, options} = Application.get_env(
       :crawly,
       :fetcher,
-      Crawly.Fetchers.HTTPoisonFetcher
+      {Crawly.Fetchers.HTTPoisonFetcher, []}
     )
 
-    case fetcher.fetch(request) do
+    case fetcher.fetch(request, options) do
       {:ok, response} ->
         {:ok, {response, spider_name}}
 
