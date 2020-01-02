@@ -66,7 +66,7 @@ Goals:
      pipelines: [
        {Crawly.Pipelines.Validate, fields: [:title, :url]},
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title },
-       {Crawly.Pipelines.CSVEncoder, fields: [:title, :url}],
+       {Crawly.Pipelines.CSVEncoder, fields: [:title, :url]},
        {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp" }
      ]
    ```
