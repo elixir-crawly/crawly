@@ -1,6 +1,15 @@
 # Basic Concepts
 
 ---
+## Flow from Request, Response, Parsed Item
+Data is fetched in a linear series of operations.
+
+1. New `Request`s is formed through `Crawly.Spider.init/0`.
+2. New `Request`s are pre-processed individually.
+3. Data is fetched, and a `Response` is returned
+4. The `Spider` receives the response and parses the response, returning new `Request`s and new parsed items
+5. Parsed items are post-processed individually. New `Request`s from the `Spider` goes to step 2
+
 
 ## Spiders
 
