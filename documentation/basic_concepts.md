@@ -149,31 +149,15 @@ defmodule MyCustomPipeline do
 end
 ```
 
+
 ### Best Practices
 
 The use of global configs is discouraged, hence one pass options through a tuple-based pipeline declaration where possible.
 
 When storing information in the `state` map, ensure that the state is namespaced with the pipeline name, so as to avoid key clashing. For example, to store state from `MyEctoPipeline`, store the state on the key `:my_ecto_pipeline_my_state`.
 
-### Item Pipeline Example - Ecto Storage Pipeline
-
-```elixir
-defmodule MyApp.MyEctoPipeline do
-  @impl Crawly.Pipeline
-  def run(item, state, _opts \\ []) do
-    case MyApp.insert_with_ecto(item) do
-      {:ok, _} ->
-        # insert successful, carry on with pipeline
-        {item, state}
-      {:error, _} ->
-        # insert not successful, drop from pipeline
-        {false, state}
-    end
-  end
-end
-```
-
-### Request Middleware Example - Add a Proxy
+### Custom Request Middlewares
+#### Request Middleware Example - Add a Proxy
 
 Following the [documentation](https://hexdocs.pm/httpoison/HTTPoison.Request.html) for proxy options of a request in `HTTPoison`, we can do the following:
 
@@ -194,7 +178,101 @@ defmodule MyApp.MyProxyMiddleware do
         new_request =  Map.put(request, :options, old_optoins ++ new_options)
         {new_request, state}
     end
-
   end
+end
+```
+
+
+### Custom Item Pipelines
+Item pipelines receives the parsed item (from the Spider) and performs post-processing on the item.
+
+#### Storing Parsed Items
+You can use custom item pipelines to save the item to custom storages.
+
+##### Example - Ecto Storage Pipeline
+In this example, we insert the scraped item into a table with Ecto. This example does not directly call `MyRepo.insert`, but delegates it to an application context function.
+
+```elixir
+defmodule MyApp.MyEctoPipeline do
+  @impl Crawly.Pipeline
+  def run(item, state, _opts \\ []) do
+    case MyApp.insert_with_ecto(item) do
+      {:ok, _} ->
+        # insert successful, carry on with pipeline
+        {item, state}
+      {:error, _} ->
+        # insert not successful, drop from pipeline
+        {false, state}
+    end
+  end
+end
+```
+
+#### Multiple Different Types of Parsed Items
+If you need to selectively post-process different types of scraped items, you can utilize pattern-matching at the item pipeline level.
+
+There are two general methods of doing so:
+1. Struct-based pattern matching
+  ```elixir
+  defmodule MyApp.MyCustomPipeline do
+    @impl Crawly.Pipeline
+    def run(%MyItem{} = item, state, _opts \\ []) do
+      # do something
+    end
+    # do nothing if it does not match
+    def run(item, state, _opts), do: {item, state}
+  end
+  ```
+2. Key-based pattern matching
+  ```elixir
+  defmodule MyApp.MyCustomPipeline do
+    @impl Crawly.Pipeline
+    def run(%{my_item: my_item} = item, state, _opts \\ []) do
+      # do something
+    end
+    # do nothing if it does not match
+    def run(item, state, _opts), do: {item, state}
+  end
+  ```
+
+Use struct-based pattern matching when:
+1. you want to utilize existing Ecto schemas
+2. you have pre-defined structs that you want to conform to
+
+Use key-based pattern matching when:
+1. you want to process two or more related and inter-dependent items together
+2. you want to bulk process multiple items for efficiency reasons. For example, processing the weather data for 365 days in one pass.
+
+##### Caveats
+When using the nested-key pattern matching method, the spider's `Crawly.Spider.parse_items/1` callback will need to return items with a single key (or a map with multiple keys, if doing related processing).
+
+When using struct-based pattern matching with existing Ecto structs, you will need to do an intermediate conversion of the struct into a map before performing the insertion into the Ecto Repo. This is due to the underlying Ecto schema metadata still being attached to the struct before insertion.
+
+##### Example - Multi-Item Pipelines With Pattern Matching
+In this example, your spider scrapes a "blog post" and a "weather data" from a website.
+We will use the key-based pattern matching approach to selectively post-process a blog post parsed item.
+
+
+```elixir
+# in MyApp.CustomSpider.ex
+def parse_item(response):
+  # parse my item
+  %{parsed_items: [
+    %{blog_post: blog_post} , 
+    %{weather: [ january_weather, february_weather ]}
+  ]}
+```
+Then, in the custom pipeline, we will pattern match on the `:blog_post` key, to ensure that we only process blog posts with this pipeline (and not weather data).
+We then update the `:blog_post` key of the received item.
+```elixir
+defmodule MyApp.BlogPostPipeline do
+  @impl Crawly.Pipeline
+  def run(%{blog_post: old_blog_post} = item, state, _opts \\ []) do
+    # process the blog post
+    updated_item = Map.put(item, :blog_post, %{my: "data"})
+    {updated_item, state}
+  end
+  # do nothing if it does not match
+  def run(item, state, _opts), do: {item, state}
 end
 ```
