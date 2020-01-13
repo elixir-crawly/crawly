@@ -51,7 +51,7 @@ defmodule Crawly.Manager do
     Process.link(request_storage_pid)
 
     # Store start requests
-    requests = Enum.map(urls, fn url -> %Crawly.Request{url: url} end)
+    requests = Enum.map(urls, fn url -> Crawly.Request.new(url) end)
 
     :ok = Crawly.RequestsStorage.store(spider_name, requests)
 
