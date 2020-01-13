@@ -22,7 +22,16 @@ defmodule Crawly do
         proxy ->
           options ++ [{:proxy, proxy}]
       end
+    request = Crawly.Request.new(url, headers, options)
 
-    HTTPoison.get(url, headers, options)
+
+    {fetcher, client_options} = Application.get_env(
+      :crawly,
+      :fetcher,
+      {Crawly.Fetchers.HTTPoisonFetcher, []}
+    )
+
+    fetcher.fetch(request, client_options)
+
   end
 end
