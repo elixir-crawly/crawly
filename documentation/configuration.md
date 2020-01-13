@@ -126,6 +126,30 @@ config :crawly,
     proxy: "<proxy_host>:<proxy_port>",
 ```
 
+### retry :: Keyword list
+
+Allows to configure the retry logic. Accepts the following configuration options:
+1) *retry_codes*: Allows to specify a list of HTTP codes which are treated as
+   failed responses. (Default: [])
+
+2) *max_retries*: Allows to specify the number of attempts before the request is
+   abandoned. (Default: 0)
+
+3) *ignored_middlewares*: Allows to modify the list of processors for a given 
+   requests when retry happens. (Will be required to avoid clashes with 
+   Unique.Request middleware).
+   
+Example:
+   ```
+        retry:
+            [
+              retry_codes: [400],
+              max_retries: 3,
+              ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
+          ]
+
+   ```
+
 ### fetcher :: atom()
 
 default: Crawly.Fetchers.HTTPoisonFetcher 

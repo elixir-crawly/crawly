@@ -8,7 +8,7 @@ defmodule Crawly.Utils do
   A helper function which returns a Request structure for the given URL
   """
   @spec request_from_url(binary()) :: Crawly.Request.t()
-  def request_from_url(url), do: %Crawly.Request{url: url, headers: []}
+  def request_from_url(url), do: Crawly.Request.new(url)
 
   @doc """
   A helper function which converts a list of URLS into a requests list.
@@ -60,7 +60,6 @@ defmodule Crawly.Utils do
   {new_item, new_state} = Crawly.Utils.pipe(pipelines, item, state)
 
   ```
-
   """
   @spec pipe(pipelines, item, state) :: result
         when pipelines: [Crawly.Pipeline.t()],
@@ -103,5 +102,15 @@ defmodule Crawly.Utils do
       end
 
     pipe(pipelines, new_item, new_state)
+  end
+
+  @doc """
+  A wrapper over Process.send after
+  This wrapper should be used instead of Process.send_after, so it's possible
+  to mock the last one. To avoid race conditions on worker's testing.
+  """
+  @spec send_after(pid(), term(), pos_integer()) :: reference()
+  def send_after(pid, message, timeout) do
+    Process.send_after(pid, message, timeout)
   end
 end

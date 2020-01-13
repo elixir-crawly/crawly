@@ -9,19 +9,22 @@ defmodule UtilsTest do
 
   test "Request from url" do
     requests = Crawly.Utils.request_from_url("https://test.com")
-    assert requests == %Crawly.Request{url: "https://test.com", headers: []}
+    assert requests == expected_request("https://test.com")
+
   end
 
   test "Requests from urls" do
     requests =
-      Crawly.Utils.requests_from_urls([
-        "https://test.com",
-        "https://example.com"
-      ])
+      Crawly.Utils.requests_from_urls(
+        [
+          "https://test.com",
+          "https://example.com"
+        ]
+      )
 
     assert requests == [
-             %Crawly.Request{url: "https://test.com", headers: []},
-             %Crawly.Request{url: "https://example.com", headers: []}
+             expected_request("https://test.com"),
+             expected_request("https://example.com")
            ]
   end
 
@@ -86,5 +89,19 @@ defmodule UtilsTest do
     {_item, state} = Crawly.Utils.pipe([FakePipeline], %{my: "item"}, %{})
 
     assert Map.has_key?(state, :args) == false
+  end
+
+  defp expected_request(url) do
+    %Crawly.Request{
+      url: url,
+      headers: [],
+      options: [],
+      middlewares: [
+        Crawly.Middlewares.DomainFilter,
+        Crawly.Middlewares.UniqueRequest,
+        Crawly.Middlewares.RobotsTxt,
+        Crawly.Middlewares.UserAgent],
+      retries: 0
+    }
   end
 end

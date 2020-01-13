@@ -63,16 +63,7 @@ defmodule Crawly.RequestsStorage.Worker do
 
   # Store the given request
   def handle_call({:store, request}, _from, state) do
-    # Define a list of middlewares which are used by default to process incoming
-    # requests
-    default_middlewares = [
-      Crawly.Middlewares.DomainFilter,
-      Crawly.Middlewares.UniqueRequest,
-      Crawly.Middlewares.RobotsTxt
-    ]
-
-    middlewares =
-      Application.get_env(:crawly, :middlewares, default_middlewares)
+    middlewares = request.middlewares
 
     new_state =
       case Crawly.Utils.pipe(middlewares, request, state) do
