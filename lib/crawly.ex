@@ -12,7 +12,7 @@ defmodule Crawly do
              headers: [],
              options: []
   def fetch(url, headers \\ [], options \\ []) do
-    options = [Application.get_env(:crawly, :follow_redirect, false)] ++ options
+    options = [follow_redirect: Application.get_env(:crawly, :follow_redirect, false)] ++ options
 
     options =
       case Application.get_env(:crawly, :proxy, false) do

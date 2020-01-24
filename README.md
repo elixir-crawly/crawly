@@ -67,7 +67,7 @@ historical archival.
    config :crawly,
      closespider_timeout: 10,
      concurrent_requests_per_domain: 8,
-     follow_redirects: true,
+     follow_redirect: true,
      closespider_itemcount: 1000,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
