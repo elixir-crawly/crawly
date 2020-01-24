@@ -104,7 +104,7 @@ default: nil
 
 Defines a minimal amount of items which needs to be scraped by the spider within the given timeframe (30s). If the limit is not reached by the spider - it will be stopped.
 
-### follow_redirects :: boolean()
+### follow_redirect :: boolean()
 
 default: false
 

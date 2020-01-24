@@ -55,7 +55,7 @@ config :crawly,
   # Stop spider if it does crawl fast enough
   closespider_timeout: 20,
   concurrent_requests_per_domain: 5,
-  follow_redirects: true,
+  follow_redirect: true,
   # Request middlewares
   middlewares: [
     Crawly.Middlewares.DomainFilter,
