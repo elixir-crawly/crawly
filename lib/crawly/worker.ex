@@ -64,6 +64,12 @@ defmodule Crawly.Worker do
     {:noreply, %{state | backoff: new_backoff}}
   end
 
+  # Catch ssl closed error coming from HTTPoison
+  def handle_info({:ssl_closed, _}, %{spider_name: _, backoff: backoff} = state) do
+    Crawly.Utils.send_after(self(), :work, backoff)
+    {:noreply, state}
+  end
+
   @spec get_response({request, spider_name}) :: result
         when request: Crawly.Request.t(),
              spider_name: atom(),
