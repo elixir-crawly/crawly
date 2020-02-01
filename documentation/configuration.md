@@ -153,7 +153,12 @@ Example:
 
 ### fetcher :: atom()
 
-default: Crawly.Fetchers.HTTPoisonFetcher 
+default: Crawly.Fetchers.HTTPoisonFetcher
 
-Allows to specify a custom HTTP client which will be performing request to the crawl
-target.
+Allows to specify a custom HTTP client which will be performing request to the crawler target.
+
+### port :: pos_integer()
+
+default: 4001
+
+Allows to specify a custom port to start the application. That is important when running more than one application in a single machine, in which case shall not use the same port as the others.
