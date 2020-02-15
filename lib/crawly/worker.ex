@@ -135,30 +135,13 @@ defmodule Crawly.Worker do
     requests = Map.get(parsed_item, :requests, [])
     items = Map.get(parsed_item, :items, [])
 
-    # Reading HTTP client options
-    options = [follow_redirect: Application.get_env(:crawly, :follow_redirect, false)]
-
-    options =
-      case Application.get_env(:crawly, :proxy, false) do
-        false ->
-          options
-
-        proxy ->
-          options ++ [{:proxy, proxy}]
-      end
-
     # Process all requests one by one
     Enum.each(
       requests,
       fn request ->
-        request =
-          request
-          |> Map.put(:prev_response, response)
-          |> Map.put(:options, options)
-
+        request = Map.put(request, :prev_response, response)
         Crawly.RequestsStorage.store(spider_name, request)
-      end
-    )
+      end)
 
     # Process all items one by one
     Enum.each(
