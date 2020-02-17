@@ -292,3 +292,35 @@ defmodule MyApp.BlogPostPipeline do
   def run(item, state, _opts), do: {item, state}
 end
 ```
+
+## Browser rendering
+
+Browser rendering is one of the most complex problems of the scraping. The Internet
+moves towards more dynamic content, where not only parts of the pages are loaded 
+asynchronously, but entire applications might be rendered by the JavaScript and
+AJAX.
+
+In most of the cases it's still possible to extract the data from dynamically 
+rendered pages. (E.g. by sending additional POST requests from loaded pages), 
+however this approach seems to have visible drawbacks. From our point of view
+it makes the spider code quite complicated and fragile.
+
+Of course it's good when you can just get pages already rendered for you. And we're
+solving this problem with a help of pluggable HTTP fetchers. 
+
+Crawly's codebase contains a special Splash fetcher, which allows to do the browser
+rendering before the page content is being parsed by a spider. Also it's possible
+to build own fetchers.
+
+### Using splash fetcher for browser rendering
+
+Splash is a lightweight opensourse browser implementation built with QT and python.
+See: https://splash.readthedocs.io/en/stable/api.html 
+
+You can try using Splash with Crawly in the following way:
+
+1. Start splash locally (e.g. using a docker image):
+` docker run -it -p 8050:8050 scrapinghub/splash --max-timeout 300`
+2. Configure Crawly to use Splash: 
+`fetcher: {Crawly.Fetchers.Splash, [base_splash_url: "http://localhost:8050/render.html"]}`
+3. Now all your pages will be automatically rendered by Splash.  

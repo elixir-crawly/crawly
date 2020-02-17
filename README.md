@@ -86,6 +86,15 @@ historical archival.
    - `iex(1)> Crawly.Engine.start_spider(EslSpider)`
 6. Results can be seen with: `$ cat /tmp/EslSpider.csv`
 
+## Browser rendering
+
+Crawly can be configured in the way that all fetched pages will be browser rendered,
+which can be very useful if you need to extract data from pages which has lots
+of asynchronous elements (for example parts loaded by AJAX).
+
+You can read more here:
+- [Browser Rendering](https://hexdocs.pm/crawly/basic_concepts.html#browser-rendering)
+
 ## Documentation
 
 - [API Reference](https://hexdocs.pm/crawly/api-reference.html#content)
