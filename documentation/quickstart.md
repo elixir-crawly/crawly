@@ -56,10 +56,10 @@ Goals:
    config :crawly,
      closespider_timeout: 10,
      concurrent_requests_per_domain: 8,
-     follow_redirect: true,
      closespider_itemcount: 1000,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
+       {Crawly.Middlewares.RequestSettings, [timeout: 30_000]},
        Crawly.Middlewares.UniqueRequest,
        Crawly.Middlewares.UserAgent
      ],

@@ -8,7 +8,7 @@ A basic example:
 config :crawly,
   pipelines: [
     # my pipelines
-  ]
+  ],
   middlewares: [
     # my middlewares
   ]
@@ -79,14 +79,15 @@ config :crawly,
 
 ### middlewares :: [module()]
 
+Example middlewares
 ```elixir
-The default middlewares are as follows:
 config :crawly,
   middlewares: [
     Crawly.Middlewares.DomainFilter,
     Crawly.Middlewares.UniqueRequest,
     Crawly.Middlewares.RobotsTxt,
-    {Crawly.Middlewares.UserAgent, user_agents: ["My Bot"] }
+    {Crawly.Middlewares.UserAgent, user_agents: ["My Bot"] },
+    {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]}
   ]
 ```
 

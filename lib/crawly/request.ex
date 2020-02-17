@@ -48,6 +48,7 @@ defmodule Crawly.Request do
     # incoming requests
     default_middlewares = [
       Crawly.Middlewares.DomainFilter,
+      Crawly.Middlewares.RequestOptions,
       Crawly.Middlewares.UniqueRequest,
       Crawly.Middlewares.RobotsTxt
     ]

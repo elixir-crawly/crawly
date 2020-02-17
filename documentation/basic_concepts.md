@@ -113,6 +113,13 @@ Built-in middlewares:
 2. `Crawly.Middlewares.RobotsTxt` - this middleware ensures that Crawly respects the robots.txt defined by the target website.
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
+5. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
+   
+   
+   Example:
+   ```elixir
+    {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]}
+   ```
 
 ### Item Pipelines
 
