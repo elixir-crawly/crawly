@@ -43,7 +43,7 @@ defmodule Crawly.DataStorage do
   end
 
   def start_link([]) do
-    Logger.info("Starting data storage")
+    Logger.debug("Starting data storage")
 
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end

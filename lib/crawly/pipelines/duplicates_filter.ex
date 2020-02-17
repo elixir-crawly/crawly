@@ -60,7 +60,7 @@ defmodule Crawly.Pipelines.DuplicatesFilter do
         {item, new_state}
 
       true ->
-        Logger.info("[error] Duplicates filter, removed item: #{inspect(item)}")
+        Logger.debug("Duplicates filter dropped item: #{inspect(item)}")
         {false, state}
     end
   end

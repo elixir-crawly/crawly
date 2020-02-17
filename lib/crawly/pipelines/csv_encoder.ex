@@ -24,7 +24,7 @@ defmodule Crawly.Pipelines.CSVEncoder do
       :undefined ->
         # only for when both tuple and global config is not provided
 
-        Logger.info(
+        Logger.error(
           "Dropping item: #{inspect(item)}. Reason: No fields declared for CSVEncoder"
         )
 

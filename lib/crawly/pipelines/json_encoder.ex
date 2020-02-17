@@ -28,7 +28,7 @@ defmodule Crawly.Pipelines.JSONEncoder do
         {new_item, state}
 
       {:error, reason} ->
-        Logger.info(
+        Logger.error(
           "Could not encode the following item: #{inspect(item)} into json,
           reason: #{inspect(reason)}"
         )

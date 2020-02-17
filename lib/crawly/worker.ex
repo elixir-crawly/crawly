@@ -42,8 +42,8 @@ defmodule Crawly.Worker do
 
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
-              # TODO: Add retry logic
-              Logger.error(
+
+              Logger.debug(
                 fn ->
                   "Crawly worker could not process the request to #{
                     inspect(request.url)
@@ -115,7 +115,7 @@ defmodule Crawly.Worker do
       error, reason ->
         stacktrace = :erlang.get_stacktrace()
 
-        Logger.error(
+        Logger.debug(
           "Could not parse item, error: #{inspect(error)}, reason: #{
             inspect(reason)
           }, stacktrace: #{inspect(stacktrace)}
@@ -164,7 +164,7 @@ defmodule Crawly.Worker do
 
     case retries <= max_retries do
       true ->
-        Logger.info("Request to #{request.url}, is scheduled for retry")
+        Logger.debug("Request to #{request.url}, is scheduled for retry")
 
         middlewares = request.middlewares -- ignored_middlewares
 
@@ -176,7 +176,7 @@ defmodule Crawly.Worker do
 
         :ok = Crawly.RequestsStorage.store(spider, request)
       false ->
-        Logger.info("Dropping request to #{request.url}, (max retries)")
+        Logger.error("Dropping request to #{request.url}, (max retries)")
         :ok
     end
 

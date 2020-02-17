@@ -32,7 +32,7 @@ defmodule Crawly.Manager do
   use GenServer
 
   def start_link(spider_name) do
-    Logger.info("Starting the manager for #{spider_name}")
+    Logger.debug("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
   end
 
