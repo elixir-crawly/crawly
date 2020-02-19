@@ -23,7 +23,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.7.0"}
+         {:crawly, "~> 0.8.0"}
        ]
    end
    ```
@@ -67,7 +67,6 @@ historical archival.
    config :crawly,
      closespider_timeout: 10,
      concurrent_requests_per_domain: 8,
-     follow_redirect: true,
      closespider_itemcount: 1000,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
@@ -103,8 +102,8 @@ You can read more here:
 
 ## Roadmap
 
-1. [ ] Pluggable HTTP client
-2. [ ] Retries support
+1. [x] Pluggable HTTP client
+2. [x] Retries support
 3. [ ] Cookies support
 4. [ ] XPath support
 5. [ ] Project generators (spiders)
