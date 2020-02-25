@@ -106,7 +106,7 @@ You can read more here:
 1. [x] Pluggable HTTP client
 2. [x] Retries support
 3. [ ] Cookies support
-4. [ ] XPath support
+4. [x] XPath support - can be actually done with meeseeks
 5. [ ] Project generators (spiders)
 6. [ ] UI for jobs management
 
@@ -120,6 +120,7 @@ You can read more here:
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
 2. E-commerce websites: https://github.com/oltarasenko/products-advisor
 3. Car shops: https://github.com/oltarasenko/crawly-cars
+4. JavaScript based website (Splash example): https://github.com/oltarasenko/autosites
 
 ## Contributors
 
