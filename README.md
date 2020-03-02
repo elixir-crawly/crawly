@@ -79,7 +79,8 @@ historical archival.
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.7.0
-      ]
+      ],
+      port: 4001
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
