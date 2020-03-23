@@ -117,16 +117,6 @@ default: 4
 
 The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
 
-### proxy :: binary()
-
-Requests can be directed through a proxy. It will set the proxy option for the request.
-It's possible to set proxy using the proxy value of Crawly config, for example:
-
-```
-config :crawly,
-    proxy: "<proxy_host>:<proxy_port>",
-```
-
 ### retry :: Keyword list
 
 Allows to configure the retry logic. Accepts the following configuration options:
