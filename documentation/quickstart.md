@@ -61,7 +61,7 @@ Goals:
      closespider_itemcount: 1000,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
-       {Crawly.Middlewares.RequestSettings, [timeout: 30_000]},
+       {Crawly.Middlewares.RequestOptions, [timeout: 30_000]},
        Crawly.Middlewares.UniqueRequest,
        Crawly.Middlewares.UserAgent
      ],
