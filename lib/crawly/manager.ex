@@ -85,7 +85,10 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    case Application.get_env(:crawly, :closespider_itemcount, 1000) do
+    case Application.get_env(:crawly, :closespider_itemcount, :disabled) do
+      :disabled ->
+        :ignored
+
       cnt when cnt < items_count ->
         Logger.info(
           "Stopping #{inspect(state.name)}, closespider_itemcount achieved"

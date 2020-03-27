@@ -93,11 +93,11 @@ config :crawly,
 
 Defines a list of middlewares responsible for pre-processing requests. If any of the requests from the `Crawly.Spider` is not passing the middleware, it's dropped.
 
-### closespider_itemcount :: pos_integer()
+### closespider_itemcount :: pos_integer() | :disabled
 
-default: 5000
+default: :disabled
 
-An integer which specifies a number of items. If the spider scrapes more than that amount and those items are passed by the item pipeline, the spider will be closed. If set to nil the spider will not be stopped.
+An integer which specifies a number of items. If the spider scrapes more than that amount and those items are passed by the item pipeline, the spider will be closed. If set to :disabled the spider will not be stopped.
 
 ### closespider_timeout :: pos_integer()
 
