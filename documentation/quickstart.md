@@ -12,10 +12,12 @@ Goals:
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.8.0"}
+         {:crawly, "~> 0.8.0"},
+         {:floki, "~> 0.26.0"}
        ]
    end
    ```
+   > **Note**: [`:floki`](https://github.com/philss/floki) is used to illustrate data extraction. Crawly is unopinionated in the way you extract data. You may alternatively use [`:meeseeks`](https://github.com/mischov/meeseeks)
 2. Fetch dependencies: `$ mix deps.get`
 3. Create a spider
 

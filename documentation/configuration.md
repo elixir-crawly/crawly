@@ -117,16 +117,6 @@ default: 4
 
 The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
 
-### proxy :: binary()
-
-Requests can be directed through a proxy. It will set the proxy option for the request.
-It's possible to set proxy using the proxy value of Crawly config, for example:
-
-```
-config :crawly,
-    proxy: "<proxy_host>:<proxy_port>",
-```
-
 ### retry :: Keyword list
 
 Allows to configure the retry logic. Accepts the following configuration options:
@@ -153,7 +143,12 @@ Example:
 
 ### fetcher :: atom()
 
-default: Crawly.Fetchers.HTTPoisonFetcher 
+default: Crawly.Fetchers.HTTPoisonFetcher
 
-Allows to specify a custom HTTP client which will be performing request to the crawl
-target.
+Allows to specify a custom HTTP client which will be performing request to the crawler target.
+
+### port :: pos_integer()
+
+default: 4001
+
+Allows to specify a custom port to start the application. That is important when running more than one application in a single machine, in which case shall not use the same port as the others.

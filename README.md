@@ -24,7 +24,8 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.8.0"}
+         {:crawly, "~> 0.8.0"},
+         {:floki, "~> 0.26.0"}
        ]
    end
    ```
@@ -79,7 +80,8 @@ historical archival.
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.7.0
-      ]
+      ],
+      port: 4001
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
@@ -106,7 +108,7 @@ You can read more here:
 1. [x] Pluggable HTTP client
 2. [x] Retries support
 3. [ ] Cookies support
-4. [ ] XPath support
+4. [x] XPath support - can be actually done with meeseeks
 5. [ ] Project generators (spiders)
 6. [ ] UI for jobs management
 
@@ -120,6 +122,7 @@ You can read more here:
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
 2. E-commerce websites: https://github.com/oltarasenko/products-advisor
 3. Car shops: https://github.com/oltarasenko/crawly-cars
+4. JavaScript based website (Splash example): https://github.com/oltarasenko/autosites
 
 ## Contributors
 
