@@ -35,13 +35,14 @@ Goals:
 
      @impl Crawly.Spider
      def parse_item(response) do
-       hrefs = response.body |> Floki.find("a.more") |> Floki.attribute("href")
+       {:ok, document} = Floki.parse_document(response.body)
+       hrefs = document |> Floki.find("a.more") |> Floki.attribute("href")
 
        requests =
          Utils.build_absolute_urls(hrefs, base_url())
          |> Utils.requests_from_urls()
 
-       title = response.body |> Floki.find("article.blog_post h1") |> Floki.text()
+       title = document |> Floki.find("article.blog_post h1") |> Floki.text()
 
        %{
          :requests => requests,
