@@ -54,7 +54,10 @@ file with the following code:
 
 ```elixir
     def deps do
-        [{:crawly, "~> 0.8.0"}]
+      [
+        {:crawly, "~> 0.8.0"},
+        {:floki, "~> 0.26.0"}
+      ]
     end
 ```
 
@@ -123,28 +126,15 @@ You will get an output similar to this:
 ```elixir
 iex(2)> Crawly.Engine.start_spider(Homebase)
 
-15:03:47.134 [info]  Starting the manager for Elixir.Homebase
+14:07:50.188 [debug] Starting the manager for Elixir.Homebase
 
-=PROGRESS REPORT==== 23-May-2019::15:03:47 ===
-         supervisor: {<0.415.0>,'Elixir.Crawly.ManagerSup'}
-            started: [{pid,<0.416.0>},
-                      {id,'Elixir.Homebase'},
-                      {mfargs,
-                          {'Elixir.DynamicSupervisor',start_link,
-                              [[{strategy,one_for_one},
-                                {name,'Elixir.Homebase'}]]}},
-                      {restart_type,permanent},
-                      {shutdown,infinity},
-                      {child_type,supervisor}]
+14:07:50.188 [debug] Starting requests storage worker for Elixir.Homebase...
 
-15:03:47.137 [debug] Starting requests storage worker for
-Elixir.Homebase..
+14:07:50.987 [debug] Started 4 workers for Elixir.Homebase
+:ok
 
-15:04:06.698 [debug] No work, increase backoff to 2400
-15:04:06.699 [debug] No work, increase backoff to 4800
-15:04:06.699 [debug] No work, increase backoff to 9600
-15:04:07.973 [debug] No work, increase backoff to 19200
-15:04:17.787 [info]  Stopping Homebase, itemcount timeout achieved
+14:08:50.990 [info]  Current crawl speed is: 0 items/min
+14:08:50.990 [info]  Stopping Homebase, itemcount timeout achieved
 ```
 
 ## What just happened under the hood?
@@ -172,7 +162,7 @@ selectors in Crawly shell.
 1. Start the Elixir shell using `iex -S mix` command
 2. Now you can fetch a given HTTP response using the following
    command:
-   `{:ok, response} = Crawly.fetch("https://www.homebase.co.uk/our-range/tools")`
+   `response = Crawly.fetch("https://www.homebase.co.uk/our-range/tools")`
 
 You will see something like:
 
@@ -220,21 +210,13 @@ response. Lets say that we want to extract all product categories links from the
 page above:
 
 ```
-response.body |> Floki.find("div.product-list-footer a") |>
-Floki.attribute("href")
+{:ok, document} = Floki.parse_document(response.body)
+document |> Floki.find("section.wrapper") |> Floki.find("div.article-tiles.article-tiles--wide a") |> Floki.attribute("href")
 
-"/our-range/tools/power-tools/drills", "/our-range/tools/power-tools/saws",
- "/our-range/tools/power-tools/sanders",
- "/our-range/tools/power-tools/electric-screwdrivers",
- "/our-range/tools/power-tools/tools-accessories",
- "/our-range/tools/power-tools/routers-and-planers",
- "/our-range/tools/power-tools/multi-tools",
- "/our-range/tools/power-tools/impact-drivers-and-wrenches",
- "/our-range/tools/power-tools/air-compressors",
- "/our-range/tools/power-tools/angle-grinders",
- "/our-range/tools/power-tools/heat-guns",
- "/our-range/tools/power-tools/heavy-duty-construction-tools",
- "/our-range/tools/power-tools/welding" ...]
+["/our-range/tools/power-tools", "/our-range/tools/garage-storage",
+ "/our-range/tools/hand-tools", "/our-range/tools/tool-storage",
+ "/our-range/tools/ladders", "/our-range/tools/safety-equipment-and-workwear",
+ "/our-range/tools/work-benches"]
 ```
 
 The result of running the command above is a list of elements which
@@ -251,30 +233,30 @@ Now let's navigate to one of the Homebase product pages and extract
 data from it.
 
 ```
-{:ok, response} =
-Crawly.fetch("https://www.homebase.co.uk/4-tier-heavy-duty-shelving-unit_p375180")
+response = Crawly.fetch("https://www.homebase.co.uk/bosch-universalimpact-800-corded-hammer-drill_p494894")
 
 ```
 
 Extract the `title` with:
 
 ```
-response.body |> Floki.find(".page-title h1") |> Floki.text()
-"4 Tier Heavy Duty Shelving Unit"
+{:ok, document} = Floki.parse_document(response.body)
+document |> Floki.find(".page-title h1") |> Floki.text()
+"Bosch UniversalImpact 800 Corded Hammer Drill"
 ```
 
 Extract the `SKU` with:
 
 ```
-response.body |> Floki.find(".product-header-heading span") |> Floki.text
-"SKU:  375180"
+document |> Floki.find(".product-header-heading span") |> Floki.text
+"SKU:  494894"
 ```
 
 Extract the `price` with:
 
 ```
-response.body |> Floki.find(".price-value [itemprop=priceCurrency]") |> Floki.text
-"£75"
+document |> Floki.find(".price-value [itemprop=priceCurrency]") |> Floki.text
+"£82"
 ```
 
 ## Extracting data in our spider
@@ -301,15 +283,19 @@ defmodule Homebase do
 
   @impl Crawly.Spider
   def parse_item(response) do
+    # Parse response body to document
+    {:ok, document} = Floki.parse_document(response.body)
+
     # Extract product category URLs
     product_categories =
-      response.body
-      |> Floki.find("div.product-list-footer a")
+      document
+      |> Floki.find("section.wrapper")
+      |> Floki.find("div.article-tiles.article-tiles--wide a")
       |> Floki.attribute("href")
 
     # Extract individual product page URLs
     product_pages =
-      response.body
+      document
       |> Floki.find("a.product-tile  ")
       |> Floki.attribute("href")
 
@@ -324,13 +310,16 @@ defmodule Homebase do
 
     # Create item (for pages where items exists)
     item = %{
-      title: response.body |> Floki.find(".page-title h1") |> Floki.text(),
+      title:
+        document
+        |> Floki.find(".page-title h1")
+        |> Floki.text(),
       sku:
-        response.body
+        document
         |> Floki.find(".product-header-heading span")
         |> Floki.text(),
       price:
-        response.body
+        document
         |> Floki.find(".price-value [itemprop=priceCurrency]")
         |> Floki.text()
     }
@@ -343,7 +332,7 @@ end
 
 ```
 
-If you run this spider, it will output the extracted data with the log:
+If you run this spider `Crawly.Engine.start_spider(Homebase)`, it will output the extracted data with the log:
 
 ```
 17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386", title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
