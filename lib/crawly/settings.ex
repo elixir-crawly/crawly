@@ -25,24 +25,24 @@ defmodule Crawly.Settings do
           | {Crawly.Pipelines.WriteToFile,
              folder: binary(), extension: binary()}
 
-  @type t() :: %{
+  @type t() :: [
           # Allows to stop spider after a given number of scraped items
           # :disabled by default.
-          optional(:closespider_itemcount) => numeric_setting(),
+          closespider_itemcount: numeric_setting(),
 
           # Allows to stop spider if it extracts less than a given amount of
           # items per minute.
-          optional(:closespider_timeout) => pos_integer(),
+          closespider_timeout: pos_integer(),
 
           # Allows to control how many workers are started for a given domain
-          optional(:concurrent_requests_per_domain) => pos_integer(),
+          concurrent_requests_per_domain: pos_integer(),
 
           # Allows to define a fetcher to perform HTTP requests
-          optional(:fetcher) => Crawly.Fetchers.Fetcher.t(),
+          fetcher: Crawly.Fetchers.Fetcher.t(),
 
           # Defines retries
-          optional(:retry) => retry(),
-          optional(:middlewares) => [middleware()],
-          optional(:pipelines) => [pipeline()]
-        }
+          retry: retry(),
+          middlewares: [middleware()],
+          pipelines: [pipeline()]
+        ]
 end

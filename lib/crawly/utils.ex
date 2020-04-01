@@ -150,10 +150,10 @@ defmodule Crawly.Utils do
   defp get_spider_setting(_setting_name, nil), do: nil
 
   defp get_spider_setting(setting_name, spider_name) do
-    case function_exported?(spider_name, :settings_override, 0) do
+    case function_exported?(spider_name, :override_settings, 0) do
       true ->
 
-        Map.get(spider_name.settings_override(), setting_name, nil)
+        Keyword.get(spider_name.override_settings(), setting_name, nil)
 
       false ->
         nil

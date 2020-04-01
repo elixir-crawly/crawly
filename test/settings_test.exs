@@ -42,7 +42,5 @@ defmodule Elixir.TestSpiderSettingsOverride do
     %{:items => [], :requests => []}
   end
 
-  def settings_override() do
-    %{concurrent_requests_per_domain: 5}
-  end
+  def override_settings(), do: [concurrent_requests_per_domain: 5]
 end

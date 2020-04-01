@@ -60,7 +60,7 @@ config :crawly,
   ],
   pipelines: [
     {Crawly.Pipelines.Validate, fields: [:title, :author, :time, :url]},
-    {Crawly.Pipelines.DuplicatesFilter, item_id: :titile},
+    {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
     Crawly.Pipelines.JSONEncoder
   ]
 

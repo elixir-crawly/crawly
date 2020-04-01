@@ -10,7 +10,7 @@ defmodule Crawly.Spider do
      request and converting it into items which can be stored and new requests
      which can be scheduled
   4. `custom_settings/0` an optional callback which can be used in order to
-      provide custom spider specific settings. Should define a map with custom
+      provide custom spider specific settings. Should define a list with custom
       settings and their values. These values will take precedence over the
       global settings defined in the config.
   """
@@ -22,7 +22,7 @@ defmodule Crawly.Spider do
   @callback parse_item(response :: HTTPoison.Response.t()) ::
               Crawly.ParsedItem.t()
 
-  @callback settings_override() :: Crawly.Settings.t()
+  @callback override_settings() :: Crawly.Settings.t()
 
-  @optional_callbacks settings_override: 0
+  @optional_callbacks override_settings: 0
 end
