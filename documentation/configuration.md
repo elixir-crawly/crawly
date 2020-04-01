@@ -25,7 +25,7 @@ is used by the Crawly.DataStorageWorker process.
 
 > **Deprecated**: This has been deprecated in favour of having pipelines to handle data storage, as of `0.6.0`
 
-### `user_agents` :: list()
+### `user_agents` :: list() [DEPRECATED in 0.9.0, use middleware based configuration]
 
 default: ["Crawly Bot 1.0"]
 
@@ -99,13 +99,13 @@ default: :disabled
 
 An integer which specifies a number of items. If the spider scrapes more than that amount and those items are passed by the item pipeline, the spider will be closed. If set to :disabled the spider will not be stopped.
 
-### closespider_timeout :: pos_integer()
+### closespider_timeout :: pos_integer() | :disabled
 
 default: nil
 
 Defines a minimal amount of items which needs to be scraped by the spider within the given timeframe (30s). If the limit is not reached by the spider - it will be stopped.
 
-### follow_redirect :: boolean()
+### follow_redirect :: boolean() [Deprecated, use fetcher settings instead]
 
 default: false
 

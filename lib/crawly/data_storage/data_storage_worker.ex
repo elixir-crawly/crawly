@@ -33,7 +33,7 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def handle_cast({:store, item}, state) do
-    pipelines = Application.get_env(:crawly, :pipelines, [])
+    pipelines = Crawly.Utils.get_settings(:pipelines, state.spider_name, [])
 
     state =
       case Crawly.Utils.pipe(pipelines, item, state) do

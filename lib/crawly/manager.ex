@@ -31,6 +31,8 @@ defmodule Crawly.Manager do
 
   use GenServer
 
+  alias Crawly.Utils
+
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
@@ -57,7 +59,7 @@ defmodule Crawly.Manager do
 
     # Start workers
     num_workers =
-      Application.get_env(:crawly, :concurrent_requests_per_domain, 4)
+      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
 
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
@@ -72,8 +74,15 @@ defmodule Crawly.Manager do
     )
 
     # Schedule basic service operations for given spider manager
-    tref = Process.send_after(self(), :operations, get_timeout())
-    {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
+    tref =
+      Process.send_after(
+        self(),
+        :operations,
+        Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+      )
+
+    {:ok,
+     %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
   def handle_info(:operations, state) do
@@ -85,7 +94,7 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    case Application.get_env(:crawly, :closespider_itemcount, :disabled) do
+    case Utils.get_settings(:closespider_itemcount, state.name, :disabled) do
       :disabled ->
         :ignored
 
@@ -100,8 +109,8 @@ defmodule Crawly.Manager do
         :ignoring
     end
 
-    # Close spider in case if it's not scraping itms fast enough
-    case Application.get_env(:crawly, :closespider_timeout) do
+    # Close spider in case if it's not scraping items fast enough
+    case Utils.get_settings(:closespider_timeout, state.name, :disabled) do
       :undefined ->
         :ignoring
 
@@ -116,12 +125,13 @@ defmodule Crawly.Manager do
         :ignoring
     end
 
-    tref = Process.send_after(self(), :operations, get_timeout())
+    tref =
+      Process.send_after(
+        self(),
+        :operations,
+        Utils.get_settings(:manager_operations_timeout, state.name, @timeout)
+      )
 
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
-  end
-
-  defp get_timeout() do
-    Application.get_env(:crawly, :manager_operations_timeout, @timeout)
   end
 end

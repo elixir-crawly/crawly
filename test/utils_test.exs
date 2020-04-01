@@ -100,7 +100,7 @@ defmodule UtilsTest do
         Crawly.Middlewares.DomainFilter,
         Crawly.Middlewares.UniqueRequest,
         Crawly.Middlewares.RobotsTxt,
-        Crawly.Middlewares.UserAgent],
+        {Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}],
       retries: 0
     }
   end

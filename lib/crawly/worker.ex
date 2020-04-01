@@ -42,15 +42,12 @@ defmodule Crawly.Worker do
 
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
-
-              Logger.debug(
-                fn ->
-                  "Crawly worker could not process the request to #{
-                    inspect(request.url)
-                  }
+              Logger.debug(fn ->
+                "Crawly worker could not process the request to #{
+                  inspect(request.url)
+                }
                   reason: #{inspect(reason)}"
-                end
-              )
+              end)
 
               @default_backoff
 
@@ -73,14 +70,16 @@ defmodule Crawly.Worker do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
     # if not set, log warning for explicit config preferred,
     # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
-    {fetcher, options} = Application.get_env(
-      :crawly,
-      :fetcher,
-      {Crawly.Fetchers.HTTPoisonFetcher, []}
-    )
+    {fetcher, options} =
+      Crawly.Utils.get_settings(
+        :fetcher,
+        spider_name,
+        {Crawly.Fetchers.HTTPoisonFetcher, []}
+      )
 
-    retry_options = Application.get_env(:crawly, :retry, [])
+    retry_options = Crawly.Utils.get_settings(:retry, spider_name, [])
     retry_codes = Keyword.get(retry_options, :retry_codes, [])
+
     case fetcher.fetch(request, options) do
       {:error, _reason} = err ->
         :ok = maybe_retry_request(spider_name, request)
@@ -93,11 +92,11 @@ defmodule Crawly.Worker do
           true ->
             :ok = maybe_retry_request(spider_name, request)
             {:error, :retry}
+
           false ->
             {:ok, {response, spider_name}}
         end
     end
-
   end
 
   @spec parse_item({response, spider_name}) :: result
@@ -141,7 +140,8 @@ defmodule Crawly.Worker do
       fn request ->
         request = Map.put(request, :prev_response, response)
         Crawly.RequestsStorage.store(spider_name, request)
-      end)
+      end
+    )
 
     # Process all items one by one
     Enum.each(
@@ -157,7 +157,7 @@ defmodule Crawly.Worker do
   ## Retry a request if max retries allows to do so
   defp maybe_retry_request(spider, request) do
     retries = request.retries
-    retry_settings = Application.get_env(:crawly, :retry, Keyword.new())
+    retry_settings = Crawly.Utils.get_settings(:retry, spider, Keyword.new())
 
     ignored_middlewares = Keyword.get(retry_settings, :ignored_middlewares, [])
     max_retries = Keyword.get(retry_settings, :max_retries, 0)
@@ -169,16 +169,16 @@ defmodule Crawly.Worker do
         middlewares = request.middlewares -- ignored_middlewares
 
         request = %Crawly.Request{
-          request |
-          middlewares: middlewares,
-          retries: retries + 1
+          request
+          | middlewares: middlewares,
+            retries: retries + 1
         }
 
         :ok = Crawly.RequestsStorage.store(spider, request)
+
       false ->
         Logger.error("Dropping request to #{request.url}, (max retries)")
         :ok
     end
-
   end
 end

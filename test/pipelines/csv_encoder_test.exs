@@ -2,16 +2,8 @@ defmodule Pipelines.CSVEncoderTest do
   use ExUnit.Case, async: false
 
   @valid %{first: "some", second: "data"}
-  setup do
-    on_exit(fn ->
-      Application.put_env(:crawly, :item, [:title, :author, :time, :url])
-    end)
-  end
-
   test "Converts a single-level map to a csv string with global config" do
-    Application.put_env(:crawly, :item, [:first, :second])
-
-    pipelines = [Crawly.Pipelines.CSVEncoder]
+    pipelines = [{Crawly.Pipelines.CSVEncoder, fields: [:first, :second]}]
     item = @valid
     state = %{}
 

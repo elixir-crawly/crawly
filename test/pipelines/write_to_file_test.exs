@@ -5,7 +5,6 @@ defmodule Pipelines.WriteToFileTest do
 
   setup do
     on_exit(fn ->
-      Application.put_env(:crawly, :"Crawly.Pipelines.WriteToFile", nil)
       :meck.unload(IO)
       :meck.unload(File)
     end)
@@ -31,15 +30,8 @@ defmodule Pipelines.WriteToFileTest do
       end
     )
 
-    Application.put_env(
-      :crawly,
-      Crawly.Pipelines.WriteToFile,
-      folder: "/tmp",
-      extension: "csv"
-    )
-
     pipelines = [
-      Crawly.Pipelines.WriteToFile
+      {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
     ]
 
     item = @binary

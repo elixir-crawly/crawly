@@ -59,20 +59,11 @@ defmodule Crawly.Pipelines.WriteToFile do
   def run(item, state, opts) do
     opts = Enum.into(opts, %{folder: nil, extension: nil})
 
-    global_config =
-      Application.get_env(
-        :crawly,
-        Crawly.Pipelines.WriteToFile,
-        Keyword.new()
-      )
-
     folder =
-      Map.get(opts, :folder) ||
-        Keyword.get(global_config, :folder, System.tmp_dir!())
+      Map.get(opts, :folder, "./")
 
     extension =
-      Map.get(opts, :extension) ||
-        Keyword.get(global_config, :extension, "jl")
+      Map.get(opts, :extension, "jl")
 
     fd = open_fd(state.spider_name, folder, extension)
     :ok = write(fd, item)

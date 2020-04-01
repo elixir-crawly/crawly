@@ -93,9 +93,9 @@ defmodule Crawly.Utils do
       catch
         error, reason ->
           Logger.error(
-            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{
-              inspect(reason)
-            }, args: #{inspect(args)}"
+            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{inspect(reason)}, args: #{
+              inspect(args)
+            }"
           )
 
           {item, state}
@@ -112,5 +112,51 @@ defmodule Crawly.Utils do
   @spec send_after(pid(), term(), pos_integer()) :: reference()
   def send_after(pid, message, timeout) do
     Process.send_after(pid, message, timeout)
+  end
+
+  @doc """
+  A helper which allows to extract a given setting.
+
+  Returned value is a result of intersection of the global settings and settings
+  defined as settings_override inside the spider. Settings defined on spider are
+  taking precedence over the global settings defined in the config.
+  """
+  @spec get_settings(setting_name, spider_name, default) :: result
+    when setting_name: atom(),
+         spider_name: atom(),
+         default: term(),
+         result: term()
+
+  def get_settings(setting_name, spider_name \\ nil, default \\ nil) do
+    global_setting = Application.get_env(:crawly, setting_name, default)
+    case get_spider_setting(setting_name, spider_name) do
+      nil ->
+        # No custom settings for a spider found
+        global_setting
+
+      custom_setting ->
+        custom_setting
+    end
+  end
+
+  ##############################################################################
+  # Private functions
+  ##############################################################################
+  @spec get_spider_setting(spider_name, setting_name) :: result
+        when spider_name: atom(),
+             setting_name: atom(),
+             result: nil | term()
+
+  defp get_spider_setting(_setting_name, nil), do: nil
+
+  defp get_spider_setting(setting_name, spider_name) do
+    case function_exported?(spider_name, :settings_override, 0) do
+      true ->
+
+        Map.get(spider_name.settings_override(), setting_name, nil)
+
+      false ->
+        nil
+    end
   end
 end

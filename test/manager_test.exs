@@ -54,8 +54,6 @@ defmodule ManagerTest do
     Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
     Process.sleep(2_000)
-    stats = Crawly.DataStorage.stats(Manager.TestSpider)
-    IO.puts("Stats: #{inspect(stats)}")
     assert %{} == Crawly.Engine.running_spiders()
   end
 

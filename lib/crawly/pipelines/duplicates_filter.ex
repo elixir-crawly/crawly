@@ -32,7 +32,7 @@ defmodule Crawly.Pipelines.DuplicatesFilter do
   def run(item, state, opts \\ []) do
     opts = Enum.into(opts, %{item_id: nil})
 
-    item_id = Map.get(opts, :item_id) || Application.get_env(:crawly, :item_id)
+    item_id = Map.get(opts, :item_id)
 
     item_id = Map.get(item, item_id)
 

@@ -73,30 +73,4 @@ defmodule DataStorageTest do
     result = Crawly.DataStorage.stats(:unkown)
     assert result == {:error, :data_storage_worker_not_running}
   end
-
-  test "Duplicates pipline is inactive when item_id is not set", context do
-    :meck.expect(Application, :get_env, fn :crawly, :item_id -> :undefined end)
-
-    Crawly.DataStorage.store(context.crawler, %{
-      title: "test title",
-      author: "me",
-      time: "Now",
-      url: "http://example.com"
-    })
-
-    Crawly.DataStorage.store(context.crawler, %{
-      title: "test title",
-      author: "me",
-      time: "Now",
-      url: "http://example.com"
-    })
-
-    Process.sleep(1000)
-    {:stored_items, 2} = Crawly.DataStorage.stats(context.crawler)
-    :meck.unload(Application)
-  end
-
-
-#  test "No data is stored if Dev"
-
 end

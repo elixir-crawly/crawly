@@ -9,6 +9,10 @@ defmodule Crawly.Spider do
   3. `parse_item/1` function which is responsible for parsing the downloaded
      request and converting it into items which can be stored and new requests
      which can be scheduled
+  4. `custom_settings/0` an optional callback which can be used in order to
+      provide custom spider specific settings. Should define a map with custom
+      settings and their values. These values will take precedence over the
+      global settings defined in the config.
   """
 
   @callback init() :: [start_urls: list()]
@@ -16,6 +20,9 @@ defmodule Crawly.Spider do
   @callback base_url() :: binary()
 
   @callback parse_item(response :: HTTPoison.Response.t()) ::
-  Crawly.ParsedItem.t()
+              Crawly.ParsedItem.t()
 
+  @callback settings_override() :: Crawly.Settings.t()
+
+  @optional_callbacks settings_override: 0
 end
