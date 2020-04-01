@@ -104,3 +104,28 @@ Allows to specify a custom HTTP client which will be performing request to the c
 default: 4001
 
 Allows to specify a custom port to start the application. That is important when running more than one application in a single machine, in which case shall not use the same port as the others.
+
+
+## Overriding global settings on spider level
+
+It's possible to override most of the setting on a spider level. In order to do that,
+it's required to define a custom callback for Crawly.Spider behaviour. 
+
+For example:
+```elixir
+def override_settings() do
+   [
+    concurrent_requests_per_domain: 5,
+    closespider_timeout: 6
+   ]
+end
+```
+
+The full list of overridable settings:
+  - closespider_itemcount,
+  - closespider_timeout,
+  - concurrent_requests_per_domain,
+  - fetcher,
+  - retry,
+  - middlewares,
+  - pipelines
