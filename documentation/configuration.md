@@ -109,7 +109,7 @@ Allows to specify a custom port to start the application. That is important when
 ## Overriding global settings on spider level
 
 It's possible to override most of the setting on a spider level. In order to do that,
-it's required to define a custom callback for Crawly.Spider behaviour. 
+it is required to define the `override_settings/0` callback in your spider.
 
 For example:
 ```elixir
