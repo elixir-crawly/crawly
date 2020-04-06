@@ -1,15 +1,8 @@
 defmodule Middlewares.UserAgentTest do
   use ExUnit.Case, async: false
 
-  setup do
-    on_exit(fn ->
-      Application.put_env(:crawly, :user_agents, nil)
-    end)
-  end
-
   test "Adds a user agent to request header with global config" do
-    Application.put_env(:crawly, :user_agents, ["My Custom Bot"])
-    middlewares = [Crawly.Middlewares.UserAgent]
+    middlewares = [{Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}]
     req = %Crawly.Request{}
     state = %{}
 

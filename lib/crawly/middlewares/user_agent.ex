@@ -12,7 +12,7 @@ defmodule Crawly.Middlewares.UserAgent do
   ### Example Declaration
   ```
   middlewares: [
-    {UserAgent, user_agents: ["My Custom Bot] }
+    {UserAgent, user_agents: ["My Custom Bot"] }
   ]
   ```
   """
@@ -24,8 +24,7 @@ defmodule Crawly.Middlewares.UserAgent do
     new_headers = List.keydelete(request.headers, "User-Agent", 0)
 
     user_agents =
-      Map.get(opts, :user_agents) ||
-        Application.get_env(:crawly, :user_agents, ["Crawly Bot 1.0"])
+      Map.get(opts, :user_agents, ["Crawly Bot 1.0"])
 
     useragent = Enum.random(user_agents)
 

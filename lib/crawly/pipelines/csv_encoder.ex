@@ -18,7 +18,7 @@ defmodule Crawly.Pipelines.CSVEncoder do
           {false, state :: map} | {csv_line :: String.t(), state :: map}
   def run(item, state, opts \\ []) do
     opts = Enum.into(opts, %{fields: nil})
-    fields = Map.get(opts, :fields) || Application.get_env(:crawly, :item)
+    fields = Map.get(opts, :fields, [])
 
     case fields do
       :undefined ->

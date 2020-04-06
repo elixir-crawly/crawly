@@ -27,7 +27,7 @@ defmodule Crawly.Pipelines.Validate do
   @impl Crawly.Pipeline
   def run(item, state, opts \\ []) do
     opts = Enum.into(opts, %{fields: nil})
-    fields = Map.get(opts, :fields) || Application.get_env(:crawly, :item, [])
+    fields = Map.get(opts, :fields, [])
 
     validation_result =
       fields

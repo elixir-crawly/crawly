@@ -13,15 +13,9 @@ defmodule Pipelines.ValidateTest do
     author: nil
   }
 
-  setup do
-    on_exit(fn ->
-      Application.put_env(:crawly, :item, [:title, :author, :time, :url])
-    end)
-  end
-
   test "Returns item unchanged when has required fields" do
     Application.put_env(:crawly, :item, [:title, :author])
-    pipelines = [Crawly.Pipelines.Validate]
+    pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @valid
     state = %{}
 
@@ -30,8 +24,7 @@ defmodule Pipelines.ValidateTest do
   end
 
   test "Drops items when missing required fields with global config" do
-    Application.put_env(:crawly, :item, [:title, :author])
-    pipelines = [Crawly.Pipelines.Validate]
+    pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @invalid_missing
     state = %{}
 
@@ -47,8 +40,7 @@ defmodule Pipelines.ValidateTest do
   end
 
   test "Drops items when required fields are equal to nil" do
-    Application.put_env(:crawly, :item, [:title, :author])
-    pipelines = [Crawly.Pipelines.Validate]
+    pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @invalid_nil
     state = %{}
 

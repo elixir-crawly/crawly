@@ -2,15 +2,9 @@ defmodule Pipelines.DuplicatesFilterTest do
   use ExUnit.Case, async: false
 
   @valid %{data: [%{some: "nested_data"}], id: "my_id"}
-  setup do
-    on_exit(fn ->
-      Application.put_env(:crawly, :item_id, :title)
-    end)
-  end
 
   test "Drops duplicate items with the same item_id value through global config" do
-    Application.put_env(:crawly, :item_id, :id)
-    pipelines = [Crawly.Pipelines.DuplicatesFilter]
+    pipelines = [{Crawly.Pipelines.DuplicatesFilter, item_id: :id}]
     item = @valid
     state = %{}
 

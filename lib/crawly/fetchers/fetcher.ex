@@ -6,6 +6,8 @@ defmodule Crawly.Fetchers.Fetcher do
   Crawly.Request, HTTP client options and return Crawly.Response.
   """
 
+  @type t :: {module(), list()}
+
   @callback fetch(request, options) :: {:ok, response} | {:error, reason}
             when request: Crawly.Request.t(),
                  response: Crawly.Response.t(),

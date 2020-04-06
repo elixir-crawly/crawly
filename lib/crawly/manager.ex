@@ -31,6 +31,8 @@ defmodule Crawly.Manager do
 
   use GenServer
 
+  alias Crawly.Utils
+
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
@@ -57,7 +59,7 @@ defmodule Crawly.Manager do
 
     # Start workers
     num_workers =
-      Application.get_env(:crawly, :concurrent_requests_per_domain, 4)
+      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
 
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
@@ -72,8 +74,13 @@ defmodule Crawly.Manager do
     )
 
     # Schedule basic service operations for given spider manager
-    tref = Process.send_after(self(), :operations, get_timeout())
-    {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
+    timeout =
+      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+
+    tref = Process.send_after(self(), :operations, timeout)
+
+    {:ok,
+     %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
   def handle_info(:operations, state) do
@@ -85,43 +92,63 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    case Application.get_env(:crawly, :closespider_itemcount, :disabled) do
-      :disabled ->
-        :ignored
+    itemcount_limit =
+      :closespider_itemcount
+      |> Utils.get_settings(state.name)
+      |> maybe_convert_to_integer()
 
-      cnt when cnt < items_count ->
-        Logger.info(
-          "Stopping #{inspect(state.name)}, closespider_itemcount achieved"
-        )
+    maybe_stop_spider_by_itemcount_limit(
+      state.name,
+      items_count,
+      itemcount_limit
+    )
 
-        Crawly.Engine.stop_spider(state.name)
+    # Close spider in case if it's not scraping items fast enough
+    closespider_timeout_limit =
+      :closespider_timeout
+      |> Utils.get_settings(state.name)
+      |> maybe_convert_to_integer()
 
-      _ ->
-        :ignoring
-    end
+      maybe_stop_spider_by_timeout(
+        state.name,
+        items_count,
+        closespider_timeout_limit
+      )
 
-    # Close spider in case if it's not scraping itms fast enough
-    case Application.get_env(:crawly, :closespider_timeout) do
-      :undefined ->
-        :ignoring
-
-      cnt when cnt > delta ->
-        Logger.info(
-          "Stopping #{inspect(state.name)}, itemcount timeout achieved"
-        )
-
-        Crawly.Engine.stop_spider(state.name)
-
-      _ ->
-        :ignoring
-    end
-
-    tref = Process.send_after(self(), :operations, get_timeout())
+    tref =
+      Process.send_after(
+        self(),
+        :operations,
+        Utils.get_settings(:manager_operations_timeout, state.name, @timeout)
+      )
 
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
   end
 
-  defp get_timeout() do
-    Application.get_env(:crawly, :manager_operations_timeout, @timeout)
+  defp maybe_stop_spider_by_itemcount_limit(spider_name, current, limit)
+       when current > limit do
+    Logger.info(
+      "Stopping #{inspect(spider_name)}, closespider_itemcount achieved"
+    )
+
+    Crawly.Engine.stop_spider(spider_name)
   end
+
+  defp maybe_stop_spider_by_itemcount_limit(_, _, _), do: :ok
+
+  defp maybe_stop_spider_by_timeout(spider_name, current, limit)
+       when current < limit do
+    Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved")
+
+    Crawly.Engine.stop_spider(spider_name)
+  end
+
+  defp maybe_stop_spider_by_timeout(_, _, _), do: :ok
+
+  defp maybe_convert_to_integer(value) when is_atom(value), do: value
+
+  defp maybe_convert_to_integer(value) when is_binary(value),
+    do: String.to_integer(value)
+
+  defp maybe_convert_to_integer(value) when is_integer(value), do: value
 end
