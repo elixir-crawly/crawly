@@ -21,9 +21,15 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
-  @spec stop_spider(module()) ::
-          :ok | {:error, :spider_not_running}
-  def stop_spider(spider_name) do
+  @spec stop_spider(module(), reason) :: result
+        when reason: :itemcount_limit | :itemcount_timeout | atom(),
+             result: :ok | {:error, :spider_not_running}
+  def stop_spider(spider_name, reason \\ :ignore) do
+    case Crawly.Utils.get_settings(:on_spider_closed_callback, spider_name) do
+      nil -> :ignore
+      fun -> apply(fun, [reason])
+    end
+
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 

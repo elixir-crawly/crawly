@@ -131,7 +131,7 @@ defmodule Crawly.Manager do
       "Stopping #{inspect(spider_name)}, closespider_itemcount achieved"
     )
 
-    Crawly.Engine.stop_spider(spider_name)
+    Crawly.Engine.stop_spider(spider_name, :itemcount_limit)
   end
 
   defp maybe_stop_spider_by_itemcount_limit(_, _, _), do: :ok
@@ -140,7 +140,7 @@ defmodule Crawly.Manager do
        when current < limit do
     Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved")
 
-    Crawly.Engine.stop_spider(spider_name)
+    Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)
   end
 
   defp maybe_stop_spider_by_timeout(_, _, _), do: :ok

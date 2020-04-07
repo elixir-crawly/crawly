@@ -232,7 +232,7 @@ defmodule WorkerTest do
 end
 
 defmodule Worker.CrashingTestSpider do
-  @behaviour Crawly.Spider
+  use Crawly.Spider
 
   @impl Crawly.Spider
   def base_url() do

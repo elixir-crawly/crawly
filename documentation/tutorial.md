@@ -75,7 +75,7 @@ homebase.ex under the lib/tutorial/spiders directory of your project.
 
 ```elixir
 defmodule Homebase do
-  @behaviour Crawly.Spider
+  use Crawly.Spider
 
   @impl Crawly.Spider
   def base_url(), do: "https://www.homebase.co.uk"
@@ -96,7 +96,7 @@ defmodule Homebase do
 end
 ```
 
-As you can see, our Spider implements the Spider behaviour and defines
+As you can see, our Spider implements the Crawly.Spider behaviour and defines
 some functions:
 
 1. base_url: method which returns base_urls for the given Spider, used in
@@ -267,7 +267,7 @@ into our spider.
 
 ```elixir
 defmodule Homebase do
-  @behaviour Crawly.Spider
+  use Crawly.Spider
 
   @impl Crawly.Spider
   def base_url(), do: "https://www.homebase.co.uk"

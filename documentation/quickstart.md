@@ -24,7 +24,7 @@ Goals:
    ```elixir
    # lib/crawly_example/esl_spider.ex
    defmodule EslSpider do
-     @behaviour Crawly.Spider
+     use Crawly.Spider
      alias Crawly.Utils
 
      @impl Crawly.Spider

@@ -43,6 +43,7 @@ defmodule Crawly.Settings do
           # Defines retries
           retry: retry(),
           middlewares: [middleware()],
-          pipelines: [pipeline()]
+          pipelines: [pipeline()],
+          on_spider_closed_callback: function()
         ]
 end

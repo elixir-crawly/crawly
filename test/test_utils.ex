@@ -22,6 +22,8 @@ defmodule TestUtils do
 end
 
 defmodule TestSpider do
+  use Crawly.Spider
+
   def base_url() do
     "https://www.example.com"
   end
