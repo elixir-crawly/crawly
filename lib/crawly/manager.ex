@@ -99,7 +99,7 @@ defmodule Crawly.Manager do
 
     maybe_stop_spider_by_itemcount_limit(
       state.name,
-      delta,
+      items_count,
       itemcount_limit
     )
 
