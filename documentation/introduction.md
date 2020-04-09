@@ -27,7 +27,7 @@ Here’s the code for a spider that scrapes blog posts from the Erlang Solutions
 
 ```elixir
 defmodule Esl do
-@behaviour Crawly.Spider
+  use Crawly.Spider
 
   @impl Crawly.Spider
   def base_url(), do: "https://www.erlang-solutions.com"

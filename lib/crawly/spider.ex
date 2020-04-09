@@ -24,5 +24,13 @@ defmodule Crawly.Spider do
 
   @callback override_settings() :: Crawly.Settings.t()
 
-  @optional_callbacks override_settings: 0
+  defmacro __using__(_opts) do
+    quote do
+      @behaviour Crawly.Spider
+
+      def override_settings(), do: []
+
+      defoverridable override_settings: 0
+    end
+  end
 end
