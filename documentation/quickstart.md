@@ -63,7 +63,7 @@ Goals:
        Crawly.Middlewares.DomainFilter,
        {Crawly.Middlewares.RequestOptions, [timeout: 30_000]},
        Crawly.Middlewares.UniqueRequest,
-       Crawly.Middlewares.UserAgent
+       {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
      ],
      pipelines: [
        {Crawly.Pipelines.Validate, fields: [:title, :url]},
