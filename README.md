@@ -80,9 +80,8 @@ historical archival.
        {Crawly.Pipelines.Validate, fields: [:url, :title]},
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
-      ],
-      port: 4001
+       {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp"}
+      ]
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
