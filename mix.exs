@@ -101,13 +101,12 @@ defmodule Crawly.Mixfile do
 
   defp extras do
     [
-      "documentation/introduction.md",
-      "documentation/quickstart.md",
       "documentation/tutorial.md",
       "documentation/basic_concepts.md",
       "documentation/configuration.md",
       "documentation/http_api.md",
-      "documentation/ethical_aspects.md"
+      "documentation/ethical_aspects.md",
+      "README.md": [title: "Introduction", file: "README.md"]
     ]
   end
 end

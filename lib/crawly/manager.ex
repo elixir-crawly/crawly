@@ -111,7 +111,7 @@ defmodule Crawly.Manager do
 
       maybe_stop_spider_by_timeout(
         state.name,
-        items_count,
+      delta,
         closespider_timeout_limit
       )
 

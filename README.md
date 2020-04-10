@@ -74,15 +74,14 @@ historical archival.
      middlewares: [
        Crawly.Middlewares.DomainFilter,
        Crawly.Middlewares.UniqueRequest,
-       Crawly.Middlewares.UserAgent
+       {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
      ],
      pipelines: [
        {Crawly.Pipelines.Validate, fields: [:url, :title]},
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.7.0
-      ],
-      port: 4001
+       {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp"}
+      ]
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
@@ -108,7 +107,7 @@ You can read more here:
 
 1. [x] Pluggable HTTP client
 2. [x] Retries support
-3. [ ] Cookies support
+3. [x] Cookies support
 4. [x] XPath support - can be actually done with meeseeks
 5. [ ] Project generators (spiders)
 6. [ ] UI for jobs management
