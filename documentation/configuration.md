@@ -56,11 +56,11 @@ default: :disabled
 
 An integer which specifies a number of items. If the spider scrapes more than that amount and those items are passed by the item pipeline, the spider will be closed. If set to :disabled the spider will not be stopped.
 
-### closespider_timeout :: pos_integer() | :disabled
+### closespider_timeout :: pos_integer()
 
-default: nil
+default: nil (disabled by default)
 
-Defines a minimal amount of items which needs to be scraped by the spider within the given timeframe (30s). If the limit is not reached by the spider - it will be stopped.
+Defines a minimal amount of items which needs to be scraped by the spider within the given timeframe (1m). If the limit is not reached by the spider - it will be stopped.
 
 
 ### concurrent_requests_per_domain :: pos_integer()
