@@ -1,7 +1,7 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
-  @version "0.9.0"
+  @version "0.10.0_dev"
 
   def project do
     [
@@ -41,8 +41,7 @@ defmodule Crawly.Mixfile do
       name: "crawly",
       licenses: ["Apache 2.0"],
       links: %{
-        "GitHub" => "https://github.com/oltarasenko/crawly",
-        "Docs" => "https://oltarasenko.github.io/crawly/"
+        "GitHub" => "https://github.com/oltarasenko/crawly"
       }
     ]
   end
@@ -69,8 +68,7 @@ defmodule Crawly.Mixfile do
       source_ref: "v#{@version}",
       logo: "documentation/assets/logo.png",
       extra_section: "documentation",
-      main: "introduction",
-      #      assets: "guides/assets",
+      main: "readme",
       formatters: ["html"],
       groups_for_modules: [
         "Building Spiders": [
@@ -95,7 +93,6 @@ defmodule Crawly.Mixfile do
         Crawly.Middlewares,
         Crawly.Pipelines
       ]
-      #      groups_for_extras: groups_for_extras()
     ]
   end
 
@@ -106,7 +103,7 @@ defmodule Crawly.Mixfile do
       "documentation/configuration.md",
       "documentation/http_api.md",
       "documentation/ethical_aspects.md",
-      "README.md": [title: "Introduction", file: "README.md"]
+      "readme.md": [title: "Introduction", file: "README.md"]
     ]
   end
 end
