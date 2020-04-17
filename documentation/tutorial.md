@@ -36,8 +36,6 @@ This will create a tutorial directory with the following contents:
 ```bash
 tutorial
 ├── README.md
-├── config
-│   └── config.exs
 ├── lib
 │   ├── tutorial
 │   │   └── application.ex
@@ -53,9 +51,9 @@ Switch to the project folder: `cd ./tutorial` and update the mix.exs
 file with the following code:
 
 ```elixir
-    def deps do
+    defp deps do
       [
-        {:crawly, "~> 0.8.0"},
+        {:crawly, "~> 0.9.0"},
         {:floki, "~> 0.26.0"}
       ]
     end
@@ -70,7 +68,7 @@ extract information from a given website. The spider must implement
 the spider behaviour (it's required to implement `parse_item/1`, `init/0`,
 `base_url/0` callbacks)
 
-This is the code for our first spider. Save it in a file name
+This is the code for our first spider. Save it in a file named
 homebase.ex under the lib/tutorial/spiders directory of your project.
 
 ```elixir
@@ -116,14 +114,14 @@ some functions:
 To put our spider to work, go to the project’s top level directory and
 run:
 
-1. iex -S mix - It will start the Elixir application which we have
-   created, and will open interactive console
+1. `iex -S mix` - It will start the Elixir application which we have
+   created, and will open interactive console.
 2. Execute the following command in the opened Elixir console:
    `Crawly.Engine.start_spider(Homebase)`
 
 You will get an output similar to this:
 
-```elixir
+```
 iex(2)> Crawly.Engine.start_spider(Homebase)
 
 14:07:50.188 [debug] Starting the manager for Elixir.Homebase
@@ -145,9 +143,9 @@ Response objects and calls the callback function associated with the
 request passing the response as argument.
 
 In our case we have not defined any data to be returned by the
-`parse_item` callback. And in our the Crawly worker processes
-(processes responsible for downloading requests) did not have work
-to do. And in the cases like that, they will slow down progressively,
+`parse_item` callback. And the Crawly worker processes
+(processes responsible for downloading requests) did not have any work
+to do. And in cases like that, they will slow down progressively,
 until the switch off (which happened because the Spider was not
 extracting items fast enough).
 
@@ -159,7 +157,7 @@ please hold on. We're going to cover it in the next section.
 The best way to learn how to extract data with Crawly is trying the
 selectors in Crawly shell.
 
-1. Start the Elixir shell using `iex -S mix` command
+1. Start the Elixir shell using `iex -S mix` command.
 2. Now you can fetch a given HTTP response using the following
    command:
    `response = Crawly.fetch("https://www.homebase.co.uk/our-range/tools")`
@@ -167,46 +165,77 @@ selectors in Crawly shell.
 You will see something like:
 
 ```
-{:ok,
- %HTTPoison.Response{
-   body: "[response body here...]"
-   headers: [
-     {"Date", "Fri, 24 May 2019 02:37:26 GMT"},
-     {"Content-Type", "text/html; charset=utf-8"},
-     {"Transfer-Encoding", "chunked"},
-     {"Connection", "keep-alive"},
-     {"Cache-Control", "no-cache, no-store"},
-     {"Pragma", "no-cache"},
-     {"Expires", "-1"},
-     {"Vary", "Accept-Encoding"},
-     {"Set-Cookie", "Bunnings.Device=default; path=/"},
-     {"Set-Cookie",
-      "ASP.NET_SessionId=bcb2deqlapednir0lysulo1h; path=/; HttpOnly"},
-     {"Set-Cookie", "Bunnings.Device=default; path=/"},
-     {"Set-Cookie",
-      "ASP.NET_SessionId=bcb2deqlapednir0lysulo1h; path=/; HttpOnly"},
-     {"Set-Cookie", "Bunnings.UserType=RetailUser; path=/"},
-     ....,
-     {"Set-Cookie",
-      "__AntiXsrfToken=fd198cd78d1b4826ba00c24c3af1ec56; path=/; HttpOnly"},
-     {"Server", "cloudflare"},
-     {"CF-RAY", "4dbbe33fae7e8b20-KBP"}
-   ],
-   request: %HTTPoison.Request{
-     body: "",
-     headers: [],
-     method: :get,
-     options: [],
-     params: %{},
-     url: "https://www.homebase.co.uk/our-range/tools"
-   },
-   request_url: "https://www.homebase.co.uk/our-range/tools",
-   status_code: 200
- }}
+%HTTPoison.Response{
+  body: "[response body here...]"
+  headers: [
+    {"Date", "Fri, 17 Apr 2020 10:34:35 GMT"},
+    {"Content-Type", "text/html; charset=utf-8"},
+    {"Transfer-Encoding", "chunked"},
+    {"Connection", "keep-alive"},
+    {"Set-Cookie",
+     "__cfduid=d4c96698cfcfdfc9c1ef44ecb162b1cce1587119674; expires=Sun, 17-May-20 10:34:34 GMT; path=/; domain=.homebase.co.uk; HttpOnly; SameSite=Lax; Secure"},
+    {"Cache-Control", "no-cache, no-store"},
+    {"Pragma", "no-cache"},
+    {"Expires", "-1"},
+    {"Vary", "Accept-Encoding"},
+    {"Set-Cookie", "Bunnings.Device=default; path=/"},
+    {"Set-Cookie",
+     "ASP.NET_SessionId=knvfhxsyghuqtrki0jgn4put; path=/; HttpOnly; SameSite=Lax"},
+    {"Set-Cookie", "Bunnings.Device=default; path=/"},
+    {"Set-Cookie",
+     "ASP.NET_SessionId=knvfhxsyghuqtrki0jgn4put; path=/; HttpOnly; SameSite=Lax"},
+    {"Set-Cookie", "Bunnings.UserType=RetailUser; path=/"},
+    {"Set-Cookie",
+     "Bunnings.NearestStoreID=335; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.NearestStoreName=Milton Keynes; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.NearestStoreNumber=0335; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.Region=Homebase; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.NearestStoreDisableOnlineOrderFulfilment=False; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.NearestStoreIsRemote=False; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.SelectedSuburbID=; expires=Tue, 07-Apr-2020 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "Bunnings.SelectedPostcode=; expires=Tue, 07-Apr-2020 10:34:35 GMT; path=/"},
+    {"Set-Cookie",
+     "__AntiXsrfToken=7692612ffe8647c28ca73c13305b6ea5; path=/; HttpOnly"},
+    {"Set-Cookie",
+     "__RequestVerificationToken=PQTUGsUtAc3gP5g74Tl1pNnDJwEZRaB44GLa5d8HuYWHBELhBioOkKtnJXZbSyvgpjYs4nP4eTGyn84xtGDTT4JdhIU1; path=/; HttpOnly"},
+    {"Set-Cookie",
+     "CookieBannerDisplay=false; domain=www.homebase.co.uk; expires=Fri, 15-May-2020 10:34:35 GMT; path=/; HttpOnly"},
+    {"COMMERCE-SERVER-SOFTWARE", "Commerce Server, Enterprise Edition"},
+    {"X-Server-Region", "Homebase"},
+    {"X-Frame-Options", "SAMEORIGIN"},
+    {"Set-Cookie",
+     "ApplicationGatewayAffinity=2929f261e1172183e7d5c6414639aaa821a8c183104063db93e46d4a48864fbe;Path=/;Domain=www.homebase.co.uk"},
+    {"Set-Cookie",
+     "ApplicationGatewayAffinityCORS=2929f261e1172183e7d5c6414639aaa821a8c183104063db93e46d4a48864fbe;Path=/;Domain=www.homebase.co.uk;SameSite=None;Secure"},
+    {"CF-Cache-Status", "DYNAMIC"},
+    {"Expect-CT",
+     "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\""},
+    {"Server", "cloudflare"},
+    {"CF-RAY", "58557e8f1e96ffd4-WAW"},
+    {"cf-request-id", "02294d6d6f0000ffd430ad9200000001"}
+  ], 
+  request: %HTTPoison.Request{
+    body: "",
+    headers: [],
+    method: :get,
+    options: [],
+    params: %{},
+    url: "https://www.homebase.co.uk/our-range/tools"
+  },
+  request_url: "https://www.homebase.co.uk/our-range/tools",
+  status_code: 200
+}
 ```
 
 Using the shell, you can try selecting elements using Floki with the
-response. Lets say that we want to extract all product categories links from the
+response. Let's say that we want to extract all product categories links from the
 page above:
 
 ```
@@ -221,7 +250,7 @@ document |> Floki.find("section.wrapper") |> Floki.find("div.article-tiles.artic
 
 The result of running the command above is a list of elements which
 contain href attribute of links selected with
-`a.category-block-heading__title` css selector. These URLs will be
+`a.category-block-heading__title` CSS selector. These URLs will be
 used in order to feed Crawly with requests to follow.
 
 In order to find the proper CSS selectors to use, you might find
@@ -332,7 +361,24 @@ end
 
 ```
 
-If you run this spider `Crawly.Engine.start_spider(Homebase)`, it will output the extracted data with the log:
+You will also need to tell Crawly where to store the scraped data. Create `config/config.exs` file with the following
+contents:
+```elixir
+use Mix.Config
+
+config :crawly,
+  pipelines: [
+    Crawly.Pipelines.JSONEncoder,
+    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
+  ]
+```
+The scraped data will now be stored in a CSV file under `/tmp` directory on your filesystem. The name of the file
+will be the same as our spider name - in our case `Homebase.csv`.
+
+If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)` again, it will output the extracted data 
+with the log:
+
+TODO: I can't see any "Scraped" messages like these below. Has that been removed on purpose or is a bug?
 
 ```
 17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386", title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
@@ -348,15 +394,7 @@ Also you will see messages like:
 17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xl_p275607, as it's already processed
 ```
 
-That's because Crawly filters out requests which it has already
-visited during the current run.
-
-## Where the data is stored afterwords?
-
-You might wonder where is the resulting data is located by default?
-Well the default location of the scraped data is under the /tmp
-folder. This can be controlled by the `base_store_path` variable in
-the Crawly configuration (`:crawly`, `:base_store_path`).
+That's because Crawly filters out requests which it has already visited during the current run.
 
 ## Next steps
 
