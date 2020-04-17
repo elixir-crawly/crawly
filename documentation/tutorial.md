@@ -178,47 +178,7 @@ You will see something like:
     {"Pragma", "no-cache"},
     {"Expires", "-1"},
     {"Vary", "Accept-Encoding"},
-    {"Set-Cookie", "Bunnings.Device=default; path=/"},
-    {"Set-Cookie",
-     "ASP.NET_SessionId=knvfhxsyghuqtrki0jgn4put; path=/; HttpOnly; SameSite=Lax"},
-    {"Set-Cookie", "Bunnings.Device=default; path=/"},
-    {"Set-Cookie",
-     "ASP.NET_SessionId=knvfhxsyghuqtrki0jgn4put; path=/; HttpOnly; SameSite=Lax"},
-    {"Set-Cookie", "Bunnings.UserType=RetailUser; path=/"},
-    {"Set-Cookie",
-     "Bunnings.NearestStoreID=335; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.NearestStoreName=Milton Keynes; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.NearestStoreNumber=0335; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.Region=Homebase; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.NearestStoreDisableOnlineOrderFulfilment=False; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.NearestStoreIsRemote=False; expires=Sat, 17-Apr-2021 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.SelectedSuburbID=; expires=Tue, 07-Apr-2020 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "Bunnings.SelectedPostcode=; expires=Tue, 07-Apr-2020 10:34:35 GMT; path=/"},
-    {"Set-Cookie",
-     "__AntiXsrfToken=7692612ffe8647c28ca73c13305b6ea5; path=/; HttpOnly"},
-    {"Set-Cookie",
-     "__RequestVerificationToken=PQTUGsUtAc3gP5g74Tl1pNnDJwEZRaB44GLa5d8HuYWHBELhBioOkKtnJXZbSyvgpjYs4nP4eTGyn84xtGDTT4JdhIU1; path=/; HttpOnly"},
-    {"Set-Cookie",
-     "CookieBannerDisplay=false; domain=www.homebase.co.uk; expires=Fri, 15-May-2020 10:34:35 GMT; path=/; HttpOnly"},
-    {"COMMERCE-SERVER-SOFTWARE", "Commerce Server, Enterprise Edition"},
-    {"X-Server-Region", "Homebase"},
-    {"X-Frame-Options", "SAMEORIGIN"},
-    {"Set-Cookie",
-     "ApplicationGatewayAffinity=2929f261e1172183e7d5c6414639aaa821a8c183104063db93e46d4a48864fbe;Path=/;Domain=www.homebase.co.uk"},
-    {"Set-Cookie",
-     "ApplicationGatewayAffinityCORS=2929f261e1172183e7d5c6414639aaa821a8c183104063db93e46d4a48864fbe;Path=/;Domain=www.homebase.co.uk;SameSite=None;Secure"},
-    {"CF-Cache-Status", "DYNAMIC"},
-    {"Expect-CT",
-     "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\""},
-    {"Server", "cloudflare"},
-    {"CF-RAY", "58557e8f1e96ffd4-WAW"},
+    ...,
     {"cf-request-id", "02294d6d6f0000ffd430ad9200000001"}
   ], 
   request: %HTTPoison.Request{
@@ -375,18 +335,7 @@ config :crawly,
 The scraped data will now be stored in a CSV file under `/tmp` directory on your filesystem. The name of the file
 will be the same as our spider name - in our case `Homebase.csv`.
 
-If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)` again, it will output the extracted data 
-with the log:
-
-TODO: I can't see any "Scraped" messages like these below. Has that been removed on purpose or is a bug?
-
-```
-17:23:42.536 [debug] Scraped %{price: "£3.99", sku: "SKU:  486386", title: "Bon Safety EN20471 Hi viz Yellow Vest, size XL"}
-17:23:43.432 [debug] Scraped %{price: "£3.99", sku: "SKU:  486384", title: "Bon Safety EN20471 Hi viz Yellow Vest, size L"}
-17:23:42.389 [debug] Scraped %{price: "£5.25", sku: "SKU:  414464", title: "Toughbuilt 24in Wall Organizer"}
-```
-
-Also you will see messages like:
+If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)`, it will output messages like:
 
 ```
 17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xxl_p275608, as it's already processed
@@ -395,6 +344,20 @@ Also you will see messages like:
 ```
 
 That's because Crawly filters out requests which it has already visited during the current run.
+
+Go ahead and check the contents of your `/tmp/Homebase.csv` file. It should contain the scraped products like these:
+```
+{"title":"26 Inch Tool Chest (4 Drawer)","sku":"SKU:  555262","price":"£175"}
+{"title":"26 Inch Tool Chest (10 Drawer)","sku":"SKU:  555260","price":"£280"}
+{"title":"Draper 26 Inch Tool Chest (8 Drawer)","sku":"SKU:  518329","price":"£435"}
+{"title":"Draper 26 Inch Tool Chest (6 Drawer)","sku":"SKU:  518327","price":"£405"}
+{"title":"Draper 26 Inch Tool Chest (4 Drawer)","sku":"SKU:  518328","price":"£350"}
+{"title":"Draper 26 Inch Tool Storage Chest (9 Drawer)","sku":"SKU:  518312","price":"£150"}
+{"title":"Draper 26 Inch Tool Chest (5 Drawer)","sku":"SKU:  518311","price":"£139"}
+{"title":"3 Tier Tool Trolley","sku":"SKU:  555311","price":"£90"}
+{"title":"Draper 26 Inch Intermediate Tool Chest (2 Drawer)","sku":"SKU:  518309","price":"£80"}
+{"title":"2 Tier Tool Trolley","sku":"SKU:  555310","price":"£70"}
+```
 
 ## Next steps
 
