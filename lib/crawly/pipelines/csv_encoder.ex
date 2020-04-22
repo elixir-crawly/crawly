@@ -18,12 +18,8 @@ defmodule Crawly.Pipelines.CSVEncoder do
           {false, state :: map} | {csv_line :: String.t(), state :: map}
   def run(item, state, opts \\ []) do
     opts = Enum.into(opts, %{fields: nil})
-    fields = Map.get(opts, :fields, [])
-
-    case fields do
-      :undefined ->
-        # only for when both tuple and global config is not provided
-
+    case opts[:fields] do
+      fields when fields in [nil, []] ->
         Logger.error(
           "Dropping item: #{inspect(item)}. Reason: No fields declared for CSVEncoder"
         )
