@@ -1,4 +1,6 @@
 defmodule Crawly.Pipelines.DownloadMedia do
+  alias Crawly.AssetDownloader
+
   @moduledoc """
     TODO: documentation
   """
@@ -26,29 +28,9 @@ defmodule Crawly.Pipelines.DownloadMedia do
             {false, state}
 
           image_url ->
-            save_image(opts[:directory], image_url)
+            AssetDownloader.download_asset(opts[:directory], image_url)
             {item, state}
         end
     end
-  end
-
-  defp save_image(directory, url) do
-    :ok = File.mkdir_p(directory)
-
-    case HTTPoison.get(url) do
-      {:ok, response} ->
-        full_path = Path.join(directory, file_name(url))
-        :ok = File.write(full_path, response.body)
-      {:error, error} ->
-        Logger.error("Could not download image from URL #{url}: #{inspect(error)}")
-    end
-  end
-
-  # Returns the string after the last slash, e.g.:
-  # https://amazon.com/products/picture.jpg => picture.jpg
-  # It is usually a good approximation of a "file name" on the web
-  defp file_name(url) do
-    Regex.run(~r/(?<=\/)[^\/]+$/, url)
-    |> List.first()
   end
 end

@@ -9,11 +9,12 @@ defmodule Crawly.Application do
     import Supervisor.Spec, warn: false
     # List all child processes to be supervised
 
-    children = [
+      children = [
       worker(Crawly.Engine, []),
       supervisor(Crawly.EngineSup, []),
       {Crawly.DataStorage, []},
       {Crawly.RequestsStorage, []},
+      {Crawly.AssetDownloader, []},
       {DynamicSupervisor,
        strategy: :one_for_one,
        name: Crawly.RequestsStorage.WorkersSup},
@@ -21,8 +22,8 @@ defmodule Crawly.Application do
        strategy: :one_for_one,
        name: Crawly.DataStorage.WorkersSup},
       {Plug.Cowboy,
-       scheme: :http, 
-       plug: Crawly.API.Router, 
+       scheme: :http,
+       plug: Crawly.API.Router,
        options: [port: Application.get_env(:crawly, :port, 4001)]}
     ]
 
