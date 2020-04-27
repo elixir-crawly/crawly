@@ -32,7 +32,7 @@ defmodule Crawly.Fetchers.Splash do
       case Keyword.pop(client_options, :base_url, nil) do
         nil ->
           throw(
-            "The base_splash_url is not set. Splash fetcher can't be used! " <>
+            "The base_url is not set. Splash fetcher can't be used! " <>
             "Please set :base_url in fetcher options to continue. " <>
             "For example: " <>
             "fetcher: {Crawly.Fetchers.Splash, [base_url: <url>]}"
