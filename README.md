@@ -24,7 +24,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.8.0"},
+         {:crawly, "~> 0.9.0"},
          {:floki, "~> 0.26.0"}
        ]
    end
@@ -80,13 +80,13 @@ historical archival.
        {Crawly.Pipelines.Validate, fields: [:url, :title]},
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp"}
+       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
       ]
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
    - `iex(1)> Crawly.Engine.start_spider(EslSpider)`
-6. Results can be seen with: `$ cat /tmp/EslSpider.csv`
+6. Results can be seen with: `$ cat /tmp/EslSpider.jl`
 
 ## Browser rendering
 

@@ -322,5 +322,5 @@ You can try using Splash with Crawly in the following way:
 1. Start splash locally (e.g. using a docker image):
 ` docker run -it -p 8050:8050 scrapinghub/splash --max-timeout 300`
 2. Configure Crawly to use Splash: 
-`fetcher: {Crawly.Fetchers.Splash, [base_splash_url: "http://localhost:8050/render.html"]}`
+`fetcher: {Crawly.Fetchers.Splash, [base_url: "http://localhost:8050/render.html"]}`
 3. Now all your pages will be automatically rendered by Splash.  

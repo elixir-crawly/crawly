@@ -329,11 +329,11 @@ use Mix.Config
 config :crawly,
   pipelines: [
     Crawly.Pipelines.JSONEncoder,
-    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
+    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "jl"}
   ]
 ```
 The scraped data will now be stored in a CSV file under `/tmp` directory on your filesystem. The name of the file
-will be the same as our spider name - in our case `Homebase.csv`.
+will be the same as our spider name - in our case `Homebase.jl`.
 
 If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)`, it will output messages like:
 
@@ -345,7 +345,7 @@ If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)`, i
 
 That's because Crawly filters out requests which it has already visited during the current run.
 
-Go ahead and check the contents of your `/tmp/Homebase.csv` file. It should contain the scraped products like these:
+Go ahead and check the contents of your `/tmp/Homebase.jl` file. It should contain the scraped products like these:
 ```
 {"title":"26 Inch Tool Chest (4 Drawer)","sku":"SKU:  555262","price":"£175"}
 {"title":"26 Inch Tool Chest (10 Drawer)","sku":"SKU:  555260","price":"£280"}
