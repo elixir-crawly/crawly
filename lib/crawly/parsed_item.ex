@@ -5,7 +5,7 @@ defmodule Crawly.ParsedItem do
 
   defstruct items: [], requests: []
 
-  @type item() :: %{}
+  @type item() :: map()
   @type t :: %__MODULE__{
     items: [item()],
     requests: [Crawly.Request.t()]
