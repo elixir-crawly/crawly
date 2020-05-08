@@ -54,34 +54,9 @@ defmodule Crawly do
     end
   end
 
-
-  def list_spiders() do
-    Enum.reduce(
-      get_modules_from_applications(),
-      [],
-      fn mod, acc ->
-        try do
-          beh = Keyword.get(mod.__info__(:attributes), :behaviour)
-
-          case beh == [Crawly.Spider] do
-            true ->
-              [mod] ++ acc
-            false ->
-              acc
-          end
-
-        rescue _ -> acc end
-      end)
-  end
-
-  def get_modules_from_applications do
-    Enum.reduce(Application.started_applications(), [], fn {app, _descr, _vsn}, acc ->
-      case :application.get_key(app, :modules) do
-        {:ok, modules} ->
-          modules ++ acc
-        other ->
-          acc
-      end
-     end)
-  end
+  @doc """
+  Returns a list of known modules which implements Crawly.Spider behaviour
+  """
+  @spec list_spiders() :: [module()]
+  def list_spiders(), do: Crawly.Utils.list_spiders()
 end

@@ -103,6 +103,7 @@ defmodule Crawly.Mixfile do
       "documentation/configuration.md",
       "documentation/http_api.md",
       "documentation/ethical_aspects.md",
+      "documentation/experimental_ui.md",
       "readme.md": [title: "Introduction", file: "README.md"]
     ]
   end
