@@ -12,14 +12,6 @@ Our aim is to provide you with the following services:
 3. View and validate scraped items for quality assurance and data analysis purposes.
 4. View individual items and compare them with the actual website.
 
-## Project status
-
-Currently the project is in early alpha stage. We're constantly working on making
-it more stable. And currently running it for long running jobs.
-So far it did no show major problems, however we accept that there will be problems
-on such early stages! If you are one of those who has them, please don't 
-hesitate to report them here. 
-
 ## Setting it up
 
 You can find setup examples [here](https://github.com/oltarasenko/crawly_ui/tree/master/examples)
@@ -54,17 +46,16 @@ In order to try it:
 
 ## Live demo
 
-Live demo is available as well. However it might be a bit unstable due to continues
-releases process. Please give it a try and let us know what do you think
+Live demo is available as well. However it might be a bit unstable due to our continuous release process.
+Please give it a try and let us know what do you think
 
 [Live Demo](http://18.216.221.122/)  
 
 ## Items browser
 
 One of the cool features of the CrawlyUI is items browser which allows comparing
-extracted data with a target website loaded in the IFRAME. However due to the
-fact that most of the big sites would block iframes, it will not work for you.
-Unless you install special browser extension to ignore X-Frame headers. For example
+extracted data with a target website loaded in the IFRAME. However, as sites may block iframes, a workaround browser extension may be used to ignore X-Frame headers.
+For example:
 [Chrome extension](https://chrome.google.com/webstore/detail/ignore-x-frame-headers/gleekbfjekiniecknbkamfmkohkpodhe)
 
 ## Gallery

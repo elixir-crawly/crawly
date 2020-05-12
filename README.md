@@ -97,12 +97,9 @@ of asynchronous elements (for example parts loaded by AJAX).
 You can read more here:
 - [Browser Rendering](https://hexdocs.pm/crawly/basic_concepts.html#browser-rendering)
 
-## New: Experimental UI
+## Experimental UI
 
-We have made few first steps towards building UI for Crawly project which would
-simplify day by day spider management routines. It could be useful for the 
-cases when it's required to organize scraping on the highest level and to assure
-the highest quality of extracted data.
+The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
 
 ![](doc/assets/main_page.png?raw=true)
 ![](doc/assets/items_page.png?raw=true)
