@@ -14,7 +14,8 @@ defmodule Crawly.Pipelines.WriteToFile do
   ### Options
   In the absence of tuple-based options being passed, the pipeline will fallback onto the config of `:crawly`, `Crawly.Pipelines.WriteToFile`, for the `:folder` and `:extension` keys
 
-  - `:folder`, optional. The folder in which the file will be created. Defaults to system temp folder.
+  - `:folder`, optional. The folder in which the file will be created. Defaults to current project's folder.
+     If provided folder does not exist it's created.
   - `:extension`, optional. The file extension in which the file will be created with. Defaults to `jl`.
 
   ### Example Declaration
@@ -61,6 +62,7 @@ defmodule Crawly.Pipelines.WriteToFile do
 
     folder =
       Map.get(opts, :folder, "./")
+    :ok = maybe_create_folder(folder)
 
     extension =
       Map.get(opts, :extension, "jl")
@@ -106,6 +108,16 @@ defmodule Crawly.Pipelines.WriteToFile do
           }
           "
         )
+    end
+  end
+
+  # Creates a folder if it does not exist
+  defp maybe_create_folder(path) do
+    case File.exists?(path) do
+      false ->
+        File.mkdir_p(path)
+      true ->
+        :ok
     end
   end
 end
