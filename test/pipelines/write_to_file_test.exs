@@ -114,4 +114,49 @@ defmodule Pipelines.WriteToFileTest do
 
     assert File.exists?(@test_path)
   end
+
+  test "Timestamp is added to the file, if relevant option enabled", _context do
+    ts = "2020-03-03-01-01-01"
+    test_pid = self()
+
+    :meck.expect(
+      IO,
+      :write,
+      fn _, _item ->
+        :ok
+      end
+    )
+
+    :meck.expect(
+      File,
+      :open,
+      fn path, _opts ->
+        send(test_pid, path)
+      end
+    )
+
+    :meck.expect(
+      Crawly.Utils,
+      :get_timestamp_str,
+      fn -> ts end
+    )
+
+    pipelines = [
+      {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv", include_timestamp: true}
+    ]
+
+    item = @binary
+
+    state = %{spider_name: MySpider}
+
+    # run the pipeline
+    _result = Crawly.Utils.pipe(pipelines, item, state)
+
+    receive do
+      msg ->
+        assert String.contains?(msg, ts)
+    after
+        500 -> assert false
+    end
+  end
 end

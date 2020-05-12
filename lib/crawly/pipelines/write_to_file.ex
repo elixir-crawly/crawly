@@ -17,7 +17,7 @@ defmodule Crawly.Pipelines.WriteToFile do
   - `:folder`, optional. The folder in which the file will be created. Defaults to current project's folder.
      If provided folder does not exist it's created.
   - `:extension`, optional. The file extension in which the file will be created with. Defaults to `jl`.
-
+  - `:include_timestamp`, boolean, optional, false by default. Allows to add timestamp to the filename.
   ### Example Declaration
   ```
   pipelines: [
@@ -45,7 +45,11 @@ defmodule Crawly.Pipelines.WriteToFile do
           state :: %{
             optional(:write_to_file_fd) => pid | {:file_descriptor, atom, any}
           },
-          opts :: [folder: String.t(), extension: String.t()]
+          opts :: [
+            folder: String.t(),
+            extension: String.t(),
+            include_timestamp: boolean()
+          ]
         ) ::
           {item :: any,
            state :: %{write_to_file_fd: pid | {:file_descriptor, atom, any}}}
@@ -58,23 +62,27 @@ defmodule Crawly.Pipelines.WriteToFile do
 
   # No active FD
   def run(item, state, opts) do
-    opts = Enum.into(opts, %{folder: nil, extension: nil})
+    opts =
+      Enum.into(opts, %{folder: nil, extension: nil, include_timestamp: false})
 
-    folder =
-      Map.get(opts, :folder, "./")
+    folder = Map.get(opts, :folder, "./")
+
     :ok = maybe_create_folder(folder)
 
-    extension =
-      Map.get(opts, :extension, "jl")
+    extension = Map.get(opts, :extension, "jl")
 
-    fd = open_fd(state.spider_name, folder, extension)
+    filename = case  Map.get(opts, :include_timestamp, false) do
+      false -> "#{inspect(state.spider_name)}.#{extension}"
+      true ->
+        ts_string = Crawly.Utils.get_timestamp_str()
+        "#{inspect(state.spider_name)}_#{ts_string}.#{extension}"
+    end
+    fd = open_fd(folder, filename)
     :ok = write(fd, item)
     {item, Map.put(state, :write_to_file_fd, fd)}
   end
 
-  defp open_fd(spider_name, folder, extension) do
-    filename = "#{inspect(spider_name)}.#{extension}"
-    
+  defp open_fd(folder, filename) do
     # Open file descriptor to write items
     {:ok, io_device} =
       File.open(
@@ -116,6 +124,7 @@ defmodule Crawly.Pipelines.WriteToFile do
     case File.exists?(path) do
       false ->
         File.mkdir_p(path)
+
       true ->
         :ok
     end
