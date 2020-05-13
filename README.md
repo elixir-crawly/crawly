@@ -101,10 +101,10 @@ You can read more here:
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
 
-![](doc/assets/main_page.png?raw=true)
-![](doc/assets/items_page.png?raw=true)
-![](doc/assets/item_with_filters.png?raw=true)
-![](doc/assets/item_preview_example.png?raw=true)
+![](documentation/assets/main_page.png?raw=true)
+![](documentation/assets/items_page.png?raw=true)
+![](documentation/assets/item_with_filters.png?raw=true)
+![](documentation/assets/item_preview_example.png?raw=true)
 
 See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#content)
 
