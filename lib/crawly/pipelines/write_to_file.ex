@@ -17,7 +17,7 @@ defmodule Crawly.Pipelines.WriteToFile do
   - `:folder`, optional. The folder in which the file will be created. Defaults to current project's folder.
      If provided folder does not exist it's created.
   - `:extension`, optional. The file extension in which the file will be created with. Defaults to `jl`.
-  - `:include_timestamp`, boolean, optional, false by default. Allows to add timestamp to the filename.
+  - `:include_timestamp`, boolean, optional, true by default. Allows to add timestamp to the filename.
   ### Example Declaration
   ```
   pipelines: [
@@ -63,7 +63,7 @@ defmodule Crawly.Pipelines.WriteToFile do
   # No active FD
   def run(item, state, opts) do
     opts =
-      Enum.into(opts, %{folder: nil, extension: nil, include_timestamp: false})
+      Enum.into(opts, %{folder: nil, extension: nil, include_timestamp: true})
 
     folder = Map.get(opts, :folder, "./")
 
@@ -74,7 +74,7 @@ defmodule Crawly.Pipelines.WriteToFile do
     filename = case  Map.get(opts, :include_timestamp, false) do
       false -> "#{inspect(state.spider_name)}.#{extension}"
       true ->
-        ts_string = Crawly.Utils.get_timestamp_str()
+        ts_string = NaiveDateTime.utc_now() |> NaiveDateTime.to_string()
         "#{inspect(state.spider_name)}_#{ts_string}.#{extension}"
     end
     fd = open_fd(folder, filename)

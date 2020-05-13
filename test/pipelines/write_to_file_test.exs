@@ -8,8 +8,7 @@ defmodule Pipelines.WriteToFileTest do
     File.rm(@test_path)
 
     on_exit(fn ->
-      :meck.unload(IO)
-      :meck.unload(File)
+      :meck.unload()
     end)
   end
 
@@ -116,7 +115,7 @@ defmodule Pipelines.WriteToFileTest do
   end
 
   test "Timestamp is added to the file, if relevant option enabled", _context do
-    ts = "2020-03-03-01-01-01"
+    ts = "2020-05-13 09:06:22.668828"
     test_pid = self()
 
     :meck.expect(
@@ -136,9 +135,9 @@ defmodule Pipelines.WriteToFileTest do
     )
 
     :meck.expect(
-      Crawly.Utils,
-      :get_timestamp_str,
-      fn -> ts end
+      NaiveDateTime,
+      :to_string,
+      fn _ -> ts end
     )
 
     pipelines = [

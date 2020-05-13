@@ -139,13 +139,6 @@ defmodule Crawly.Utils do
     end
   end
 
-  @doc """
-  Returns a string representation of the current timestamp in yyy-mm-dd-hh-mm-ss
-  """
-  def get_timestamp_str() do
-    ts = NaiveDateTime.utc_now()
-    "#{ts.year}-#{ts.month}-#{ts.day}-#{ts.hour}-#{ts.minute}-#{ts.second}"
-  end
   ##############################################################################
   # Private functions
   ##############################################################################
