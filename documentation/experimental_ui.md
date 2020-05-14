@@ -1,5 +1,4 @@
 # Experimental UI
----
 
 We believe that web scraping is a process. It might seem easy to extract first 
 data items, however we believe that the data delivery requires a bit more efforts or
@@ -60,10 +59,10 @@ For example:
 
 ## Gallery
 
-![Main Page](assets/main_page.png?raw=true)
---
-![Items browser](assets/items_page.png?raw=true)
---
-![Items browser search](assets/item_with_filters.png?raw=true)
---
-![Items browser](assets/item_preview_example.png?raw=true)
+![Main Page](documentation/assets/main_page.png?raw=true)
+
+![Items browser](documentation/assets/items_page.png?raw=true)
+
+![Items browser search](documentation/assets/item_with_filters.png?raw=true)
+
+![Items browser](documentation/assets/item_preview_example.png?raw=true)

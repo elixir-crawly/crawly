@@ -17,9 +17,23 @@ defmodule Crawly.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
       elixirc_options: [warnings_as_errors: true],
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
+
+  defp aliases do
+    [
+      generate_documentation: &generate_documentation/1,
+    ]
+  end
+
+  defp generate_documentation(_) do
+    System.cmd("mix", ["docs"])
+    System.cmd("mkdir", ["-p", "./doc/documentation/assets"])
+    System.cmd("cp", ["-r", "documentation/assets", "doc/documentation"])
+  end
+
 
   defp elixirc_paths(:test), do: ["lib", "test"]
   defp elixirc_paths(_), do: ["lib"]
