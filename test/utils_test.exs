@@ -91,6 +91,12 @@ defmodule UtilsTest do
     assert Map.has_key?(state, :args) == false
   end
 
+  test "can find CrawlySpider behaviors" do
+    assert Enum.any?(
+      Crawly.Utils.list_spiders(),
+      fn x -> x == UtilsTestSpider end)
+  end
+
   defp expected_request(url) do
     %Crawly.Request{
       url: url,
@@ -105,3 +111,5 @@ defmodule UtilsTest do
     }
   end
 end
+
+

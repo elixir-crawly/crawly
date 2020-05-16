@@ -53,4 +53,10 @@ defmodule Crawly do
         spider.parse_item(response)
     end
   end
+
+  @doc """
+  Returns a list of known modules which implements Crawly.Spider behaviour
+  """
+  @spec list_spiders() :: [module()]
+  def list_spiders(), do: Crawly.Utils.list_spiders()
 end

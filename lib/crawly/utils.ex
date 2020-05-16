@@ -93,9 +93,9 @@ defmodule Crawly.Utils do
       catch
         error, reason ->
           Logger.error(
-            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{inspect(reason)}, args: #{
-              inspect(args)
-            }"
+            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{
+              inspect(reason)
+            }, args: #{inspect(args)}"
           )
 
           {item, state}
@@ -122,13 +122,14 @@ defmodule Crawly.Utils do
   taking precedence over the global settings defined in the config.
   """
   @spec get_settings(setting_name, spider_name, default) :: result
-    when setting_name: atom(),
-         spider_name: atom(),
-         default: term(),
-         result: term()
+        when setting_name: atom(),
+             spider_name: atom(),
+             default: term(),
+             result: term()
 
   def get_settings(setting_name, spider_name \\ nil, default \\ nil) do
     global_setting = Application.get_env(:crawly, setting_name, default)
+
     case get_spider_setting(setting_name, spider_name) do
       nil ->
         # No custom settings for a spider found
@@ -137,6 +138,40 @@ defmodule Crawly.Utils do
       custom_setting ->
         custom_setting
     end
+  end
+
+  @doc """
+  Returns a list of known modules which implements Crawly.Spider behaviour
+  """
+  @spec list_spiders() :: [module()]
+  def list_spiders() do
+    Enum.reduce(
+      get_modules_from_applications(),
+      [],
+      fn mod, acc ->
+        try do
+          behaviors =
+            Keyword.take(mod.__info__(:attributes), [:behaviour])
+            |> Keyword.values()
+            |> List.flatten()
+
+          module_has_spider_behaviour =
+            Enum.any?(behaviors, fn beh -> beh == Crawly.Spider end)
+
+          case module_has_spider_behaviour do
+            true ->
+              [mod] ++ acc
+
+            false ->
+              acc
+          end
+        rescue
+          error ->
+            Logger.debug("Could not get behaviour information for: #{inspect(error)}")
+            acc
+        end
+      end
+    )
   end
 
   ##############################################################################
@@ -152,11 +187,24 @@ defmodule Crawly.Utils do
   defp get_spider_setting(setting_name, spider_name) do
     case function_exported?(spider_name, :override_settings, 0) do
       true ->
-
         Keyword.get(spider_name.override_settings(), setting_name, nil)
 
       false ->
         nil
     end
+  end
+
+  @spec get_modules_from_applications() :: [module()]
+  def get_modules_from_applications do
+    Enum.reduce(Application.started_applications(), [], fn {app, _descr, _vsn},
+                                                           acc ->
+      case :application.get_key(app, :modules) do
+        {:ok, modules} ->
+          modules ++ acc
+
+        _other ->
+          acc
+      end
+    end)
   end
 end
