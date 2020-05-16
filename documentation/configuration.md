@@ -30,7 +30,7 @@ config :crawly,
     {Crawly.Pipelines.Validate, fields: [:id, :date]},
     {Crawly.Pipelines.DuplicatesFilter, item_id: :id},
     Crawly.Pipelines.JSONEncoder,
-    {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.6.0
+    {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp", include_timestamp: true}
     ]
 ```
 
