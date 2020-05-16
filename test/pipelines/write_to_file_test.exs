@@ -116,6 +116,7 @@ defmodule Pipelines.WriteToFileTest do
 
   test "Timestamp is added to the file by default", _context do
     ts = "2020-05-13 09:06:22.668828"
+    expected_ts = "2020_05_13_09_06_22_668828"
     test_pid = self()
 
     :meck.expect(
@@ -153,7 +154,7 @@ defmodule Pipelines.WriteToFileTest do
 
     receive do
       msg ->
-        assert String.contains?(msg, ts)
+        assert String.contains?(msg, expected_ts)
     after
       500 -> assert false
     end
@@ -179,7 +180,8 @@ defmodule Pipelines.WriteToFileTest do
     )
 
     pipelines = [
-      {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv", include_timestamp: false}
+      {Crawly.Pipelines.WriteToFile,
+       folder: "/tmp", extension: "csv", include_timestamp: false}
     ]
 
     item = @binary

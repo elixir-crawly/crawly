@@ -71,12 +71,20 @@ defmodule Crawly.Pipelines.WriteToFile do
 
     extension = Map.get(opts, :extension, "jl")
 
-    filename = case  Map.get(opts, :include_timestamp, false) do
-      false -> "#{inspect(state.spider_name)}.#{extension}"
-      true ->
-        ts_string = NaiveDateTime.utc_now() |> NaiveDateTime.to_string()
-        "#{inspect(state.spider_name)}_#{ts_string}.#{extension}"
-    end
+    filename =
+      case Map.get(opts, :include_timestamp, false) do
+        false ->
+          "#{inspect(state.spider_name)}.#{extension}"
+
+        true ->
+          ts_string =
+            NaiveDateTime.utc_now()
+            |> NaiveDateTime.to_string()
+            |> String.replace(~r/( |-|:|\.)/, "_")
+
+          "#{inspect(state.spider_name)}_#{ts_string}.#{extension}"
+      end
+
     fd = open_fd(folder, filename)
     :ok = write(fd, item)
     {item, Map.put(state, :write_to_file_fd, fd)}
