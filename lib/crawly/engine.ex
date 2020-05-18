@@ -13,12 +13,12 @@ defmodule Crawly.Engine do
 
   defstruct started_spiders: %{}
 
-  @spec start_spider(module()) ::
+  @spec start_spider(module(), binary()) ::
           :ok
           | {:error, :spider_already_started}
           | {:error, :atom}
-  def start_spider(spider_name) do
-    GenServer.call(__MODULE__, {:start_spider, spider_name})
+  def start_spider(spider_name, crawl_id \\ UUID.uuid1()) do
+    GenServer.call(__MODULE__, {:start_spider, spider_name, crawl_id})
   end
 
   @spec stop_spider(module(), reason) :: result
@@ -42,16 +42,34 @@ defmodule Crawly.Engine do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @spec get_crawl_id(atom()) :: {:error, :spider_not_running} | {:ok, binary()}
+  def get_crawl_id(spider_name) do
+    GenServer.call(__MODULE__, {:get_crawl_id, spider_name})
+  end
+
   @spec init(any) :: {:ok, __MODULE__.t()}
   def init(_args) do
     {:ok, %Crawly.Engine{}}
+  end
+
+  def handle_call({:get_crawl_id, spider_name}, _from, state) do
+    msg =
+      case Map.get(state.started_spiders, spider_name) do
+        nil ->
+          {:error, :spider_not_running}
+
+        {_pid, crawl_id} ->
+          {:ok, crawl_id}
+      end
+
+    {:reply, msg, state}
   end
 
   def handle_call(:running_spiders, _from, state) do
     {:reply, state.started_spiders, state}
   end
 
-  def handle_call({:start_spider, spider_name}, _form, state) do
+  def handle_call({:start_spider, spider_name, crawl_id}, _form, state) do
     result =
       case Map.get(state.started_spiders, spider_name) do
         nil ->
@@ -64,7 +82,7 @@ defmodule Crawly.Engine do
     {msg, new_started_spiders} =
       case result do
         {:ok, pid} ->
-          {:ok, Map.put(state.started_spiders, spider_name, pid)}
+          {:ok, Map.put(state.started_spiders, spider_name, {pid, crawl_id})}
 
         {:error, _} = err ->
           {err, state.started_spiders}
@@ -79,7 +97,7 @@ defmodule Crawly.Engine do
         {nil, _} ->
           {{:error, :spider_not_running}, state.started_spiders}
 
-        {pid, new_started_spiders} ->
+        {{pid, _crawl_id}, new_started_spiders} ->
           Crawly.EngineSup.stop_spider(pid)
 
           {:ok, new_started_spiders}
