@@ -18,4 +18,13 @@ defmodule EngineTest do
     assert started_status.state == :started
     assert started_status.pid
   end
+
+  test "start_all_spiders/0 starts all spiders in the engine" do
+    assert :ok = Crawly.Engine.start_all_spiders()
+    statuses = Crawly.Engine.list_spiders()
+
+    assert Enum.all(statuses, fn status ->
+             status.started == :started and not is_nil(status.pid)
+           end)
+  end
 end

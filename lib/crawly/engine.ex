@@ -24,6 +24,12 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
+  @spec start_all_spiders() ::
+          :ok
+  def start_all_spiders() do
+    GenServer.call(__MODULE__, {:start_all_spiders, nil})
+  end
+
   @spec stop_spider(module(), reason) :: result
         when reason: :itemcount_limit | :itemcount_timeout | atom(),
              result: :ok | {:error, :spider_not_running}
@@ -97,6 +103,28 @@ defmodule Crawly.Engine do
       end
 
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
+  end
+
+  def handle_call({:start_all_spiders, nil}, _form, state) do
+    stopped =
+      list_spiders()
+      |> Enum.filter(fn s -> s.status == :stopped end)
+
+    # start all stopped spiders
+    new_started_spiders =
+      Enum.reduce(stopped, state.started_spiders, fn spider_status, acc ->
+        Crawly.EngineSup.start_spider(spider_status.name)
+        |> case do
+          {:ok, pid} ->
+            {:ok, Map.put(acc, spider_status.name, pid)}
+
+          _ ->
+            acc
+        end
+      end)
+
+    # returns ok regardless of whether errors encountered
+    {:reply, :ok, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
   def handle_call({:stop_spider, spider_name}, _form, state) do
