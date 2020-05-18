@@ -93,8 +93,8 @@ defmodule Crawly.Engine do
 
   def handle_call({:start_all_spiders, nil}, _form, state) do
     stopped =
-      list_spiders()
-      |> Enum.filter(fn s -> s.status == :stopped end)
+      list_all_spider_status(state.started_spiders)
+      |> Enum.filter(fn s -> s.state == :stopped end)
 
     # start all stopped spiders
     new_started_spiders =
@@ -102,7 +102,7 @@ defmodule Crawly.Engine do
         Crawly.EngineSup.start_spider(spider_status.name)
         |> case do
           {:ok, pid} ->
-            {:ok, Map.put(acc, spider_status.name, pid)}
+            Map.put(acc, spider_status.name, pid)
 
           _ ->
             acc

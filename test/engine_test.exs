@@ -1,6 +1,16 @@
 defmodule EngineTest do
   use ExUnit.Case
 
+  setup do
+    stop_all()
+    on_exit(&stop_all/0)
+  end
+
+  defp stop_all do
+    Crawly.Utils.list_spiders()
+    |> Enum.each(fn s -> Crawly.Engine.stop_spider(s) end)
+  end
+
   test "list_spiders/0 lists all spiders and their current status in the engine" do
     assert spiders = Crawly.Engine.list_spiders()
     assert [_ | _] = spiders
@@ -23,8 +33,8 @@ defmodule EngineTest do
     assert :ok = Crawly.Engine.start_all_spiders()
     statuses = Crawly.Engine.list_spiders()
 
-    assert Enum.all(statuses, fn status ->
-             status.started == :started and not is_nil(status.pid)
+    assert Enum.all?(statuses, fn status ->
+             status.state == :started and not is_nil(status.pid)
            end)
   end
 end
