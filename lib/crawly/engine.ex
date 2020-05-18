@@ -10,6 +10,9 @@ defmodule Crawly.Engine do
 
   @type t :: %__MODULE__{started_spiders: started_spiders()}
   @type started_spiders() :: %{optional(module()) => identifier()}
+  @type list_spiders() :: [
+          %{name: module(), state: :stopped | :started, pid: identifier()}
+        ]
 
   defstruct started_spiders: %{}
 
@@ -33,6 +36,11 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 
+  @spec list_spiders() :: list_spiders()
+  def list_spiders() do
+    GenServer.call(__MODULE__, :list_spiders)
+  end
+
   @spec running_spiders() :: started_spiders()
   def running_spiders() do
     GenServer.call(__MODULE__, :running_spiders)
@@ -49,6 +57,24 @@ defmodule Crawly.Engine do
 
   def handle_call(:running_spiders, _from, state) do
     {:reply, state.started_spiders, state}
+  end
+
+  def handle_call(:list_spiders, _from, state) do
+    list =
+      Crawly.Utils.list_spiders()
+      |> Enum.map(fn name ->
+        %{
+          name: name,
+          state:
+            case Map.has_key?(state.started_spiders, name) do
+              true -> :started
+              false -> :stopped
+            end,
+          pid: Map.get(state.started_spiders, name)
+        }
+      end)
+
+    {:reply, list, state}
   end
 
   def handle_call({:start_spider, spider_name}, _form, state) do
