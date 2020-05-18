@@ -36,6 +36,20 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 
+  @spec stop_all_spiders() :: :ok
+  @doc "Stops all spiders, regardless of their current state. Runs :on_spider_closed_callback if available"
+  def stop_all_spiders() do
+    Crawly.Utils.list_spiders()
+    |> Enum.each(fn name ->
+      case Crawly.Utils.get_settings(:on_spider_closed_callback, name) do
+        nil -> :ignore
+        fun -> apply(fun, [:stop_all])
+      end
+
+      GenServer.call(__MODULE__, {:stop_spider, name})
+    end)
+  end
+
   @spec list_spiders() :: list_spiders()
   def list_spiders() do
     GenServer.call(__MODULE__, :list_spiders)
