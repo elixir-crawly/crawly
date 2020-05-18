@@ -60,21 +60,7 @@ defmodule Crawly.Engine do
   end
 
   def handle_call(:list_spiders, _from, state) do
-    list =
-      Crawly.Utils.list_spiders()
-      |> Enum.map(fn name ->
-        %{
-          name: name,
-          state:
-            case Map.has_key?(state.started_spiders, name) do
-              true -> :started
-              false -> :stopped
-            end,
-          pid: Map.get(state.started_spiders, name)
-        }
-      end)
-
-    {:reply, list, state}
+    {:reply, list_all_spider_status(state.started_spiders), state}
   end
 
   def handle_call({:start_spider, spider_name}, _form, state) do
@@ -112,5 +98,20 @@ defmodule Crawly.Engine do
       end
 
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
+  end
+
+  defp list_all_spider_status(started_spiders) do
+    Crawly.Utils.list_spiders()
+    |> Enum.map(fn name ->
+      %{
+        name: name,
+        state:
+          case Map.has_key?(started_spiders, name) do
+            true -> :started
+            false -> :stopped
+          end,
+        pid: Map.get(started_spiders, name)
+      }
+    end)
   end
 end
