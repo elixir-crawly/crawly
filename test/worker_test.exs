@@ -32,7 +32,7 @@ defmodule WorkerTest do
     test "Backoff increased when there is no work", context do
       send(context.crawler, :work)
       state = :sys.get_state(context.crawler)
-      assert state.backoff > 300
+      assert state.backoff > 25_000
     end
 
     test "Backoff interval restores if requests are in the system", context do
@@ -46,7 +46,7 @@ defmodule WorkerTest do
 
       send(context.crawler, :work)
       state = :sys.get_state(context.crawler)
-      assert state.backoff == 300
+      assert state.backoff == 25_000
     end
   end
 
