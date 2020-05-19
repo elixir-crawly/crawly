@@ -7,7 +7,12 @@ defmodule Crawly.Pipelines.Experimental.SendToUI do
 
   @impl Crawly.Pipeline
   def run(item, state, opts \\ []) do
-    job_tag = Map.get(state, :job_tag, UUID.uuid1())
+    job_tag =
+      Map.get_lazy(state, :job_tag, fn ->
+        {:ok, job_tag} = Crawly.Engine.get_crawl_id(state.spider_name)
+        job_tag
+      end)
+
     spider_name = state.spider_name |> Atom.to_string()
 
     case Keyword.get(opts, :ui_node) do
@@ -20,7 +25,7 @@ defmodule Crawly.Pipelines.Experimental.SendToUI do
       ui_node ->
         :rpc.cast(ui_node, CrawlyUI, :store_item, [
           spider_name,
-          item, 
+          item,
           job_tag,
           Node.self() |> to_string()
         ])
