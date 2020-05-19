@@ -1,5 +1,5 @@
 defmodule ManagerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup do
     Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
