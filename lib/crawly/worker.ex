@@ -8,7 +8,7 @@ defmodule Crawly.Worker do
   require Logger
 
   # define the default worker fetch interval.
-  @default_backoff 300
+  @default_backoff 25_000
 
   defstruct backoff: @default_backoff, spider_name: nil
 
@@ -17,7 +17,7 @@ defmodule Crawly.Worker do
   end
 
   def init([spider_name]) do
-    Crawly.Utils.send_after(self(), :work, @default_backoff)
+    Crawly.Utils.send_after(self(), :work, 0)
 
     {:ok, %Crawly.Worker{spider_name: spider_name, backoff: @default_backoff}}
   end

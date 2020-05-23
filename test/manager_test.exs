@@ -1,9 +1,10 @@
 defmodule ManagerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup do
     Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
     Application.put_env(:crawly, :closespider_itemcount, 10)
+    Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
 
     :meck.expect(HTTPoison, :get, fn _, _, _ ->
       {:ok,
@@ -16,7 +17,8 @@ defmodule ManagerTest do
     end)
 
     on_exit(fn ->
-      :meck.unload(HTTPoison)
+      :meck.unload()
+      Crawly.Engine.stop_spider(Manager.TestSpider)
       Application.put_env(:crawly, :manager_operations_timeout, 30_000)
       Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
       Application.put_env(:crawly, :closespider_timeout, 20)
@@ -24,12 +26,12 @@ defmodule ManagerTest do
     end)
   end
 
-  test "test normal spider behavior" do
+  test "max request per minute is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
     {:stored_requests, num} = Crawly.RequestsStorage.stats(Manager.TestSpider)
     assert num == 1
-    Process.sleep(5_00)
+    Process.sleep(1_00)
 
     {:stored_items, num} = Crawly.DataStorage.stats(Manager.TestSpider)
     assert num == 1
@@ -39,21 +41,30 @@ defmodule ManagerTest do
   end
 
   test "Closespider itemcount is respected" do
-    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
-    Application.put_env(:crawly, :closespider_timeout, 1)
-    Application.put_env(:crawly, :concurrent_requests_per_domain, 5)
-    Application.put_env(:crawly, :closespider_itemcount, 3)
+    Process.register(self(), :spider_closed_callback_test)
+
+    Application.put_env(:crawly, :manager_operations_timeout, 50)
+    Application.put_env(:crawly, :closespider_itemcount, 1)
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
-    Process.sleep(2_000)
+    assert_receive :itemcount_timeout
+
     assert %{} == Crawly.Engine.running_spiders()
   end
 
   test "Closespider timeout is respected" do
-    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
-    Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
+
+    Process.register(self(), :spider_closed_callback_test)
+
+    # Ignore closespider_itemcount
+    Application.put_env(:crawly, :closespider_itemcount, :disabled)
+
+    Application.put_env(:crawly, :closespider_timeout, 10)
+
+    Application.put_env(:crawly, :manager_operations_timeout, 50)
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    Process.sleep(2_000)
+
+    assert_receive :itemcount_timeout
     assert %{} == Crawly.Engine.running_spiders()
   end
 
@@ -62,17 +73,6 @@ defmodule ManagerTest do
 
     assert {:error, :spider_already_started} ==
              Crawly.Engine.start_spider(Manager.TestSpider)
-
-    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
-  end
-
-  test "Can't stop the spider which is not started already started spider" do
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-
-    assert {:error, :spider_already_started} ==
-             Crawly.Engine.start_spider(Manager.TestSpider)
-
-    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
   end
 
   test "Spider closed callback is called when spider is stopped" do
