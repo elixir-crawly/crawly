@@ -26,7 +26,7 @@ defmodule ManagerTest do
     end)
   end
 
-  test "test normal spider behavior" do
+  test "max request per minute is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
     {:stored_requests, num} = Crawly.RequestsStorage.stats(Manager.TestSpider)
