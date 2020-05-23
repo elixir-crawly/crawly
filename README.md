@@ -142,3 +142,7 @@ We would gladly accept your contributions!
 
 ## Documentation
 Please find documentation on the [HexDocs](https://hexdocs.pm/crawly/)
+
+## Production usages
+
+Using Crawly on production? Please let us know about your case!
