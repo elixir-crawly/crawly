@@ -111,7 +111,7 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 ## Documentation
 
 - [API Reference](https://hexdocs.pm/crawly/api-reference.html#content)
-- [Quickstart](https://hexdocs.pm/crawly/quickstart.html)
+- [Quickstart](https://hexdocs.pm/crawly/readme.html#quickstart)
 - [Tutorial](https://hexdocs.pm/crawly/tutorial.html)
 
 ## Roadmap
