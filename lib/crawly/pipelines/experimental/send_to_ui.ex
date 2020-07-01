@@ -20,7 +20,7 @@ defmodule Crawly.Pipelines.Experimental.SendToUI do
       ui_node ->
         :rpc.cast(ui_node, CrawlyUI, :store_item, [
           spider_name,
-          item, 
+          item,
           job_tag,
           Node.self() |> to_string()
         ])

@@ -23,8 +23,7 @@ defmodule Crawly.Middlewares.UserAgent do
 
     new_headers = List.keydelete(request.headers, "User-Agent", 0)
 
-    user_agents =
-      Map.get(opts, :user_agents, ["Crawly Bot 1.0"])
+    user_agents = Map.get(opts, :user_agents, ["Crawly Bot 1.0"])
 
     useragent = Enum.random(user_agents)
 

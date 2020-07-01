@@ -18,13 +18,11 @@ defmodule WorkerTest do
           {Crawly.Worker, [spider_name]}
         )
 
-      on_exit(
-        fn ->
-          :meck.unload(Crawly.RequestsStorage)
-          :ok = TestUtils.stop_process(workers_sup)
-          :ok = TestUtils.stop_process(storage_pid)
-        end
-      )
+      on_exit(fn ->
+        :meck.unload(Crawly.RequestsStorage)
+        :ok = TestUtils.stop_process(workers_sup)
+        :ok = TestUtils.stop_process(storage_pid)
+      end)
 
       {:ok, %{crawler: pid, name: spider_name}}
     end
@@ -65,24 +63,22 @@ defmodule WorkerTest do
           {Crawly.Worker, [spider_name]}
         )
 
-      {:ok, requests_storage_pid} = Crawly.RequestsStorage.start_worker(
-        spider_name
-      )
+      {:ok, requests_storage_pid} =
+        Crawly.RequestsStorage.start_worker(spider_name)
 
-      :ok = Crawly.RequestsStorage.store(
-        spider_name,
-        Crawly.Utils.request_from_url("https://www.example.com")
-      )
+      :ok =
+        Crawly.RequestsStorage.store(
+          spider_name,
+          Crawly.Utils.request_from_url("https://www.example.com")
+        )
 
-      on_exit(
-        fn ->
-          :meck.unload()
+      on_exit(fn ->
+        :meck.unload()
 
-          :ok = TestUtils.stop_process(workers_sup)
-          :ok = TestUtils.stop_process(storage_pid)
-          :ok = TestUtils.stop_process(requests_storage_pid)
-        end
-      )
+        :ok = TestUtils.stop_process(workers_sup)
+        :ok = TestUtils.stop_process(storage_pid)
+        :ok = TestUtils.stop_process(requests_storage_pid)
+      end)
 
       {
         :ok,
@@ -96,6 +92,7 @@ defmodule WorkerTest do
 
     test "Pages with http 404 are handled correctly", context do
       test_pid = self()
+
       :meck.expect(
         HTTPoison,
         :get,
@@ -135,6 +132,7 @@ defmodule WorkerTest do
 
     test "Pages with http timeout are handled correctly", context do
       test_pid = self()
+
       :meck.expect(
         HTTPoison,
         :get,
@@ -211,12 +209,12 @@ defmodule WorkerTest do
 
       {:stored_requests, num} =
         Crawly.DataStorage.Worker.stats(context.requests_storage)
+
       assert 0 == num
 
       assert Process.alive?(context.crawler)
     end
   end
-
 
   defp receive_mocked_response() do
     # Check to see if request is added back to the request storage,
@@ -224,11 +222,11 @@ defmodule WorkerTest do
     receive do
       {:request, req} ->
         req
-    after 1000 ->
-      false
+    after
+      1000 ->
+        false
     end
   end
-
 end
 
 defmodule Worker.CrashingTestSpider do

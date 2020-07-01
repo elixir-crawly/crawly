@@ -53,7 +53,6 @@ defmodule ManagerTest do
   end
 
   test "Closespider timeout is respected" do
-
     Process.register(self(), :spider_closed_callback_test)
 
     # Ignore closespider_itemcount
