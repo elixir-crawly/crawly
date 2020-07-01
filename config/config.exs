@@ -62,7 +62,10 @@ config :crawly,
     {Crawly.Pipelines.Validate, fields: [:title, :author, :time, :url]},
     {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
     Crawly.Pipelines.JSONEncoder
-  ]
+  ],
 
+  # Port for the Http Server on BenchRouter
+  hostname: "localhost",
+  benchmark_port: 8085
 
 import_config "#{Mix.env()}.exs"

@@ -24,7 +24,7 @@ defmodule Crawly.Mixfile do
 
   defp aliases do
     [
-      generate_documentation: &generate_documentation/1,
+      generate_documentation: &generate_documentation/1
     ]
   end
 
@@ -33,7 +33,6 @@ defmodule Crawly.Mixfile do
     System.cmd("mkdir", ["-p", "./doc/documentation/assets"])
     System.cmd("cp", ["-r", "documentation/assets", "doc/documentation"])
   end
-
 
   defp elixirc_paths(:test), do: ["lib", "test"]
   defp elixirc_paths(_), do: ["lib"]
