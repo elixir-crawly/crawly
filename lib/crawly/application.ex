@@ -29,8 +29,7 @@ defmodule Crawly.Application do
   end
 
   defp bench do
-    # Application.get_env(:crawly, :bench, []) do
-    if true do
+    if Application.get_env(:crawly, :bench, []) do
       [
         {Plug.Adapters.Cowboy,
          scheme: :http,

@@ -6,13 +6,16 @@ defmodule Crawly.Bench do
 
   alias Crawly.Manager
 
-  def start_benchmark do
+  @spec start_benchmark(atom) :: nil
+  def start_benchmark(spider_name) do
     {:ok, _} = Application.ensure_all_started(:crawly)
     :ok = Application.put_env(:crawly, :bench, true, persistent: true)
-    spider_name = Crawly.Bench.BenchSpider
     Crawly.Engine.start_spider(spider_name)
     wait_until(spider_name, 0)
   end
+
+  @spec start_benchmark :: nil
+  def start_benchmark, do: start_benchmark(Crawly.Bench.BenchSpider)
 
   defp wait_until(name, reduc, retries \\ 200, interval \\ 5000)
 
