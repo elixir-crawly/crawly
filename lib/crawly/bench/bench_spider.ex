@@ -2,7 +2,6 @@ defmodule Crawly.Bench.BenchSpider do
   @behaviour Crawly.Spider
 
   alias Crawly.Bench.BenchRouter
-  alias Crawly.Manager
   alias Crawly.Utils
 
   @impl Crawly.Spider
@@ -14,7 +13,7 @@ defmodule Crawly.Bench.BenchSpider do
   @impl Crawly.Spider
   def parse_item(response) do
     links = String.split(response.body, "|", trim: true)
-    Manager.performance_info("Elixir.#{__MODULE__}") # we need to add some delay before ask for info
+
     %Crawly.ParsedItem{
       :requests => Utils.requests_from_urls(links),
       :items => [%{request_url: response.request_url, urls: links}]

@@ -1,15 +1,17 @@
 defmodule Crawly.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-    # List all child processes to be supervised
+    opts = [strategy: :one_for_one, name: Crawly.Supervisor]
+    Supervisor.start_link(children(), opts)
+  end
 
-    children = [
+  defp children do
+    import Supervisor.Spec, warn: false
+
+    [
       worker(Crawly.Engine, []),
       supervisor(Crawly.EngineSup, []),
       {Crawly.DataStorage, []},
@@ -21,16 +23,20 @@ defmodule Crawly.Application do
       {Plug.Cowboy,
        scheme: :http,
        plug: Crawly.API.Router,
-       options: [port: Application.get_env(:crawly, :port, 4001)]},
-      {Plug.Adapters.Cowboy,
-       scheme: :http,
-       plug: Crawly.Bench.BenchRouter,
-       options: [port: Application.get_env(:crawly, :benchmark_port, 8085)]}
+       options: [port: Application.get_env(:crawly, :port, 4001)]}
+      | bench()
     ]
+  end
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Crawly.Supervisor]
-    Supervisor.start_link(children, opts)
+  defp bench do
+    # Application.get_env(:crawly, :bench, []) do
+    if true do
+      [
+        {Plug.Adapters.Cowboy,
+         scheme: :http,
+         plug: Crawly.Bench.BenchRouter,
+         options: [port: Application.get_env(:crawly, :benchmark_port, 8085)]}
+      ]
+    end
   end
 end

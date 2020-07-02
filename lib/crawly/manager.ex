@@ -33,14 +33,18 @@ defmodule Crawly.Manager do
 
   alias Crawly.Utils
 
-  def performance_info(spider_name) do
-    GenServer.call(via_tuple(spider_name), :get_state)
+  def collect_metrics(spider_name) do
+    GenServer.call(via_tuple(spider_name), :collect_metrics)
   end
+
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
-    {:ok, _} = Registry.start_link(keys: :unique, name: :spider_process_registry)
+
+    {:ok, _} =
+      Registry.start_link(keys: :unique, name: :spider_process_registry)
+
     name = via_tuple(spider_name)
-    Server.start_link(__MODULE__, spider_name, keys: :unique, name: name)
+    GenServer.start_link(__MODULE__, spider_name, keys: :unique, name: name)
   end
 
   def init(spider_name) do
@@ -88,12 +92,11 @@ defmodule Crawly.Manager do
      %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
-  def handle_call(:get_state, _, state) do
+  def handle_call(:collect_metrics, _, state) do
     info = :erlang.process_info(self())
-    total_heap_size = Keyword.get(info, :total_heap_size)
-    heap_size = Keyword.get(info, :heap_size)
-    Logger.info("Mem use: #{total_heap_size - heap_size}")
-    {:reply, state, state}
+    {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
+    delta = items_count - state.prev_scraped_cnt
+    {:reply, {:info, info, :delta, delta}, state}
   end
 
   def handle_info(:operations, state) do

@@ -10,8 +10,17 @@ defmodule Crawly.Bench.BenchRouter do
     %{"str" => str} = conn.params
     url = build_url(str)
 
+    num_of_requests_per_domain =
+      Crawly.Bench.BenchSpider.override_settings()[
+        :concurrent_requests_per_domain
+      ]
+
     num_of_workers =
-      Application.get_env(:crawly, :concurrent_requests_per_domain)
+      Application.get_env(
+        :crawly,
+        :concurrent_requests_per_domain,
+        num_of_requests_per_domain
+      )
 
     # Generating subset links from url
     links = Enum.map(1..num_of_workers, &(url <> "#{&1}|"))
