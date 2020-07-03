@@ -167,10 +167,7 @@ defmodule Crawly.Utils do
           end
         rescue
           error ->
-            Logger.debug(
-              "Could not get behaviour information for: #{inspect(error)}"
-            )
-
+            Logger.debug("Could not get behaviour information for: #{inspect(error)}")
             acc
         end
       end

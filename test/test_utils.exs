@@ -1,4 +1,5 @@
 defmodule TestUtils do
+
   def stop_process(pid) do
     :erlang.exit(pid, :shutdown)
     wait_pid(pid)
@@ -17,4 +18,5 @@ defmodule TestUtils do
 
     result
   end
+
 end

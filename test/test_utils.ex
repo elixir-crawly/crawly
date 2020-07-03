@@ -1,4 +1,5 @@
 defmodule TestUtils do
+
   def stop_process(pid) do
     :erlang.exit(pid, :shutdown)
     wait_pid(pid)
@@ -17,6 +18,7 @@ defmodule TestUtils do
 
     result
   end
+
 end
 
 defmodule TestSpider do
@@ -34,14 +36,12 @@ defmodule TestSpider do
 
   def parse_item(_response) do
     path = Enum.random(1..100)
-
     %Crawly.ParsedItem{
       :items => [
         %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
       ],
       :requests => [
-        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
-      ]
+        Crawly.Utils.request_from_url("https://www.example.com/#{path}")]
     }
   end
 end

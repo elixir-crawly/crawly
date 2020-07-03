@@ -147,8 +147,7 @@ defmodule Crawly.RequestsStorage do
               %{
                 id: :undefined,
                 restart: :temporary,
-                start:
-                  {Crawly.RequestsStorage.Worker, :start_link, [spider_name]}
+                start: {Crawly.RequestsStorage.Worker, :start_link, [spider_name]}
               }
             )
 
