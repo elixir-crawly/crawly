@@ -17,7 +17,7 @@ defmodule Crawly.Bench do
   @spec start_benchmark :: nil
   def start_benchmark, do: start_benchmark(Crawly.Bench.BenchSpider)
 
-  defp wait_until(name, reduc, retries \\ 200, interval \\ 5000)
+  defp wait_until(name, reduc, retries \\ 200, interval \\ 1000)
 
   defp wait_until(_, _, 0, _), do: raise("The spider doesn't stop")
 
