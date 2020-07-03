@@ -1,15 +1,34 @@
-defmodule Middlewares.UniqueRequestTest do
+defmodule Middlewares.UserAgentTest do
   use ExUnit.Case, async: false
 
-  @valid %Crawly.Request{url: "https://www.some_url.com"}
+  test "Adds a user agent to request header with global config" do
+    middlewares = [{Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}]
+    req = %Crawly.Request{}
+    state = %{}
 
-  test "Filters out requests non-unique urls" do
-    middlewares = [Crawly.Middlewares.UniqueRequest]
-    req = @valid
-    state = %{spider_name: :test_spider}
+    {req, _state} = Crawly.Utils.pipe(middlewares, req, state)
 
-    assert {_req, state} = Crawly.Utils.pipe(middlewares, req, state)
-    # run again, should drop the request
-    assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
+    {_, ua} =
+      Map.get(req, :headers)
+      |> Enum.find(fn {name, _value} -> name == "User-Agent" end)
+
+    assert ua == "My Custom Bot"
+  end
+
+  test "Adds a user agent to request header with tuple config" do
+    middlewares = [
+      {Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}
+    ]
+
+    req = %Crawly.Request{}
+    state = %{}
+
+    {req, _state} = Crawly.Utils.pipe(middlewares, req, state)
+
+    {_, ua} =
+      Map.get(req, :headers)
+      |> Enum.find(fn {name, _value} -> name == "User-Agent" end)
+
+    assert ua == "My Custom Bot"
   end
 end
