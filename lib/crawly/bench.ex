@@ -1,10 +1,11 @@
 defmodule Crawly.Bench do
   @moduledoc """
-  TODO
+  This module implements a simple benchmarking suite that spawns a local HTTP
+  server to exercise Crawly to the maximum possible speed
   """
   require Logger
 
-  alias Crawly.Manager
+  alias Crawly.Engine
 
   @spider_name Crawly.Bench.BenchSpider
 
@@ -22,7 +23,8 @@ defmodule Crawly.Bench do
   defp wait_until(name, reduc_num_of_items, retries \\ 200, interval \\ 1000)
 
   defp wait_until(spider_name, {_, _, items}, 0, _) do
-    Manager.stop_spider(spider_name)
+    Logger.info("Stopping #{inspect(spider_name)}")
+    Engine.stop_spider(spider_name, :normal)
     Logger.info("Max of #{items} requests/sec")
   end
 
@@ -30,19 +32,33 @@ defmodule Crawly.Bench do
     Process.sleep(interval)
 
     if Process.whereis(name) do
-      {:info, info, :items_count, items_count} = Manager.collect_metrics(name)
+      spiders = Engine.running_spiders()
+
+      {_, pid, :worker, _} =
+        Supervisor.which_children(Map.get(spiders, name))
+        |> Enum.find(&({Crawly.Manager, _, :worker, [Crawly.Manager]} = &1))
+
+      {:info, info, :items_count, items_count} =
+        GenServer.call(pid, :collect_metrics)
+
       reductions = Keyword.get(info, :reductions)
       total_heap_size = Keyword.get(info, :total_heap_size)
       heap_size = Keyword.get(info, :heap_size)
       mem = total_heap_size - heap_size
       items = items_count - num_of_items
+
       Logger.info(
         "Mem usage: #{mem} | Number of reductions since the last time: #{
           reductions - reduc
         } | Current crawl speed is: #{items} requests/sec"
       )
 
-      wait_until(name, {reduc, items_count, max(items, max_items)}, retries - 1, interval)
+      wait_until(
+        name,
+        {reduc, items_count, max(items, max_items)},
+        retries - 1,
+        interval
+      )
     end
   end
 end

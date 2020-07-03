@@ -33,18 +33,9 @@ defmodule Crawly.Manager do
 
   alias Crawly.Utils
 
-  def collect_metrics(spider_name) do
-    GenServer.call(via_tuple(spider_name), :collect_metrics)
-  end
-
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
-
-    {:ok, _} =
-      Registry.start_link(keys: :unique, name: :spider_process_registry)
-
-    name = via_tuple(spider_name)
-    GenServer.start_link(__MODULE__, spider_name, keys: :unique, name: name)
+    GenServer.start_link(__MODULE__, spider_name)
   end
 
   def init(spider_name) do
@@ -95,8 +86,7 @@ defmodule Crawly.Manager do
   def handle_call(:collect_metrics, _, state) do
     info = :erlang.process_info(self())
     {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
-    delta = items_count - state.prev_scraped_cnt
-    {:reply, {:info, info, :delta, delta}, state}
+    {:reply, {:info, info, :items_count, items_count}, state}
   end
 
   def handle_info(:operations, state) do
@@ -139,10 +129,6 @@ defmodule Crawly.Manager do
       )
 
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
-  end
-
-  defp via_tuple(spider_name) do
-    {:via, Registry, {:spider_process_registry, spider_name}}
   end
 
   defp maybe_stop_spider_by_itemcount_limit(spider_name, current, limit)
