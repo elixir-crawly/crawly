@@ -8,7 +8,7 @@ defmodule Crawly.Bench.BenchSpider do
   def base_url(), do: BenchRouter.build_url()
 
   @impl Crawly.Spider
-  def init(), do: [start_urls: [BenchRouter.build_url("asdf")]]
+  def init(), do: [start_urls: [BenchRouter.build_url(UUID.uuid1())]]
 
   @impl Crawly.Spider
   def parse_item(response) do
@@ -25,7 +25,6 @@ defmodule Crawly.Bench.BenchSpider do
     [
       concurrent_requests_per_domain: 50,
       closespider_itemcount: 100_000,
-      closespider_timeout: 50,
       pipelines: [
         {Crawly.Pipelines.CSVEncoder, fields: ~w(request_url urls)a},
         {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
