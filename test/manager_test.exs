@@ -26,6 +26,20 @@ defmodule ManagerTest do
     end)
   end
 
+  test "it is possible to collect metrics" do
+    spider = Manager.TestSpider
+    :ok = Crawly.Engine.start_spider(spider)
+    Process.sleep(1_00)
+    spiders = Crawly.Engine.running_spiders()
+
+    {_, pid, :worker, _} =
+      Supervisor.which_children(Map.get(spiders, spider))
+      |> Enum.find(&({Crawly.Manager, _, :worker, [Crawly.Manager]} = &1))
+
+    assert {:info, _, :items_count, _} = GenServer.call(pid, :collect_metrics)
+    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
+  end
+
   test "max request per minute is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
@@ -53,7 +67,6 @@ defmodule ManagerTest do
   end
 
   test "Closespider timeout is respected" do
-
     Process.register(self(), :spider_closed_callback_test)
 
     # Ignore closespider_itemcount
