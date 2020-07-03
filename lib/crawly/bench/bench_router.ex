@@ -7,23 +7,11 @@ defmodule Crawly.Bench.BenchRouter do
 
   get "/" do
     conn = fetch_query_params(conn, [])
-    %{"str" => str} = conn.params
-    url = build_url(str)
-
-    num_of_requests_per_domain =
-      Crawly.Bench.BenchSpider.override_settings()[
-        :concurrent_requests_per_domain
-      ]
-
-    num_of_workers =
-      Application.get_env(
-        :crawly,
-        :concurrent_requests_per_domain,
-        num_of_requests_per_domain
-      )
+    %{"id" => id} = conn.params
+    url = build_url(id)
 
     # Generating subset links from url
-    links = Enum.map(1..num_of_workers, &(url <> "#{&1}|"))
+    links = Enum.map(1..30, fn _ -> url <> "#{UUID.uuid1()}|" end)
 
     send_resp(conn, 200, links)
   end
@@ -41,5 +29,5 @@ defmodule Crawly.Bench.BenchRouter do
   end
 
   @spec build_url(String.t()) :: String.t()
-  def build_url(item), do: build_url() <> "/?str=" <> item
+  def build_url(item), do: build_url() <> "/?id=" <> item
 end
