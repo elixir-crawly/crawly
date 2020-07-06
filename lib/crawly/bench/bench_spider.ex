@@ -25,10 +25,7 @@ defmodule Crawly.Bench.BenchSpider do
     [
       concurrent_requests_per_domain: 50,
       closespider_itemcount: 100_000,
-      pipelines: [
-        {Crawly.Pipelines.CSVEncoder, fields: ~w(request_url urls)a},
-        {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "csv"}
-      ]
+      pipelines: []
     ]
   end
 end

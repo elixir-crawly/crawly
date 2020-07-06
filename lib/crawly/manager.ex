@@ -84,9 +84,7 @@ defmodule Crawly.Manager do
   end
 
   def handle_call(:collect_metrics, _, state) do
-    info = :erlang.process_info(self())
-    {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
-    {:reply, {:info, info, :items_count, items_count}, state}
+    {:reply, {:info, :erlang.process_info(self())}, state}
   end
 
   def handle_info(:operations, state) do

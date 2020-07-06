@@ -36,7 +36,7 @@ defmodule ManagerTest do
       Supervisor.which_children(Map.get(spiders, spider))
       |> Enum.find(&({Crawly.Manager, _, :worker, [Crawly.Manager]} = &1))
 
-    assert {:info, _, :items_count, _} = GenServer.call(pid, :collect_metrics)
+    assert {:info, _} = GenServer.call(pid, :collect_metrics)
     :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
   end
 
