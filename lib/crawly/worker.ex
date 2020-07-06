@@ -8,7 +8,7 @@ defmodule Crawly.Worker do
   require Logger
 
   # define the default worker fetch interval.
-  @default_backoff 25_000
+  @default_backoff 10_000
 
   defstruct backoff: @default_backoff, spider_name: nil
 
