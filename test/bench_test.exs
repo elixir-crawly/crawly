@@ -12,6 +12,6 @@ defmodule BenchTest do
     assert Code.ensure_loaded?(spider_name)
 
     assert capture_log(fn -> Crawly.Bench.start_benchmark() end) =~
-             "Current crawl speed is: 0 items/min"
+             "Current crawl speed is: "
   end
 end

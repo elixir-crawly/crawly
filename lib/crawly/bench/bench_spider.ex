@@ -23,7 +23,6 @@ defmodule Crawly.Bench.BenchSpider do
   @impl Crawly.Spider
   def override_settings() do
     [
-      concurrent_requests_per_domain: 50,
       closespider_itemcount: 100_000,
       pipelines: []
     ]

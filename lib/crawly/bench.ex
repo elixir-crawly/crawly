@@ -14,7 +14,7 @@ defmodule Crawly.Bench do
     {:ok, _} = Application.ensure_all_started(:crawly)
     :ok = Application.put_env(:crawly, :bench, true, persistent: true)
     Crawly.Engine.start_spider(spider_name)
-    wait_until(spider_name, {0, 0, 0})
+    wait_until(spider_name, {0, 0, 0, 0})
   end
 
   @spec start_benchmark :: nil
@@ -22,13 +22,18 @@ defmodule Crawly.Bench do
 
   defp wait_until(name, reduc_num_of_items, retries \\ 100, interval \\ 1000)
 
-  defp wait_until(spider_name, {_, _, items}, 0, _) do
+  defp wait_until(spider_name, {_, _, items, workers}, 0, _) do
     Logger.info("Stopping #{inspect(spider_name)}")
     Engine.stop_spider(spider_name, :normal)
-    Logger.info("Max of #{items} requests/sec")
+    Logger.info("Max of #{items} requests/sec with #{workers} workers")
   end
 
-  defp wait_until(name, {reduc, last_num_requests, acc_req}, retries, interval) do
+  defp wait_until(
+         name,
+         {reduc, last_num_requests, acc_req, _num_of_workers},
+         retries,
+         interval
+       ) do
     Process.sleep(interval)
 
     if Process.whereis(name) do
@@ -55,9 +60,20 @@ defmodule Crawly.Bench do
         } | Current crawl speed is: #{num_requests_now} requests/sec"
       )
 
+      num_of_workers = DynamicSupervisor.count_children(name)[:workers]
+
+      if rem(retries, 10) == 0 and retries != 100 do
+        Logger.info("Adding 10 workers for #{name}")
+
+        Enum.map(1..10, fn _x ->
+          DynamicSupervisor.start_child(name, {Crawly.Worker, [name]})
+        end)
+      end
+
       wait_until(
         name,
-        {reduc, num_requests_now, max(num_requests_now, acc_req)},
+        {reduc, num_requests_now, max(num_requests_now, acc_req),
+         num_of_workers},
         retries - 1,
         interval
       )
