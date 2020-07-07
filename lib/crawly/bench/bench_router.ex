@@ -8,7 +8,8 @@ defmodule Crawly.Bench.BenchRouter do
   get "/" do
     conn = fetch_query_params(conn, [])
     # Generating subset links from url
-    links = Enum.map(1..30, fn _ -> build_url(UUID.uuid1()) <> "|" end)
+    max = Enum.random([0, 0, 0, 0, 0, 0, 5, 5, 5, 20])
+    links = Enum.map(0..max, fn _ -> build_url(UUID.uuid1()) <> "|" end)
 
     send_resp(conn, 200, links)
   end
