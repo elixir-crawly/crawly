@@ -38,6 +38,7 @@ defmodule Crawly.Manager do
     GenServer.start_link(__MODULE__, spider_name)
   end
 
+  @impl true
   def init(spider_name) do
     # Getting spider start urls
     [start_urls: urls] = spider_name.init()
@@ -83,6 +84,18 @@ defmodule Crawly.Manager do
      %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
+  @impl true
+  def handle_cast({:add_workers, num_of_workers}, state) do
+    Logger.info("Adding #{num_of_workers} workers for #{state.name}")
+
+    Enum.each(1..num_of_workers, fn _ ->
+      DynamicSupervisor.start_child(state.name, {Crawly.Worker, [state.name]})
+    end)
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(:operations, state) do
     Process.cancel_timer(state.tref)
 
@@ -109,11 +122,11 @@ defmodule Crawly.Manager do
       |> Utils.get_settings(state.name)
       |> maybe_convert_to_integer()
 
-      maybe_stop_spider_by_timeout(
-        state.name,
+    maybe_stop_spider_by_timeout(
+      state.name,
       delta,
-        closespider_timeout_limit
-      )
+      closespider_timeout_limit
+    )
 
     tref =
       Process.send_after(
