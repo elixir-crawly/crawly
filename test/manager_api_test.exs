@@ -1,8 +1,6 @@
 defmodule ManagerAPITest do
   use ExUnit.Case, async: false
 
-  import ExUnit.CaptureLog
-
   alias Crawly.ManagerAPI
   alias Features.Manager.TestSpider
 
@@ -26,12 +24,6 @@ defmodule ManagerAPITest do
     end)
   end
 
-  # test "it can get the spider pid by name" do
-  #   pid = ManagerAPI.get_spider_pid_by_name(TestSpider)
-  #   state = :sys.get_state(pid)
-  #   assert TestSpider == state.name
-  # end
-
   test "it is possible to add more workers to a spider" do
     spider_name = TestSpider
     initial_number_of_workers = 1
@@ -41,9 +33,6 @@ defmodule ManagerAPITest do
 
     workers = 2
     assert :ok == ManagerAPI.add_workers(spider_name, workers)
-
-    assert capture_log(fn -> Process.sleep(500) end) =~
-             "Adding #{workers} workers for #{spider_name}"
 
     pid = Crawly.Engine.get_manager(spider_name)
     state = :sys.get_state(pid)
