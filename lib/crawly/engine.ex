@@ -22,11 +22,11 @@ defmodule Crawly.Engine do
   end
 
   @spec get_manager(module()) ::
-          pid() | {:error, :spider_non_exist} | {:error, :spider_not_found}
+          pid() | {:error, :spider_not_found}
   def get_manager(spider_name) do
     case Map.fetch(running_spiders(), spider_name) do
       :error ->
-        {:error, :spider_non_exist}
+        {:error, :spider_not_found}
 
       {:ok, pid_sup} ->
         Supervisor.which_children(pid_sup)
@@ -62,6 +62,19 @@ defmodule Crawly.Engine do
   @spec init(any) :: {:ok, __MODULE__.t()}
   def init(_args) do
     {:ok, %Crawly.Engine{}}
+  end
+
+  def handle_call({:get_manager, spider_name}, _, state) do
+    pid =
+      case Map.get(state.started_spiders, spider_name) do
+        nil ->
+          {:error, :spider_not_found}
+
+        pid ->
+          pid
+      end
+
+    {:reply, pid, state}
   end
 
   def handle_call(:running_spiders, _from, state) do
