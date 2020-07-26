@@ -28,6 +28,7 @@ defmodule Crawly.Request do
           | :mobile
           | :game_console
           | :tablet
+          | :ereader
 
   @type t :: %__MODULE__{
           url: url(),
