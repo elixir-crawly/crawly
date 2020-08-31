@@ -30,6 +30,23 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:start_spider, spider_name})
   end
 
+  @spec get_manager(module()) ::
+          pid() | {:error, :spider_not_found}
+  def get_manager(spider_name) do
+    case Map.fetch(running_spiders(), spider_name) do
+      :error ->
+        {:error, :spider_not_found}
+
+      {:ok, pid_sup} ->
+        Supervisor.which_children(pid_sup)
+        |> Enum.find(&({Crawly.Manager, _, :worker, [Crawly.Manager]} = &1))
+        |> case do
+          nil -> {:error, :spider_not_found}
+          {_, pid, :worker, _} -> pid
+        end
+    end
+  end
+
   @spec stop_spider(module(), reason) :: result
         when reason: :itemcount_limit | :itemcount_timeout | atom(),
              result:
@@ -71,6 +88,19 @@ defmodule Crawly.Engine do
     spiders = get_updated_known_spider_list()
 
     {:ok, %Crawly.Engine{known_spiders: spiders}}
+  end
+
+  def handle_call({:get_manager, spider_name}, _, state) do
+    pid =
+      case Map.get(state.started_spiders, spider_name) do
+        nil ->
+          {:error, :spider_not_found}
+
+        pid ->
+          pid
+      end
+
+    {:reply, pid, state}
   end
 
   def handle_call(:running_spiders, _from, state) do
