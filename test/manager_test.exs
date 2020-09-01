@@ -90,13 +90,13 @@ defmodule ManagerTest do
     assert %{} == Crawly.Engine.running_spiders()
   end
 
-  @tag timeout: 61_000
   test "spider does not close after 1 minute when closespider timeout is disabled" do
     Application.put_env(:crawly, :closespider_timeout, :disabled)
+    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
 
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
-    Process.sleep(60_000)
+    Process.sleep(1_001)
 
     refute %{} == Crawly.Engine.running_spiders()
 
