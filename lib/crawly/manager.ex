@@ -31,13 +31,26 @@ defmodule Crawly.Manager do
 
   use GenServer
 
-  alias Crawly.Utils
+  alias Crawly.{Engine, Utils}
+
+  @spec add_workers(module(), non_neg_integer()) ::
+          :ok | {:error, :spider_non_exist}
+  def add_workers(spider_name, num_of_workers) do
+    case Engine.get_manager(spider_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      pid ->
+        GenServer.cast(pid, {:add_workers, num_of_workers})
+    end
+  end
 
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
   end
 
+  @impl true
   def init(spider_name) do
     # Getting spider start urls
     [start_urls: urls] = spider_name.init()
@@ -83,6 +96,18 @@ defmodule Crawly.Manager do
      %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
+  @impl true
+  def handle_cast({:add_workers, num_of_workers}, state) do
+    Logger.info("Adding #{num_of_workers} workers for #{state.name}")
+
+    Enum.each(1..num_of_workers, fn _ ->
+      DynamicSupervisor.start_child(state.name, {Crawly.Worker, [state.name]})
+    end)
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(:operations, state) do
     Process.cancel_timer(state.tref)
 

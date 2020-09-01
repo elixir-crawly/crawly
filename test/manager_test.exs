@@ -25,6 +25,30 @@ defmodule ManagerTest do
     end)
   end
 
+  test "it is possible to add more workers to a spider" do
+    spider_name = Manager.TestSpider
+    :ok = Crawly.Engine.start_spider(spider_name)
+    initial_number_of_workers = 1
+
+    assert initial_number_of_workers ==
+             DynamicSupervisor.count_children(spider_name)[:workers]
+
+    workers = 2
+    assert :ok == Crawly.Manager.add_workers(spider_name, workers)
+
+    pid = Crawly.Engine.get_manager(spider_name)
+    state = :sys.get_state(pid)
+    assert spider_name == state.name
+
+    assert initial_number_of_workers + workers ==
+             DynamicSupervisor.count_children(spider_name)[:workers]
+  end
+
+  test "returns error when spider doesn't exist" do
+    assert {:error, :spider_not_found} ==
+             Crawly.Manager.add_workers(Manager.NonExistentSpider, 2)
+  end
+
   test "max request per minute is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
