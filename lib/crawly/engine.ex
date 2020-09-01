@@ -8,10 +8,19 @@ defmodule Crawly.Engine do
 
   use GenServer
 
-  @type t :: %__MODULE__{started_spiders: started_spiders()}
+  @type t :: %__MODULE__{
+          started_spiders: started_spiders(),
+          known_spiders: [module()]
+        }
   @type started_spiders() :: %{optional(module()) => identifier()}
 
-  defstruct started_spiders: %{}
+  @type spider_info() :: %{
+          name: module(),
+          status: :stopped | :started,
+          pid: identifier() | nil
+        }
+
+  defstruct(started_spiders: %{}, known_spiders: [])
 
   @spec start_spider(module()) ::
           :ok
@@ -40,7 +49,8 @@ defmodule Crawly.Engine do
 
   @spec stop_spider(module(), reason) :: result
         when reason: :itemcount_limit | :itemcount_timeout | atom(),
-             result: :ok | {:error, :spider_not_running}
+             result:
+               :ok | {:error, :spider_not_running} | {:error, :spider_not_found}
   def stop_spider(spider_name, reason \\ :ignore) do
     case Crawly.Utils.get_settings(:on_spider_closed_callback, spider_name) do
       nil -> :ignore
@@ -50,9 +60,23 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, {:stop_spider, spider_name})
   end
 
+  @spec list_known_spiders() :: [spider_info()]
+  def list_known_spiders() do
+    GenServer.call(__MODULE__, :list_known_spiders)
+  end
+
   @spec running_spiders() :: started_spiders()
   def running_spiders() do
     GenServer.call(__MODULE__, :running_spiders)
+  end
+
+  @spec get_spider_info(module()) :: spider_info()
+  def get_spider_info(name) do
+    GenServer.call(__MODULE__, {:get_spider, name})
+  end
+
+  def refresh_spider_list() do
+    GenServer.cast(__MODULE__, :refresh_spider_list)
   end
 
   def start_link() do
@@ -61,7 +85,9 @@ defmodule Crawly.Engine do
 
   @spec init(any) :: {:ok, __MODULE__.t()}
   def init(_args) do
-    {:ok, %Crawly.Engine{}}
+    spiders = get_updated_known_spider_list()
+
+    {:ok, %Crawly.Engine{known_spiders: spiders}}
   end
 
   def handle_call({:get_manager, spider_name}, _, state) do
@@ -79,6 +105,10 @@ defmodule Crawly.Engine do
 
   def handle_call(:running_spiders, _from, state) do
     {:reply, state.started_spiders, state}
+  end
+
+  def handle_call(:list_known_spiders, _from, state) do
+    {:reply, format_spider_info(state), state}
   end
 
   def handle_call({:start_spider, spider_name}, _form, state) do
@@ -116,5 +146,30 @@ defmodule Crawly.Engine do
       end
 
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
+  end
+
+  def handle_cast(:refresh_spider_list, state) do
+    updated = get_updated_known_spider_list(state.known_spiders)
+    {:noreply, %Crawly.Engine{state | known_spiders: updated}}
+  end
+
+  # this function generates a spider_info map for each spider known
+  defp format_spider_info(state) do
+    Enum.map(state.known_spiders, fn s ->
+      pid = Map.get(state.started_spiders, s)
+
+      %{
+        name: s,
+        status: if(is_nil(pid), do: :stopped, else: :started),
+        pid: pid
+      }
+    end)
+  end
+
+  defp get_updated_known_spider_list(known \\ []) do
+    new = Crawly.Utils.list_spiders()
+
+    (known ++ new)
+    |> Enum.dedup_by(& &1)
   end
 end
