@@ -4,7 +4,6 @@ defmodule ManagerTest do
   setup do
     Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
     Application.put_env(:crawly, :closespider_itemcount, 10)
-    Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
 
     :meck.expect(HTTPoison, :get, fn _, _, _ ->
       {:ok,
@@ -88,6 +87,20 @@ defmodule ManagerTest do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
     assert_receive :itemcount_timeout
+    assert %{} == Crawly.Engine.running_spiders()
+  end
+
+  test "spider does not close after 1 minute when closespider timeout is disabled" do
+    Application.put_env(:crawly, :closespider_timeout, :disabled)
+    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
+
+    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
+
+    Process.sleep(1_001)
+
+    refute %{} == Crawly.Engine.running_spiders()
+
+    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
     assert %{} == Crawly.Engine.running_spiders()
   end
 
