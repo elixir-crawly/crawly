@@ -37,12 +37,14 @@ defmodule Crawly.Engine do
       :error ->
         {:error, :spider_not_found}
 
-      {:ok, pid_sup} ->
+      {:ok, {pid_sup, _job_tag}} ->
         Supervisor.which_children(pid_sup)
         |> Enum.find(&({Crawly.Manager, _, :worker, [Crawly.Manager]} = &1))
         |> case do
           nil -> {:error, :spider_not_found}
-          {_, pid, :worker, _} -> pid
+          {_, pid, :worker, _} ->
+            IO.inspect pid
+            pid
         end
     end
   end
