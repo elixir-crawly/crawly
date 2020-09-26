@@ -101,6 +101,9 @@ You can read more here:
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
 
+Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui) 
+or try it online [CrawlyUIDemo](http://crawlyui.com)
+
 ![](documentation/assets/main_page.png?raw=true)
 ![](documentation/assets/items_page.png?raw=true)
 ![](documentation/assets/item_with_filters.png?raw=true)
