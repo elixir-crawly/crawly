@@ -192,7 +192,10 @@ defmodule Manager.StartRequestsTestSpider do
 
   def init() do
     [
-      start_requests: [Crawly.Request.new("https://www.example.com/blog.html")]
+      start_requests: [
+        Crawly.Request.new("https://www.example.com/blog.html"),
+        "Incorrect request"
+      ]
     ]
   end
 

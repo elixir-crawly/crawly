@@ -68,8 +68,17 @@ defmodule Crawly.Manager do
     # Store start urls
     Enum.each(
       Keyword.get(init, :start_requests, []),
-      fn request ->
-        Crawly.RequestsStorage.store(spider_name, request)
+      fn
+        %Crawly.Request{} = request ->
+          Crawly.RequestsStorage.store(spider_name, request)
+
+        request ->
+          # We should not attempt to store something which is not a request
+          Logger.error(
+            "#{inspect(request)} does not seem to be a request. Ignoring."
+          )
+
+          :ignore
       end
     )
 
