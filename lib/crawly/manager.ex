@@ -53,7 +53,7 @@ defmodule Crawly.Manager do
   @impl true
   def init(spider_name) do
     # Getting spider start urls
-    [start_urls: urls] = spider_name.init()
+    init = spider_name.init()
 
     # Start DataStorage worker
     {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
@@ -65,10 +65,29 @@ defmodule Crawly.Manager do
 
     Process.link(request_storage_pid)
 
-    # Store start requests
-    requests = Enum.map(urls, fn url -> Crawly.Request.new(url) end)
+    # Store start urls
+    Enum.each(
+      Keyword.get(init, :start_requests, []),
+      fn
+        %Crawly.Request{} = request ->
+          Crawly.RequestsStorage.store(spider_name, request)
 
-    :ok = Crawly.RequestsStorage.store(spider_name, requests)
+        request ->
+          # We should not attempt to store something which is not a request
+          Logger.error(
+            "#{inspect(request)} does not seem to be a request. Ignoring."
+          )
+
+          :ignore
+      end
+    )
+
+    Enum.each(
+      Keyword.get(init, :start_urls, []),
+      fn url ->
+        Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
+      end
+    )
 
     # Start workers
     num_workers =
