@@ -163,16 +163,16 @@ defmodule Crawly.Engine do
 
   def handle_call({:start_all_spiders, nil}, _form, state) do
     stopped =
-      list_all_spider_status(state.started_spiders)
-      |> Enum.filter(fn s -> s.state == :stopped end)
+      state.known_spiders
+      |> Enum.filter(fn s -> Map.has_key?(s.started_spiders, s) == false end)
 
     # start all stopped spiders
     new_started_spiders =
-      Enum.reduce(stopped, state.started_spiders, fn spider_status, acc ->
-        Crawly.EngineSup.start_spider(spider_status.name)
+      Enum.reduce(stopped, state.started_spiders, fn info, acc ->
+        Crawly.EngineSup.start_spider(info.name)
         |> case do
           {:ok, pid} ->
-            Map.put(acc, spider_status.name, pid)
+            Map.put(acc, info.name, pid)
 
           _ ->
             acc
