@@ -13,37 +13,26 @@ defmodule EngineTest do
     Crawly.Engine.start_spider(TestSpider)
 
     assert started_status =
-             Crawly.Engine.list_spiders()
+             Crawly.Engine.list_known_spiders()
              |> Enum.find(fn s -> s.name == TestSpider end)
 
-    assert started_status.state == :started
+    assert started_status.status == :started
     assert started_status.pid
   end
 
   test "stop_all_spiders/0 stops all spiders" do
-    Crawly.Engine.list_spiders()
+    Crawly.Engine.list_known_spiders()
     |> Enum.each(fn %{name: name} ->
       Crawly.Engine.start_spider(name)
     end)
 
     Crawly.Engine.stop_all_spiders()
 
-    statuses = Crawly.Engine.list_spiders()
+    statuses = Crawly.Engine.list_known_spiders()
 
     assert Enum.all?(statuses, fn status ->
-             assert status.state == :stopped
+             assert status.status == :stopped
              assert status.pid == nil
            end)
-
-    Crawly.Engine.list_known_spiders()
-    |> Enum.find(fn s -> s.name == TestSpider end)
-
-    assert :started = started_status.status
-    assert started_status.pid
-
-    # stop spider
-    Crawly.Engine.stop_spider(TestSpider)
-    spiders = Crawly.Engine.list_known_spiders()
-    assert Enum.all?(spiders, fn s -> s.status == :stopped end)
   end
 end
