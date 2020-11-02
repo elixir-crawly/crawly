@@ -33,7 +33,10 @@ All items are processed sequentially and are processed by Item pipelines.
 
 In order to make a working web crawler, all the behaviour callbacks need to be implemented.
 
-`init()` - a part of the Crawly.Spider behaviour. This function should return a KVList which contains a `start_urls` entry with a list, which defines the starting requests made by Crawly.
+`init()` - a part of the Crawly.Spider behaviour. This function should return a KVList which contains a `start_urls` entry with a list, which defines the starting requests made by Crawly. Alternatively you may provide `start_requests` if it's required
+ to prepare first requests on `init()`. Which might be useful if, for example, you
+ want to pass a session cookie to the starting request. Note: `start_requests` are
+ processed before start_urls.
 
 `base_url()` - defines a base_url of the given Spider. This function is used in order to filter out all requests which are going outside of the crawled website.
 
@@ -98,7 +101,7 @@ Modules that implement the `Crawly.Pipeline` behaviour can make use of the `Craw
 
 ## Request Middlewares
 
-These are configured under the `middlewares` option. See [configuration](./configuration.md) for more details.
+These are configured under the `middlewares` option. See [configuration](configuration.html) for more details.
 
 > **Middleware:** A pipeline module that modifies a request. It implements the `Crawly.Pipeline` behaviour.
 
@@ -114,7 +117,7 @@ Built-in middlewares:
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
 5. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
-6. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.      
+6. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.
    Example:
    ```elixir
     {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]},
@@ -274,7 +277,7 @@ We will use the key-based pattern matching approach to selectively post-process 
 def parse_item(response):
   # parse my item
   %{parsed_items: [
-    %{blog_post: blog_post} , 
+    %{blog_post: blog_post} ,
     %{weather: [ january_weather, february_weather ]}
   ]}
 ```
@@ -296,17 +299,17 @@ end
 ## Browser rendering
 
 Browser rendering is one of the most complex problems of the scraping. The Internet
-moves towards more dynamic content, where not only parts of the pages are loaded 
+moves towards more dynamic content, where not only parts of the pages are loaded
 asynchronously, but entire applications might be rendered by the JavaScript and
 AJAX.
 
-In most of the cases it's still possible to extract the data from dynamically 
-rendered pages. (E.g. by sending additional POST requests from loaded pages), 
+In most of the cases it's still possible to extract the data from dynamically
+rendered pages. (E.g. by sending additional POST requests from loaded pages),
 however this approach seems to have visible drawbacks. From our point of view
 it makes the spider code quite complicated and fragile.
 
 Of course it's good when you can just get pages already rendered for you. And we're
-solving this problem with a help of pluggable HTTP fetchers. 
+solving this problem with a help of pluggable HTTP fetchers.
 
 Crawly's codebase contains a special Splash fetcher, which allows to do the browser
 rendering before the page content is being parsed by a spider. Also it's possible
@@ -315,12 +318,12 @@ to build own fetchers.
 ### Using splash fetcher for browser rendering
 
 Splash is a lightweight opensourse browser implementation built with QT and python.
-See: https://splash.readthedocs.io/en/stable/api.html 
+See: https://splash.readthedocs.io/en/stable/api.html
 
 You can try using Splash with Crawly in the following way:
 
 1. Start splash locally (e.g. using a docker image):
 ` docker run -it -p 8050:8050 scrapinghub/splash --max-timeout 300`
-2. Configure Crawly to use Splash: 
+2. Configure Crawly to use Splash:
 `fetcher: {Crawly.Fetchers.Splash, [base_url: "http://localhost:8050/render.html"]}`
-3. Now all your pages will be automatically rendered by Splash.  
+3. Now all your pages will be automatically rendered by Splash.

@@ -166,8 +166,8 @@ defmodule Crawly.Utils do
               acc
           end
         rescue
-          error ->
-            Logger.debug("Could not get behaviour information for: #{inspect(error)}")
+          _error ->
+            # Just ignore the case, as probably the given module is not a Spider
             acc
         end
       end

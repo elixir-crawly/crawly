@@ -69,6 +69,10 @@ default: 4
 
 The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
 
+NOTE: Worker's speed if often limited by the speed of the actual HTTP client and
+network bandwidth. Crawly itself would not allow one worker to send more than
+4 requests per minute.
+
 ### retry :: Keyword list
 
 Allows to configure the retry logic. Accepts the following configuration options:
