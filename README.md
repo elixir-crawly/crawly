@@ -24,7 +24,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.10.0"},
+         {:crawly, "~> 0.11.0"},
          {:floki, "~> 0.26.0"}
        ]
    end
@@ -100,6 +100,9 @@ You can read more here:
 ## Experimental UI
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
+
+Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui) 
+or try it online [CrawlyUIDemo](http://crawlyui.com)
 
 ![](documentation/assets/main_page.png?raw=true)
 ![](documentation/assets/items_page.png?raw=true)
