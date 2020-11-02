@@ -35,7 +35,7 @@ defmodule Crawly.Engine do
 
   @spec start_all_spiders() :: :ok
   def start_all_spiders() do
-    GenServer.call(__MODULE__, {:start_all_spiders, nil})
+    GenServer.call(__MODULE__, :start_all_spiders)
   end
 
   @spec get_manager(module()) :: pid() | {:error, :spider_not_found}
@@ -161,10 +161,10 @@ defmodule Crawly.Engine do
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
-  def handle_call({:start_all_spiders, nil}, _form, state) do
+  def handle_call(:start_all_spiders, _form, state) do
     stopped =
       state.known_spiders
-      |> Enum.filter(fn s -> Map.has_key?(s.started_spiders, s) == false end)
+      |> Enum.filter(fn s -> Map.has_key?(state.started_spiders, s) == false end)
 
     # start all stopped spiders
     new_started_spiders =
