@@ -168,11 +168,11 @@ defmodule Crawly.Engine do
 
     # start all stopped spiders
     new_started_spiders =
-      Enum.reduce(stopped, state.started_spiders, fn info, acc ->
-        Crawly.EngineSup.start_spider(info.name)
+      Enum.reduce(stopped, state.started_spiders, fn s, acc ->
+        Crawly.EngineSup.start_spider(s)
         |> case do
           {:ok, pid} ->
-            Map.put(acc, info.name, pid)
+            Map.put(acc, s, pid)
 
           _ ->
             acc
