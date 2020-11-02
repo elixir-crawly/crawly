@@ -24,7 +24,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.9.0"},
+         {:crawly, "~> 0.10.0"},
          {:floki, "~> 0.26.0"}
        ]
    end
@@ -81,7 +81,7 @@ historical archival.
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
-      ]
+     ]
    ```
 5. Start the Crawl:
    - `$ iex -S mix`
@@ -111,7 +111,7 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 ## Documentation
 
 - [API Reference](https://hexdocs.pm/crawly/api-reference.html#content)
-- [Quickstart](https://hexdocs.pm/crawly/quickstart.html)
+- [Quickstart](https://hexdocs.pm/crawly/readme.html#quickstart)
 - [Tutorial](https://hexdocs.pm/crawly/tutorial.html)
 
 ## Roadmap
@@ -142,3 +142,7 @@ We would gladly accept your contributions!
 
 ## Documentation
 Please find documentation on the [HexDocs](https://hexdocs.pm/crawly/)
+
+## Production usages
+
+Using Crawly on production? Please let us know about your case!

@@ -34,5 +34,4 @@ config :crawly,
     ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
   ]
 
-# set log level to error
-config :logger, level: :error
+config :logger, level: :info
