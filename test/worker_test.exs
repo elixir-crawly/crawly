@@ -4,6 +4,7 @@ defmodule WorkerTest do
   describe "Check that worker intervals are working correctly" do
     setup do
       :meck.expect(Crawly.RequestsStorage, :pop, fn _ -> nil end)
+      :meck.expect(Crawly.RequestsStorage, :store, fn _, _ -> :ok end)
 
       spider_name = Elixir.TestWorker
 
@@ -32,7 +33,7 @@ defmodule WorkerTest do
     test "Backoff increased when there is no work", context do
       send(context.crawler, :work)
       state = :sys.get_state(context.crawler)
-      assert state.backoff > 300
+      assert state.backoff > 10_000
     end
 
     test "Backoff interval restores if requests are in the system", context do
@@ -46,7 +47,7 @@ defmodule WorkerTest do
 
       send(context.crawler, :work)
       state = :sys.get_state(context.crawler)
-      assert state.backoff == 300
+      assert state.backoff == 10_000
     end
   end
 
