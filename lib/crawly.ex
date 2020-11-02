@@ -13,13 +13,31 @@ defmodule Crawly do
 
   Provide a spider with the `:with` option to fetch a given webpage using that spider.
 
+  ### Fetching with a spider
+  To fetch a response from a url with a spider, define your spider, and pass the module name to the `:with` option.
 
+    iex> Crawly.fetch("https://www.example.com", with: MySpider)
+    {%HTTPoison.Response{...}, %{...}, [...], %{...}}
+
+  Using the `:with` option will return a 4 item tuple:
+
+  1. The HTTPoison response
+  2. The result returned from the `parse_item/1` callback
+  3. The list of items that have been processed by the declared item pipelines.
+  4. The pipeline state, included for debugging purposes.
   """
   @type with_opt :: {:with, nil | module()}
   @type request_opt :: {:request_options, list(Crawly.Request.option())}
   @type headers_opt :: {:headers, list(Crawly.Request.header())}
 
-  @spec fetch(url, opts) :: HTTPoison.Response.t()
+  @type parsed_item_result :: Crawly.ParsedItem.t()
+  @type parsed_items :: list(any())
+  @type pipeline_state :: %{optional(atom()) => any()}
+
+  @spec fetch(url, opts) ::
+          HTTPoison.Response.t()
+          | {HTTPoison.Response.t(), parsed_item_result, parsed_items,
+             pipeline_state}
         when url: binary(),
              opts: [
                with_opt
