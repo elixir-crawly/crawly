@@ -15,10 +15,17 @@ defmodule Crawly do
 
 
   """
+  @type with_opt :: {:with, nil | module()}
+  @type request_opt :: {:request_options, list(Crawly.Request.option())}
+  @type headers_opt :: {:headers, list(Crawly.Request.header())}
 
   @spec fetch(url, opts) :: HTTPoison.Response.t()
         when url: binary(),
-             opts: list()
+             opts: [
+               with_opt
+               | request_opt
+               | headers_opt
+             ]
   def fetch(url, opts \\ []) do
     opts = Enum.into(opts, %{with: nil, request_options: [], headers: []})
 
@@ -68,13 +75,18 @@ defmodule Crawly do
                  opts[:with]
                ),
              items <- Map.get(parsed_result, :items, []),
-             pipeline_result <-
-               Enum.reduce(items, [], fn item, acc ->
-                 {piped, _state} = Crawly.Utils.pipe(pipelines, item, %{})
+             {pipeline_result, pipeline_state} <-
+               Enum.reduce(items, {[], %{}}, fn item, {acc, state} ->
+                 {piped, state} = Crawly.Utils.pipe(pipelines, item, state)
 
-                 [acc | piped]
+                 if piped == false do
+                   # dropped
+                   {acc, state}
+                 else
+                   {[piped | acc], state}
+                 end
                end) do
-          {response, parsed_result, pipeline_result}
+          {response, parsed_result, pipeline_result, pipeline_state}
         end
     end
   end
