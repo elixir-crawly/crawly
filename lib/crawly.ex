@@ -8,7 +8,7 @@ defmodule Crawly do
   when you need to get individual pages and parse them.
 
   The fetched URL is being converted to a request, and the request is piped
-  through the middlewares specidied in a config (with the exception of
+  through the middlewares specified in a config (with the exception of
   `Crawly.Middlewares.DomainFilter`, `Crawly.Middlewares.RobotsTxt`)
 
   Provide a spider with the `:with` option to fetch a given webpage using that spider.
