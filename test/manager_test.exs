@@ -1,10 +1,11 @@
 defmodule ManagerTest do
   use ExUnit.Case, async: false
 
+  alias Crawly.Engine
+
   setup do
     Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
     Application.put_env(:crawly, :closespider_itemcount, 10)
-    Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
 
     :meck.expect(HTTPoison, :get, fn _, _, _ ->
       {:ok,
@@ -18,7 +19,8 @@ defmodule ManagerTest do
 
     on_exit(fn ->
       :meck.unload()
-      Crawly.Engine.stop_spider(Manager.TestSpider)
+      running_spiders = Engine.running_spiders() |> Map.keys()
+      Enum.each(running_spiders, &Engine.stop_spider/1)
       Application.put_env(:crawly, :manager_operations_timeout, 30_000)
       Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
       Application.put_env(:crawly, :closespider_timeout, 20)
@@ -91,6 +93,20 @@ defmodule ManagerTest do
     assert %{} == Crawly.Engine.running_spiders()
   end
 
+  test "spider does not close after 1 minute when closespider timeout is disabled" do
+    Application.put_env(:crawly, :closespider_timeout, :disabled)
+    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
+
+    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
+
+    Process.sleep(1_001)
+
+    refute %{} == Crawly.Engine.running_spiders()
+
+    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
+    assert %{} == Crawly.Engine.running_spiders()
+  end
+
   test "Can't start already started spider" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
@@ -104,6 +120,25 @@ defmodule ManagerTest do
     :ok = Crawly.Engine.stop_spider(Manager.TestSpider, :manual_stop)
 
     assert_receive :manual_stop
+  end
+
+  test "It's possible to start a spider with start_requests" do
+    pid = self()
+    :ok = Crawly.Engine.start_spider(Manager.StartRequestsTestSpider)
+
+    :meck.expect(HTTPoison, :get, fn url, _, _ ->
+      send(pid, {:performing_request, url})
+
+      {:ok,
+       %HTTPoison.Response{
+         status_code: 200,
+         body: "Some page",
+         headers: [],
+         request: %{}
+       }}
+    end)
+
+    assert_receive {:performing_request, "https://www.example.com/blog.html"}
   end
 end
 
@@ -146,12 +181,34 @@ defmodule Manager.TestSpider do
       ]
     }
   end
+end
 
-  def spider_closed(:manual_stop) do
-    send(:spider_closed_callback_test, :manual_stop)
+defmodule Manager.StartRequestsTestSpider do
+  use Crawly.Spider
+
+  def base_url() do
+    "https://www.example.com"
   end
 
-  def spider_closed(_) do
-    :ignored
+  def init() do
+    [
+      start_requests: [
+        Crawly.Request.new("https://www.example.com/blog.html"),
+        "Incorrect request"
+      ]
+    ]
+  end
+
+  def parse_item(_response) do
+    path = Enum.random(1..100)
+
+    %{
+      :items => [
+        %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
+      ],
+      :requests => [
+        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
+      ]
+    }
   end
 end

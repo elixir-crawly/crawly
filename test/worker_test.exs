@@ -4,6 +4,7 @@ defmodule WorkerTest do
   describe "Check that worker intervals are working correctly" do
     setup do
       :meck.expect(Crawly.RequestsStorage, :pop, fn _ -> nil end)
+      :meck.expect(Crawly.RequestsStorage, :store, fn _, _ -> :ok end)
 
       spider_name = Elixir.TestWorker
 

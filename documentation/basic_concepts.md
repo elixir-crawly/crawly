@@ -33,7 +33,10 @@ All items are processed sequentially and are processed by Item pipelines.
 
 In order to make a working web crawler, all the behaviour callbacks need to be implemented.
 
-`init()` - a part of the Crawly.Spider behaviour. This function should return a KVList which contains a `start_urls` entry with a list, which defines the starting requests made by Crawly.
+`init()` - a part of the Crawly.Spider behaviour. This function should return a KVList which contains a `start_urls` entry with a list, which defines the starting requests made by Crawly. Alternatively you may provide `start_requests` if it's required
+ to prepare first requests on `init()`. Which might be useful if, for example, you
+ want to pass a session cookie to the starting request. Note: `start_requests` are
+ processed before start_urls.
 
 `base_url()` - defines a base_url of the given Spider. This function is used in order to filter out all requests which are going outside of the crawled website.
 
