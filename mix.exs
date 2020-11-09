@@ -64,7 +64,7 @@ defmodule Crawly.Mixfile do
     [
       {:httpoison, "~> 1.7", override: true},
       {:uuid, "~> 1.1"},
-      {:poison, "~> 4.0"},
+      {:poison, "~> 3.1"},
       {:new_gollum, "~> 0.3.0"},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
