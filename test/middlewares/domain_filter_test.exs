@@ -46,4 +46,16 @@ defmodule Middlewares.DomainFilterTest do
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
+
+  test "Non absolute url should not crash the middleware" do
+    middlewares = [Crawly.Middlewares.DomainFilter]
+
+    req = %Crawly.Request{
+      url: "/blog"
+    }
+
+    state = %{spider_name: :test_spider}
+
+    assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
+  end
 end
