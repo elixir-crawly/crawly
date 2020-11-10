@@ -112,14 +112,12 @@ defmodule Crawly.Worker do
       {:ok, {parsed_item, response, spider_name}}
     catch
       error, reason ->
-        stacktrace = :erlang.get_stacktrace()
-
         Logger.debug(
           "Could not parse item, error: #{inspect(error)}, reason: #{
             inspect(reason)
-          }, stacktrace: #{inspect(stacktrace)}
-          "
+          }"
         )
+        Logger.debug(Exception.format(:error, error, __STACKTRACE__))
 
         {:error, reason}
     end

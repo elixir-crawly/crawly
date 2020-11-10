@@ -13,7 +13,7 @@ historical archival.
 
 ## Requirements
 
-1. Elixir "~> 1.7"
+1. Elixir "~> 1.10"
 2. Works on Linux, Windows, OS X and BSD
 
 
