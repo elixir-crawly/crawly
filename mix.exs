@@ -24,7 +24,7 @@ defmodule Crawly.Mixfile do
 
   defp aliases do
     [
-      generate_documentation: &generate_documentation/1,
+      generate_documentation: &generate_documentation/1
     ]
   end
 
@@ -33,7 +33,6 @@ defmodule Crawly.Mixfile do
     System.cmd("mkdir", ["-p", "./doc/documentation/assets"])
     System.cmd("cp", ["-r", "documentation/assets", "doc/documentation"])
   end
-
 
   defp elixirc_paths(:test), do: ["lib", "test"]
   defp elixirc_paths(_), do: ["lib"]
@@ -63,16 +62,16 @@ defmodule Crawly.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.4"},
+      {:httpoison, "~> 1.7", override: true},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
       {:new_gollum, "~> 0.3.0"},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
-      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
-      {:meck, "~> 0.8.13", only: :test},
+      {:meck, "~> 0.9", only: :test},
       {:excoveralls, "~> 0.10", only: :test}
     ]
   end

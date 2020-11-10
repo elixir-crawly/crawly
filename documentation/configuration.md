@@ -67,11 +67,13 @@ Defines a minimal amount of items which needs to be scraped by the spider within
 
 default: 4
 
-The maximum number of concurrent (ie. simultaneous) requests that will be performed by the Crawly workers.
+Indicates the number of Crawly workers that will be used to make simultaneous requests on a per-spider basis.
 
-NOTE: Worker's speed if often limited by the speed of the actual HTTP client and
-network bandwidth. Crawly itself would not allow one worker to send more than
-4 requests per minute.
+Each Crawly worker is rate-limited to a maximum of 4 requests per minute. Hence, by default, the number of requests possible would be `4 x 4 = 16 req/min`.
+
+In order to increase the number of requests made per minute, set this option to a higher value. The default value is intentionally set at 4 for ethical crawling reasons.
+
+NOTE: A worker's speed if often limited by the speed of the actual HTTP client and network bandwidth, and may be less than 4 requests per minute.
 
 ### retry :: Keyword list
 
