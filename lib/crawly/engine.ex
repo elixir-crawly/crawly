@@ -22,12 +22,52 @@ defmodule Crawly.Engine do
 
   defstruct(started_spiders: %{}, known_spiders: [])
 
-  @spec start_spider(module(), binary()) ::
-          :ok
-          | {:error, :spider_already_started}
-          | {:error, :atom}
-  def start_spider(spider_name, crawl_id \\ UUID.uuid1()) do
-    GenServer.call(__MODULE__, {:start_spider, spider_name, crawl_id})
+  @spec start_spider(spider_name) :: result
+        when spider_name: module(),
+             result:
+               :ok
+               | {:error, :spider_already_started}
+               | {:error, :atom}
+
+  def start_spider(spider_name) do
+    start_spider(spider_name, UUID.uuid1(), [])
+  end
+
+  @spec start_spider(spider_name, crawl_id) :: result
+        when spider_name: module(),
+             crawl_id: binary(),
+             result:
+               :ok
+               | {:error, :spider_already_started}
+               | {:error, :atom}
+
+  def start_spider(spider_name, crawl_id) when is_binary(crawl_id) do
+    start_spider(spider_name, crawl_id, [])
+  end
+
+  @spec start_spider(spider_name, options) :: result
+        when spider_name: module(),
+             options: list(),
+             result:
+               :ok
+               | {:error, :spider_already_started}
+               | {:error, :atom}
+
+  def start_spider(spider_name, options) when is_list(options) do
+    start_spider(spider_name, UUID.uuid1(), options)
+  end
+
+  @spec start_spider(spider_name, crawl_id, options) :: result
+        when spider_name: module(),
+             crawl_id: binary(),
+             options: list(),
+             result:
+               :ok
+               | {:error, :spider_already_started}
+               | {:error, :atom}
+
+  def start_spider(spider_name, crawl_id, options) do
+    GenServer.call(__MODULE__, {:start_spider, spider_name, crawl_id, options})
   end
 
   @spec get_manager(module()) ::
@@ -132,11 +172,15 @@ defmodule Crawly.Engine do
     {:reply, format_spider_info(state), state}
   end
 
-  def handle_call({:start_spider, spider_name, crawl_id}, _form, state) do
+  def handle_call(
+        {:start_spider, spider_name, crawl_id, options},
+        _form,
+        state
+      ) do
     result =
       case Map.get(state.started_spiders, spider_name) do
         nil ->
-          Crawly.EngineSup.start_spider(spider_name)
+          Crawly.EngineSup.start_spider(spider_name, options)
 
         _ ->
           {:error, :spider_already_started}

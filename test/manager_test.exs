@@ -140,6 +140,16 @@ defmodule ManagerTest do
 
     assert_receive {:performing_request, "https://www.example.com/blog.html"}
   end
+
+  test "It's possible to initialize a spider with parameters" do
+    Process.register(self(), :manager_test_initial_args_test)
+    urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"]
+    :ok = Crawly.Engine.start_spider(Manager.InitialArgsTestSpider, [urls: urls])
+
+    assert_receive recv_urls
+
+    assert Enum.sort(recv_urls) == Enum.sort(urls)
+  end
 end
 
 defmodule Manager.TestSpider do
@@ -210,5 +220,22 @@ defmodule Manager.StartRequestsTestSpider do
         Crawly.Utils.request_from_url("https://www.example.com/#{path}")
       ]
     }
+  end
+end
+
+defmodule Manager.InitialArgsTestSpider do
+  use Crawly.Spider
+
+  def base_url() do
+    "https://www.example.com"
+  end
+
+  def init([urls: list_of_urls]) do
+    send(:manager_test_initial_args_test, list_of_urls)
+    [start_urls: list_of_urls]
+   end
+
+  def parse_item(_response) do
+    %{items: [], requests: []}
   end
 end

@@ -11,7 +11,7 @@ defmodule Crawly.EngineSup do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def start_spider(spider_name) do
+  def start_spider(spider_name, options) do
     result =
       case Code.ensure_loaded?(spider_name) do
         true ->
@@ -19,7 +19,7 @@ defmodule Crawly.EngineSup do
           {:ok, _sup_pid} =
             DynamicSupervisor.start_child(
               __MODULE__,
-              {Crawly.ManagerSup, spider_name}
+              {Crawly.ManagerSup, [spider_name, options]}
             )
 
         false ->

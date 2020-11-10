@@ -47,7 +47,6 @@ defmodule TestSpider do
 end
 
 defmodule UtilsTestSpider do
-  use GenServer
   use Crawly.Spider
 
   @impl true
