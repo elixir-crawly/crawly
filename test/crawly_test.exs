@@ -1,6 +1,5 @@
 defmodule CrawlyTest do
   use ExUnit.Case
-  doctest Crawly
 
   setup do
     :meck.new(CrawlyTestSpider, [:non_strict])
