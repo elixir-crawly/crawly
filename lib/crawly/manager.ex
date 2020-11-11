@@ -45,15 +45,15 @@ defmodule Crawly.Manager do
     end
   end
 
-  def start_link(spider_name) do
+  def start_link([spider_name, options]) do
     Logger.debug("Starting the manager for #{spider_name}")
-    GenServer.start_link(__MODULE__, spider_name)
+    GenServer.start_link(__MODULE__, [spider_name, options])
   end
 
   @impl true
-  def init(spider_name) do
+  def init([spider_name, options]) do
     # Getting spider start urls
-    init = spider_name.init()
+    init = spider_name.init(options)
 
     # Start DataStorage worker
     {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
