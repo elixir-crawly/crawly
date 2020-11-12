@@ -2,9 +2,12 @@ defmodule Pipelines.Experimental.SendToUITest do
   use ExUnit.Case, async: false
 
   @item %{title: "Title", author: "Me"}
-  
+
   test "job tag is not re-generated if pipeline was re-executed" do
-    pipelines = [{Crawly.Pipelines.Experimental.SendToUI, ui_node: :'ui@127.0.0.1'}]
+    pipelines = [
+      {Crawly.Pipelines.Experimental.SendToUI, ui_node: :"ui@127.0.0.1"}
+    ]
+
     state = %{spider_name: PipelineTestSpider}
     {@item, state} = Crawly.Utils.pipe(pipelines, @item, state)
 

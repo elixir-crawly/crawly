@@ -33,16 +33,17 @@ defmodule Crawly.Fetchers.Splash do
         nil ->
           throw(
             "The base_url is not set. Splash fetcher can't be used! " <>
-            "Please set :base_url in fetcher options to continue. " <>
-            "For example: " <>
-            "fetcher: {Crawly.Fetchers.Splash, [base_url: <url>]}"
+              "Please set :base_url in fetcher options to continue. " <>
+              "For example: " <>
+              "fetcher: {Crawly.Fetchers.Splash, [base_url: <url>]}"
           )
 
         {base_url, other_options} ->
           {base_url, other_options}
       end
 
-    query_parameters = URI.encode_query(Keyword.put(other_options, :url, request.url))
+    query_parameters =
+      URI.encode_query(Keyword.put(other_options, :url, request.url))
 
     url =
       URI.merge(base_url, "?" <> query_parameters)
@@ -53,10 +54,11 @@ defmodule Crawly.Fetchers.Splash do
         new_request = %HTTPoison.Request{response.request | url: request.url}
 
         new_response = %HTTPoison.Response{
-          response |
-          request: new_request,
-          request_url: request.url
+          response
+          | request: new_request,
+            request_url: request.url
         }
+
         {:ok, new_response}
 
       error ->

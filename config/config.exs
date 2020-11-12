@@ -64,5 +64,4 @@ config :crawly,
     Crawly.Pipelines.JSONEncoder
   ]
 
-
 import_config "#{Mix.env()}.exs"

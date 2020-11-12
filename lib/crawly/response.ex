@@ -10,10 +10,10 @@ defmodule Crawly.Response do
             status_code: nil
 
   @type t :: %__MODULE__{
-               body: term(),
-               headers: list(),
-               request: Crawly.Request.t(),
-               request_url: Crawly.Request.url(),
-               status_code: integer()
-             }
+          body: term(),
+          headers: list(),
+          request: Crawly.Request.t(),
+          request_url: Crawly.Request.url(),
+          status_code: integer()
+        }
 end

@@ -4,9 +4,9 @@ defmodule Crawly.Request do
 
   Defines Crawly request structure.
   """
-  ###===========================================================================
+  ### ===========================================================================
   ### Type definitions
-  ###===========================================================================
+  ### ===========================================================================
   defstruct url: nil,
             headers: [],
             prev_response: nil,
@@ -23,17 +23,17 @@ defmodule Crawly.Request do
   @type option :: {atom(), binary()}
 
   @type t :: %__MODULE__{
-               url: url(),
-               headers: [header()],
-               prev_response: %{},
-               options: [option()],
-               middlewares: [atom()],
-               retries: non_neg_integer()
-             }
+          url: url(),
+          headers: [header()],
+          prev_response: %{},
+          options: [option()],
+          middlewares: [atom()],
+          retries: non_neg_integer()
+        }
 
-  ###===========================================================================
+  ### ===========================================================================
   ### API functions
-  ###===========================================================================
+  ### ===========================================================================
   @doc """
   Create new Crawly.Request from url, headers and options
   """
@@ -64,10 +64,11 @@ defmodule Crawly.Request do
   parameter.
   """
   @spec new(url, headers, options, middlewares) :: request
+        # TODO: improve typespec here
         when url: binary(),
              headers: [term()],
              options: [term()],
-             middlewares: [term()], # TODO: improve typespec here
+             middlewares: [term()],
              request: Crawly.Request.t()
   def new(url, headers, options, middlewares) do
     %Crawly.Request{

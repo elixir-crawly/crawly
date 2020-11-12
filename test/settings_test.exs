@@ -16,14 +16,18 @@ defmodule SettingsTest do
     assert 5 ==
              Crawly.Utils.get_settings(
                :concurrent_requests_per_domain,
-               TestSpiderSettingsOverride, 1)
+               TestSpiderSettingsOverride,
+               1
+             )
   end
 
   test "incomplete spider overrides do not break global settings" do
     assert 10 ==
              Crawly.Utils.get_settings(
                :closespider_itemcount,
-               TestSpiderSettingsOverride, 1)
+               TestSpiderSettingsOverride,
+               1
+             )
   end
 end
 
