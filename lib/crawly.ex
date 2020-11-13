@@ -8,36 +8,105 @@ defmodule Crawly do
   when you need to get individual pages and parse them.
 
   The fetched URL is being converted to a request, and the request is piped
-  through the middlewares specidied in a config (with the exception of
-  `Crawly.Middlewares.DomainFilter`, `Crawly.Middlewares.RobotsTxt` these 2 are
-  ignored)
+  through the middlewares specified in a config (with the exception of
+  `Crawly.Middlewares.DomainFilter`, `Crawly.Middlewares.RobotsTxt`)
 
+  Provide a spider with the `:with` option to fetch a given webpage using that spider.
+
+  ### Fetching with a spider
+  To fetch a response from a url with a spider, define your spider, and pass the module name to the `:with` option.
+
+    iex> Crawly.fetch("https://www.example.com", with: MySpider)
+    {%HTTPoison.Response{...}, %{...}, [...], %{...}}
+
+  Using the `:with` option will return a 4 item tuple:
+
+  1. The HTTPoison response
+  2. The result returned from the `parse_item/1` callback
+  3. The list of items that have been processed by the declared item pipelines.
+  4. The pipeline state, included for debugging purposes.
   """
-  @spec fetch(url, headers, options) :: HTTPoison.Response.t()
+  @type with_opt :: {:with, nil | module()}
+  @type request_opt :: {:request_options, list(Crawly.Request.option())}
+  @type headers_opt :: {:headers, list(Crawly.Request.header())}
+
+  @type parsed_item_result :: Crawly.ParsedItem.t()
+  @type parsed_items :: list(any())
+  @type pipeline_state :: %{optional(atom()) => any()}
+
+  @spec fetch(url, opts) ::
+          HTTPoison.Response.t()
+          | {HTTPoison.Response.t(), parsed_item_result, parsed_items,
+             pipeline_state}
         when url: binary(),
-             headers: [],
-             options: []
-  def fetch(url, headers \\ [], options \\ []) do
-    request0 = Crawly.Request.new(url, headers, options)
+             opts: [
+               with_opt
+               | request_opt
+               | headers_opt
+             ]
+  def fetch(url, opts \\ []) do
+    opts = Enum.into(opts, %{with: nil, request_options: [], headers: []})
+
+    request0 =
+      Crawly.Request.new(url, opts[:headers], opts[:request_options])
+      |> Map.put(
+        :middlewares,
+        Crawly.Utils.get_settings(:middlewares, opts[:with], [])
+      )
 
     ignored_middlewares = [
       Crawly.Middlewares.DomainFilter,
       Crawly.Middlewares.RobotsTxt
     ]
 
-    middlewares = request0.middlewares -- ignored_middlewares
+    new_middlewares = request0.middlewares -- ignored_middlewares
 
-    {request, _} = Crawly.Utils.pipe(middlewares, request0, %{})
+    request0 =
+      Map.put(
+        request0,
+        :middlewares,
+        new_middlewares
+      )
+
+    {%{} = request, _} = Crawly.Utils.pipe(request0.middlewares, request0, %{})
 
     {fetcher, client_options} =
-      Application.get_env(
-        :crawly,
+      Crawly.Utils.get_settings(
         :fetcher,
+        opts[:with],
         {Crawly.Fetchers.HTTPoisonFetcher, []}
       )
 
     {:ok, response} = fetcher.fetch(request, client_options)
-    response
+
+    case opts[:with] do
+      nil ->
+        # no spider provided, return response as is
+        response
+
+      _ ->
+        # spider provided, send response through  parse_item callback, pipe through the pipelines
+        with parsed_result <- parse(response, opts[:with]),
+             pipelines <-
+               Crawly.Utils.get_settings(
+                 :pipelines,
+                 opts[:with]
+               ),
+             items <- Map.get(parsed_result, :items, []),
+             {pipeline_result, pipeline_state} <-
+               Enum.reduce(items, {[], %{}}, fn item, {acc, state} ->
+                 {piped, state} = Crawly.Utils.pipe(pipelines, item, state)
+
+                 if piped == false do
+                   # dropped
+                   {acc, state}
+                 else
+                   {[piped | acc], state}
+                 end
+               end) do
+          {response, parsed_result, pipeline_result, pipeline_state}
+        end
+    end
   end
 
   @doc """
@@ -59,7 +128,9 @@ defmodule Crawly do
   end
 
   @doc """
-  Returns a list of known modules which implements Crawly.Spider behaviour
+  Returns a list of known modules which implements Crawly.Spider behaviour.
+
+  Should not be used for spider management. Use functions defined in `Crawly.Engine` for that.
   """
   @spec list_spiders() :: [module()]
   def list_spiders(), do: Crawly.Utils.list_spiders()
