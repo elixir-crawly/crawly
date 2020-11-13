@@ -16,10 +16,11 @@ defmodule Crawly.Spider do
       global settings defined in the config.
   """
 
-
-
   @callback init() :: [start_urls: list(), start_requests: list()]
-  @callback init(options: keyword()) :: [start_urls: list(), start_requests: list()]
+  @callback init(options: keyword()) :: [
+              start_urls: list(),
+              start_requests: list()
+            ]
 
   @callback base_url() :: binary()
 

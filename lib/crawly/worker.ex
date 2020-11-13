@@ -117,6 +117,7 @@ defmodule Crawly.Worker do
             inspect(reason)
           }"
         )
+
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))
 
         {:error, reason}

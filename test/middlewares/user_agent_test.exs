@@ -2,7 +2,10 @@ defmodule Middlewares.UserAgentTest do
   use ExUnit.Case, async: false
 
   test "Adds a user agent to request header with global config" do
-    middlewares = [{Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}]
+    middlewares = [
+      {Crawly.Middlewares.UserAgent, user_agents: ["My Custom Bot"]}
+    ]
+
     req = %Crawly.Request{}
     state = %{}
 

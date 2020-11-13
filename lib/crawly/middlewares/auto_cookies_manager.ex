@@ -43,6 +43,7 @@ defmodule Crawly.Middlewares.AutoCookiesManager do
 
         new_state =
           Map.put(state, :cookies_manager_seen_cookies, new_known_cookies)
+
         {new_request, new_state}
     end
   end

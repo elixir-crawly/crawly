@@ -12,7 +12,6 @@ defmodule ManagerTest do
     assert Crawly.Engine.get_crawl_id(TestSpider)
   end
 
-
   test "Engine will use a tag from external system if set" do
     tag = "custom_crawl_tag"
     :ok = Crawly.Engine.start_spider(TestSpider, tag)

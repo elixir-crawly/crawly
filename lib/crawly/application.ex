@@ -15,14 +15,12 @@ defmodule Crawly.Application do
       {Crawly.DataStorage, []},
       {Crawly.RequestsStorage, []},
       {DynamicSupervisor,
-       strategy: :one_for_one,
-       name: Crawly.RequestsStorage.WorkersSup},
+       strategy: :one_for_one, name: Crawly.RequestsStorage.WorkersSup},
       {DynamicSupervisor,
-       strategy: :one_for_one,
-       name: Crawly.DataStorage.WorkersSup},
+       strategy: :one_for_one, name: Crawly.DataStorage.WorkersSup},
       {Plug.Cowboy,
-       scheme: :http, 
-       plug: Crawly.API.Router, 
+       scheme: :http,
+       plug: Crawly.API.Router,
        options: [port: Application.get_env(:crawly, :port, 4001)]}
     ]
 

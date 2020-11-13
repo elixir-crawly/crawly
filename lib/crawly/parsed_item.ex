@@ -7,7 +7,7 @@ defmodule Crawly.ParsedItem do
 
   @type item() :: map()
   @type t :: %__MODULE__{
-    items: [item()],
-    requests: [Crawly.Request.t()]
-  }
+          items: [item()],
+          requests: [Crawly.Request.t()]
+        }
 end
