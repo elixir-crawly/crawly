@@ -62,10 +62,10 @@ defmodule Crawly.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.7", override: true},
+      {:httpoison, "~> 1.7"},
       {:uuid, "~> 1.1"},
       {:poison, "~> 3.1"},
-      {:new_gollum, "~> 0.3.0"},
+      {:gollum, "~> 0.4.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
       {:epipe, "~> 1.0"},
       {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
