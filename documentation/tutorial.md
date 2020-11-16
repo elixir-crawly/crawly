@@ -53,7 +53,7 @@ file with the following code:
 ```elixir
     defp deps do
       [
-        {:crawly, "~> 0.11.0"},
+        {:crawly, "~> 0.12.0"},
         {:floki, "~> 0.26.0"}
       ]
     end
