@@ -18,5 +18,5 @@ jobs:
       - run: mix deps.get
       - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
-      - run: mix test --trace
-      - run: mix coveralls.circle
+      - run: MIX_ENV=test mix test --trace
+      - run: MIX_ENV=test mix coveralls.circle
