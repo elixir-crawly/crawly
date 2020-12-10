@@ -262,12 +262,12 @@ defmodule Manager.ManyUrlsTestSpider do
 
   def init(_opts) do
     urls =
-      for i <- 0..50_000 do
+      for i <- 0..400_000 do
         "https://www.example.com/#{i}"
       end
 
     requests =
-      for i <- 0..50_000 do
+      for i <- 0..400_000 do
         Crawly.Request.new("https://www.example.com/x/#{i}")
       end
 
