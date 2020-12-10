@@ -66,28 +66,34 @@ defmodule Crawly.Manager do
     Process.link(request_storage_pid)
 
     # Store start urls
-    Enum.each(
-      Keyword.get(init, :start_requests, []),
-      fn
-        %Crawly.Request{} = request ->
-          Crawly.RequestsStorage.store(spider_name, request)
+    start_requests = Keyword.get(init, :start_requests, [])
+    {sync_start_req, async_start_req} = Enum.split(start_requests, 1000)
 
-        request ->
-          # We should not attempt to store something which is not a request
-          Logger.error(
-            "#{inspect(request)} does not seem to be a request. Ignoring."
-          )
+    store_req_fun = fn
+      %Crawly.Request{} = request ->
+        Crawly.RequestsStorage.store(spider_name, request)
 
-          :ignore
-      end
-    )
+      request ->
+        # We should not attempt to store something which is not a request
+        Logger.error(
+          "#{inspect(request)} does not seem to be a request. Ignoring."
+        )
 
-    Enum.each(
-      Keyword.get(init, :start_urls, []),
-      fn url ->
-        Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
-      end
-    )
+        :ignore
+    end
+
+    Enum.each(sync_start_req, store_req_fun)
+    Task.start_link(fn -> Enum.each(async_start_req, store_req_fun) end)
+
+    start_urls = Keyword.get(init, :start_urls, [])
+    {sync_start_urls, async_start_urls} = Enum.split(start_urls, 1000)
+
+    store_url_fun = fn url ->
+      Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
+    end
+
+    Enum.each(sync_start_urls, store_url_fun)
+    Task.start_link(fn -> Enum.each(async_start_urls, store_url_fun) end)
 
     # Start workers
     num_workers =
