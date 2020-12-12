@@ -52,9 +52,6 @@ defmodule Crawly.Manager do
 
   @impl true
   def init([spider_name, options]) do
-    # Getting spider start urls
-    init = spider_name.init(options)
-
     # Start DataStorage worker
     {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
     Process.link(data_storage_pid)
@@ -65,6 +62,42 @@ defmodule Crawly.Manager do
 
     Process.link(request_storage_pid)
 
+    # Start workers
+    num_workers =
+      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
+
+    worker_pids =
+      Enum.map(1..num_workers, fn _x ->
+        DynamicSupervisor.start_child(
+          spider_name,
+          {Crawly.Worker, [spider_name]}
+        )
+      end)
+
+    Logger.debug(
+      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
+    )
+
+    # Schedule basic service operations for given spider manager
+    timeout =
+      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+
+    tref = Process.send_after(self(), :operations, timeout)
+
+    {:ok,
+     %{
+       name: spider_name,
+       tref: tref,
+       prev_scraped_cnt: 0,
+       workers: worker_pids
+     }, {:continue, {:startup, options}}}
+  end
+
+  @impl true
+  def handle_continue({:startup, options}, state) do
+    # Getting spider start urls
+    init = state.name.init(options)
+    spider_name = state.name
     # Store start urls
     start_requests = Keyword.get(init, :start_requests, [])
     {sync_start_req, async_start_req} = Enum.split(start_requests, 1000)
@@ -95,30 +128,8 @@ defmodule Crawly.Manager do
     Enum.each(sync_start_urls, store_url_fun)
     Task.start_link(fn -> Enum.each(async_start_urls, store_url_fun) end)
 
-    # Start workers
-    num_workers =
-      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
-
-    worker_pids =
-      Enum.map(1..num_workers, fn _x ->
-        DynamicSupervisor.start_child(
-          spider_name,
-          {Crawly.Worker, [spider_name]}
-        )
-      end)
-
-    Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
-    )
-
-    # Schedule basic service operations for given spider manager
-    timeout =
-      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
-
-    tref = Process.send_after(self(), :operations, timeout)
-
-    {:ok,
-     %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
+    # return state as unchanged
+    {:noreply, state}
   end
 
   @impl true
