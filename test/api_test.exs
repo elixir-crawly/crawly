@@ -21,15 +21,7 @@ defmodule APITest do
 
     assert conn.resp_body == "Started!"
 
-    Process.sleep(1000)
-
-    conn =
-      :get
-      |> conn("/spiders/TestSpider/scheduled-requests", "")
-      |> Crawly.API.Router.call(@opts)
-
-    assert conn.resp_body == "{:stored_requests, 1}"
-    Process.sleep(1000)
+    Process.sleep(400)
 
     conn =
       :get

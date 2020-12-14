@@ -4,9 +4,6 @@ defmodule ManagerTest do
   alias Crawly.Engine
 
   setup do
-    Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
-    Application.put_env(:crawly, :closespider_itemcount, 10)
-
     :meck.expect(HTTPoison, :get, fn _, _, _ ->
       {:ok,
        %HTTPoison.Response{
@@ -20,14 +17,11 @@ defmodule ManagerTest do
     on_exit(fn ->
       Engine.running_spiders()
       |> Map.keys()
-      |> Enum.each(&Engine.stop_spider/1)
+      |> Enum.each(fn spider ->
+        Engine.stop_spider(spider, :stopped_by_on_exit)
+      end)
 
       :meck.unload()
-
-      Application.put_env(:crawly, :manager_operations_timeout, 30_000)
-      Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
-      Application.put_env(:crawly, :closespider_timeout, 20)
-      Application.put_env(:crawly, :closespider_itemcount, 100)
     end)
   end
 
@@ -62,57 +56,27 @@ defmodule ManagerTest do
   test "max request per minute is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
 
+    Process.sleep(250)
     {:stored_requests, num} = Crawly.RequestsStorage.stats(Manager.TestSpider)
     assert num == 1
-    Process.sleep(1_00)
-
-    {:stored_items, num} = Crawly.DataStorage.stats(Manager.TestSpider)
-    assert num == 1
-
-    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
-    assert %{} == Crawly.Engine.running_spiders()
   end
 
   test "Closespider itemcount is respected" do
     Process.register(self(), :spider_closed_callback_test)
-
-    Application.put_env(:crawly, :manager_operations_timeout, 50)
-    Application.put_env(:crawly, :closespider_itemcount, 1)
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-
-    assert_receive :itemcount_timeout
-
-    assert %{} == Crawly.Engine.running_spiders()
+    Process.sleep(501)
+    assert_receive :itemcount_limit
   end
 
   test "Closespider timeout is respected" do
-    Process.register(self(), :spider_closed_callback_test)
+    Process.register(self(), :close_by_timeout_listener)
 
-    # Ignore closespider_itemcount
-    Application.put_env(:crawly, :closespider_itemcount, :disabled)
-
-    Application.put_env(:crawly, :closespider_timeout, 10)
-
-    Application.put_env(:crawly, :manager_operations_timeout, 50)
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-
+    :ok = Crawly.Engine.start_spider(Manager.CloseByTimeoutSpider)
+    Process.sleep(501)
     assert_receive :itemcount_timeout
-    assert %{} == Crawly.Engine.running_spiders()
   end
 
-  test "spider does not close after 1 minute when closespider timeout is disabled" do
-    Application.put_env(:crawly, :closespider_timeout, :disabled)
-    Application.put_env(:crawly, :manager_operations_timeout, 1_000)
-
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-
-    Process.sleep(1_001)
-
-    refute %{} == Crawly.Engine.running_spiders()
-
-    :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
-    assert %{} == Crawly.Engine.running_spiders()
-  end
+  #
 
   test "Can't start already started spider" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
@@ -179,7 +143,59 @@ defmodule Manager.TestSpider do
       end
     end
 
-    [on_spider_closed_callback: on_spider_closed_callback]
+    [
+      on_spider_closed_callback: on_spider_closed_callback,
+      concurrent_requests_per_domain: 1,
+      closespider_itemcount: 1,
+      closespider_timeout: :disabled
+    ]
+  end
+
+  def base_url() do
+    "https://www.example.com"
+  end
+
+  def init() do
+    [
+      start_urls: ["https://www.example.com/blog.html"]
+    ]
+  end
+
+  def parse_item(_response) do
+    path = Enum.random(1..100)
+
+    %{
+      :items => [
+        %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
+      ],
+      :requests => [
+        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
+      ]
+    }
+  end
+end
+
+defmodule Manager.CloseByTimeoutSpider do
+  use Crawly.Spider
+
+  def override_settings() do
+    on_spider_closed_callback = fn reason ->
+      IO.puts("Stopped #{reason}")
+
+      case Process.whereis(:close_by_timeout_listener) do
+        nil ->
+          :nothing_to_do
+
+        _pid ->
+          send(:close_by_timeout_listener, reason)
+      end
+    end
+
+    [
+      on_spider_closed_callback: on_spider_closed_callback,
+      closespider_timeout: 1,
+      concurrent_requests_per_domain: 1
+    ]
   end
 
   def base_url() do

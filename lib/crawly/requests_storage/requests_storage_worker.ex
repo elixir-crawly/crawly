@@ -40,7 +40,13 @@ defmodule Crawly.RequestsStorage.Worker do
   """
   @spec pop(pid()) :: Crawly.Request.t() | nil
   def pop(pid) do
-    GenServer.call(pid, :pop)
+    try do
+      GenServer.call(pid, :pop)
+    catch
+      error, reason ->
+        Logger.error("Could not fetch a request: #{inspect(reason)}")
+        Logger.error(Exception.format(:error, error, __STACKTRACE__))
+    end
   end
 
   @doc """
