@@ -13,12 +13,21 @@ defmodule Crawly.Worker do
   defstruct backoff: @default_backoff, spider_name: nil, crawl_id: nil
 
   def start_link(spider_name: spider_name, crawl_id: crawl_id) do
-    GenServer.start_link(__MODULE__, spider_name: spider_name, crawl_id: crawl_id)
+    GenServer.start_link(__MODULE__,
+      spider_name: spider_name,
+      crawl_id: crawl_id
+    )
   end
 
   def init(spider_name: spider_name, crawl_id: crawl_id) do
     Crawly.Utils.send_after(self(), :work, 0)
-    {:ok, %Crawly.Worker{crawl_id: crawl_id, spider_name: spider_name, backoff: @default_backoff}}
+
+    {:ok,
+     %Crawly.Worker{
+       crawl_id: crawl_id,
+       spider_name: spider_name,
+       backoff: @default_backoff
+     }}
   end
 
   def handle_info(:work, state) do
@@ -41,12 +50,14 @@ defmodule Crawly.Worker do
 
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
-              Logger.debug(fn ->
+              Logger.debug(
                 "Crawly worker could not process the request to #{
                   inspect(request.url)
                 }
-                  reason: #{inspect(reason)}"
-              end)
+                  reason: #{inspect(reason)}",
+                spider_name: state.spider_name,
+                crawl_id: state.crawl_id
+              )
 
               @default_backoff
 

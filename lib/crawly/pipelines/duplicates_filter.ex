@@ -40,7 +40,9 @@ defmodule Crawly.Pipelines.DuplicatesFilter do
       nil ->
         Logger.info(
           "Duplicates filter pipeline is inactive, item_id option is required
-          to make it operational."
+          to make it operational.",
+          spider_name: state.spider_name,
+          crawl_id: state.crawl_id
         )
 
         {item, state}

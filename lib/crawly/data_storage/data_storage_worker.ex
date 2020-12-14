@@ -17,7 +17,10 @@ defmodule Crawly.DataStorage.Worker do
   defstruct stored_items: 0, spider_name: nil, crawl_id: nil
 
   def start_link(spider_name: spider_name, crawl_id: crawl_id) do
-    GenServer.start_link(__MODULE__, spider_name: spider_name, crawl_id: crawl_id)
+    GenServer.start_link(__MODULE__,
+      spider_name: spider_name,
+      crawl_id: crawl_id
+    )
   end
 
   @spec stats(pid()) :: {:stored_items, non_neg_integer()}

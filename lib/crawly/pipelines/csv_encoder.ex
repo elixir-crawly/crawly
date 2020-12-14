@@ -22,7 +22,9 @@ defmodule Crawly.Pipelines.CSVEncoder do
     case opts[:fields] do
       fields when fields in [nil, []] ->
         Logger.error(
-          "Dropping item: #{inspect(item)}. Reason: No fields declared for CSVEncoder"
+          "Dropping item: #{inspect(item)}. Reason: No fields declared for CSVEncoder",
+          spider_name: state.spider_name,
+          crawl_id: state.crawl_id
         )
 
         {false, state}

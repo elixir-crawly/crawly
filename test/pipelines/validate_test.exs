@@ -17,7 +17,7 @@ defmodule Pipelines.ValidateTest do
     Application.put_env(:crawly, :item, [:title, :author])
     pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @valid
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {item, _state} = Crawly.Utils.pipe(pipelines, item, state)
     assert item == @valid
@@ -26,7 +26,7 @@ defmodule Pipelines.ValidateTest do
   test "Drops items when missing required fields with global config" do
     pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @invalid_missing
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
@@ -34,7 +34,7 @@ defmodule Pipelines.ValidateTest do
   test "Drops items when missing required fields with tuple config" do
     pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @invalid_missing
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
@@ -42,7 +42,7 @@ defmodule Pipelines.ValidateTest do
   test "Drops items when required fields are equal to nil" do
     pipelines = [{Crawly.Pipelines.Validate, fields: [:title, :author]}]
     item = @invalid_nil
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
