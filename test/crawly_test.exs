@@ -17,6 +17,8 @@ defmodule CrawlyTest do
       [pipelines: [Crawly.Pipelines.JSONEncoder]]
     end)
 
+    :meck.expect(HTTPoison, :get, fn _, _, _ -> {:ok, %HTTPoison.Response{}} end)
+
     on_exit(fn ->
       :meck.unload()
     end)
