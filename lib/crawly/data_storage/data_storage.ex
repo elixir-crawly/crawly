@@ -29,8 +29,8 @@ defmodule Crawly.DataStorage do
 
   defstruct workers: %{}, pid_spiders: %{}
 
-  def start_worker(spider_name) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name})
+  def start_worker(spider_name, crawl_id) do
+    GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end
 
   @spec store(atom(), map()) :: :ok
@@ -74,7 +74,7 @@ defmodule Crawly.DataStorage do
     {:reply, :ok, %{state | workers: new_workers}}
   end
 
-  def handle_call({:start_worker, spider_name}, _from, state) do
+  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
@@ -86,7 +86,7 @@ defmodule Crawly.DataStorage do
                 restart: :temporary,
                 start:
                   {Crawly.DataStorage.Worker, :start_link,
-                   [[spider_name: spider_name]]}
+                   [[spider_name: spider_name, crawl_id: crawl_id]]}
               }
             )
 

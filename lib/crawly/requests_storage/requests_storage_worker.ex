@@ -13,7 +13,7 @@ defmodule Crawly.RequestsStorage.Worker do
 
   use GenServer
 
-  defstruct requests: [], count: 0, spider_name: nil
+  defstruct requests: [], count: 0, spider_name: nil, crawl_id: nil
 
   alias Crawly.RequestsStorage.Worker
 
@@ -51,14 +51,14 @@ defmodule Crawly.RequestsStorage.Worker do
     do_call(pid, :stats)
   end
 
-  def start_link(spider_name) do
+  def start_link(spider_name, crawl_id) do
     Logger.debug("Starting requests storage worker for #{spider_name}...")
 
-    GenServer.start_link(__MODULE__, spider_name)
+    GenServer.start_link(__MODULE__, [spider_name, crawl_id])
   end
 
-  def init(spider_name) do
-    {:ok, %Worker{requests: [], spider_name: spider_name}}
+  def init([spider_name, crawl_id]) do
+    {:ok, %Worker{requests: [], spider_name: spider_name, crawl_id: crawl_id}}
   end
 
   # Store the given request

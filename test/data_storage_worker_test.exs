@@ -3,7 +3,7 @@ defmodule DataStorageWorkerTest do
 
   setup do
     name = :test_crawler
-    {:ok, pid} = Crawly.DataStorage.start_worker(name)
+    {:ok, pid} = Crawly.DataStorage.start_worker(name, "123")
 
     on_exit(fn ->
       :meck.unload()
@@ -45,7 +45,7 @@ defmodule DataStorageWorkerTest do
   end
 
   test "Starting child worker twice", context do
-    result = Crawly.DataStorage.start_worker(context.crawler)
+    result = Crawly.DataStorage.start_worker(context.crawler, "123")
     assert result == {:error, :already_started}
   end
 

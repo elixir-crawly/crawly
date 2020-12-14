@@ -81,11 +81,12 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Starts a worker for a given spider
   """
-  @spec start_worker(spider_name) :: result
+  @spec start_worker(spider_name, crawl_id) :: result
         when spider_name: atom(),
+             crawl_id: String.t(),
              result: {:ok, pid()} | {:error, :already_started}
-  def start_worker(spider_name) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name})
+  def start_worker(spider_name, crawl_id) do
+    GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end
 
   def start_link([]) do
@@ -137,7 +138,7 @@ defmodule Crawly.RequestsStorage do
     {:reply, msg, state}
   end
 
-  def handle_call({:start_worker, spider_name}, _from, state) do
+  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
@@ -148,7 +149,7 @@ defmodule Crawly.RequestsStorage do
                 id: :undefined,
                 restart: :temporary,
                 start:
-                  {Crawly.RequestsStorage.Worker, :start_link, [spider_name]}
+                  {Crawly.RequestsStorage.Worker, :start_link, [spider_name, crawl_id]}
               }
             )
 
