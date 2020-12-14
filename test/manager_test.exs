@@ -18,14 +18,21 @@ defmodule ManagerTest do
     end)
 
     on_exit(fn ->
+      Engine.running_spiders()
+      |> Map.keys()
+      |> Enum.each(&Engine.stop_spider/1)
+
       :meck.unload()
-      running_spiders = Engine.running_spiders() |> Map.keys()
-      Enum.each(running_spiders, &Engine.stop_spider/1)
+
       Application.put_env(:crawly, :manager_operations_timeout, 30_000)
       Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
       Application.put_env(:crawly, :closespider_timeout, 20)
       Application.put_env(:crawly, :closespider_itemcount, 100)
     end)
+  end
+
+  test "manager does not crash with high number of urls" do
+    assert :ok = Crawly.Engine.start_spider(Manager.ManyUrlsTestSpider)
   end
 
   test "it is possible to add more workers to a spider" do
@@ -239,6 +246,32 @@ defmodule Manager.InitialArgsTestSpider do
   def init(opts) do
     send(:manager_test_initial_args_test, opts)
     [start_urls: opts[:urls]]
+  end
+
+  def parse_item(_response) do
+    %{items: [], requests: []}
+  end
+end
+
+defmodule Manager.ManyUrlsTestSpider do
+  use Crawly.Spider
+
+  def base_url() do
+    "https://www.example.com"
+  end
+
+  def init(_opts) do
+    urls =
+      for i <- 0..400_000 do
+        "https://www.example.com/#{i}"
+      end
+
+    requests =
+      for i <- 0..400_000 do
+        Crawly.Request.new("https://www.example.com/x/#{i}")
+      end
+
+    [start_requests: requests, start_urls: urls]
   end
 
   def parse_item(_response) do

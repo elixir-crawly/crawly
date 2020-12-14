@@ -21,6 +21,8 @@ defmodule APITest do
 
     assert conn.resp_body == "Started!"
 
+    Process.sleep(1000)
+
     conn =
       :get
       |> conn("/spiders/TestSpider/scheduled-requests", "")
