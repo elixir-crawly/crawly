@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :crawly,
-  manager_operations_timeout: 30_000,
+  manager_operations_timeout: 500,
 
   # Stop spider after scraping certain amount of items
   closespider_itemcount: 100,
@@ -34,4 +34,4 @@ config :crawly,
     ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
   ]
 
-config :logger, level: :info
+config :logger, level: :debug

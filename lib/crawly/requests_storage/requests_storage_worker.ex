@@ -33,14 +33,14 @@ defmodule Crawly.RequestsStorage.Worker do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(pid, request), do: GenServer.call(pid, {:store, request})
+  def store(pid, request), do: do_call(pid, {:store, request})
 
   @doc """
   Pop a request out of requests storage
   """
   @spec pop(pid()) :: Crawly.Request.t() | nil
   def pop(pid) do
-    GenServer.call(pid, :pop)
+    do_call(pid, :pop)
   end
 
   @doc """
@@ -48,7 +48,7 @@ defmodule Crawly.RequestsStorage.Worker do
   """
   @spec stats(pid()) :: {:stored_requests, non_neg_integer()}
   def stats(pid) do
-    GenServer.call(pid, :stats)
+    do_call(pid, :stats)
   end
 
   def start_link(spider_name) do
@@ -98,5 +98,15 @@ defmodule Crawly.RequestsStorage.Worker do
 
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_requests, state.count}, state}
+  end
+
+  defp do_call(pid, command) do
+    try do
+      GenServer.call(pid, command)
+    catch
+      error, reason ->
+        Logger.error("Could not fetch a request: #{inspect(reason)}")
+        Logger.error(Exception.format(:error, error, __STACKTRACE__))
+    end
   end
 end
