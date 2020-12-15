@@ -23,10 +23,7 @@ defmodule Crawly.Middlewares.RobotsTxt do
   def run(request, state, _opts \\ []) do
     case Gollum.crawlable?("Crawly", request.url) do
       :uncrawlable ->
-        Logger.debug("Dropping request: #{request.url} (robots.txt filter)",
-          spider_name: state.spider_name,
-          crawl_id: state.crawl_id
-        )
+        Logger.debug("Dropping request: #{request.url} (robots.txt filter)")
 
         {false, state}
 

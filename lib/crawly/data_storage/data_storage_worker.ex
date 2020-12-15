@@ -32,6 +32,7 @@ defmodule Crawly.DataStorage.Worker do
   end
 
   def init(spider_name: spider_name, crawl_id: crawl_id) do
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
     {:ok, %Worker{spider_name: spider_name, crawl_id: crawl_id}}
   end
 

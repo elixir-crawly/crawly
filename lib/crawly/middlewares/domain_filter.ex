@@ -25,9 +25,7 @@ defmodule Crawly.Middlewares.DomainFilter do
     case host != nil and String.contains?(base_url, host) do
       false ->
         Logger.debug(
-          "Dropping request: #{inspect(request.url)} (domain filter)",
-          spider_name: state.spider_name,
-          crawl_id: state.crawl_id
+          "Dropping request: #{inspect(request.url)} (domain filter)"
         )
 
         {false, state}

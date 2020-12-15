@@ -52,12 +52,12 @@ defmodule Crawly.RequestsStorage.Worker do
   end
 
   def start_link(spider_name, crawl_id) do
-    Logger.debug("Starting requests storage worker for #{spider_name}...")
-
     GenServer.start_link(__MODULE__, [spider_name, crawl_id])
   end
 
   def init([spider_name, crawl_id]) do
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
+    Logger.debug("Starting requests storage worker for #{spider_name}...")
     {:ok, %Worker{requests: [], spider_name: spider_name, crawl_id: crawl_id}}
   end
 

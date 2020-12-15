@@ -24,9 +24,7 @@ defmodule Crawly.Middlewares.UniqueRequest do
 
       _ ->
         Logger.debug(
-          "Dropping request: #{request.url}, as it's already processed",
-          spider_name: state.spider_name,
-          crawl_id: state.crawl_id
+          "Dropping request: #{request.url}, as it's already processed"
         )
 
         {false, state}

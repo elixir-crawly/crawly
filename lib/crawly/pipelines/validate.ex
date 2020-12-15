@@ -48,9 +48,7 @@ defmodule Crawly.Pipelines.Validate do
 
       _ ->
         Logger.info(
-          "Dropping item: #{inspect(item)}. Reason: missing required fields",
-          spider_name: state.spider_name,
-          crawl_id: state.crawl_id
+          "Dropping item: #{inspect(item)}. Reason: missing required fields"
         )
 
         {false, state}

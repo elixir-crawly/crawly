@@ -20,6 +20,7 @@ defmodule Crawly.Worker do
   end
 
   def init(spider_name: spider_name, crawl_id: crawl_id) do
+    Logger.metadata(crawl_id: crawl_id, spider_name: spider_name)
     Crawly.Utils.send_after(self(), :work, 0)
 
     {:ok,
@@ -54,9 +55,7 @@ defmodule Crawly.Worker do
                 "Crawly worker could not process the request to #{
                   inspect(request.url)
                 }
-                  reason: #{inspect(reason)}",
-                spider_name: state.spider_name,
-                crawl_id: state.crawl_id
+                  reason: #{inspect(reason)}"
               )
 
               @default_backoff
