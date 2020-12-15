@@ -53,7 +53,7 @@ defmodule Crawly.Manager do
   @impl true
   def init([spider_name, options]) do
     crawl_id = Keyword.get(options, :crawl_id)
-
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
     # Start DataStorage worker
     {:ok, data_storage_pid} =
       Crawly.DataStorage.start_worker(spider_name, crawl_id)
@@ -85,9 +85,7 @@ defmodule Crawly.Manager do
     tref = Process.send_after(self(), :operations, timeout)
 
     Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name}",
-      spider_name: spider_name,
-      crawl_id: crawl_id
+      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
     )
 
     {:ok,
@@ -116,9 +114,7 @@ defmodule Crawly.Manager do
       request ->
         # We should not attempt to store something which is not a request
         Logger.error(
-          "#{inspect(request)} does not seem to be a request. Ignoring.",
-          spider_name: spider_name,
-          crawl_id: state.crawl_id
+          "#{inspect(request)} does not seem to be a request. Ignoring."
         )
 
         :ignore
@@ -143,10 +139,7 @@ defmodule Crawly.Manager do
 
   @impl true
   def handle_cast({:add_workers, num_of_workers}, state) do
-    Logger.info("Adding #{num_of_workers} workers for #{state.name}",
-      spider_name: state.name,
-      crawl_id: state.crawl_id
-    )
+    Logger.info("Adding #{num_of_workers} workers for #{state.name}")
 
     Enum.each(1..num_of_workers, fn _ ->
       DynamicSupervisor.start_child(
@@ -167,10 +160,7 @@ defmodule Crawly.Manager do
 
     delta = items_count - state.prev_scraped_cnt
 
-    Logger.info("Current crawl speed is: #{delta} items/min",
-      spider_name: state.name,
-      crawl_id: state.crawl_id
-    )
+    Logger.info("Current crawl speed is: #{delta} items/min")
 
     itemcount_limit =
       :closespider_itemcount
@@ -178,7 +168,7 @@ defmodule Crawly.Manager do
       |> maybe_convert_to_integer()
 
     maybe_stop_spider_by_itemcount_limit(
-      {state.name, state.crawl_id},
+      state.name,
       items_count,
       itemcount_limit
     )
@@ -190,7 +180,7 @@ defmodule Crawly.Manager do
       |> maybe_convert_to_integer()
 
     maybe_stop_spider_by_timeout(
-      {state.name, state.crawl_id},
+      state.name,
       delta,
       closespider_timeout_limit
     )
@@ -206,15 +196,13 @@ defmodule Crawly.Manager do
   end
 
   defp maybe_stop_spider_by_itemcount_limit(
-         {spider_name, crawl_id},
+         spider_name,
          current,
          limit
        )
        when current >= limit do
     Logger.info(
-      "Stopping #{inspect(spider_name)}, closespider_itemcount achieved",
-      spider_name: spider_name,
-      crawl_id: crawl_id
+      "Stopping #{inspect(spider_name)}, closespider_itemcount achieved"
     )
 
     Crawly.Engine.stop_spider(spider_name, :itemcount_limit)
@@ -222,12 +210,9 @@ defmodule Crawly.Manager do
 
   defp maybe_stop_spider_by_itemcount_limit(_, _, _), do: :ok
 
-  defp maybe_stop_spider_by_timeout({spider_name, crawl_id}, current, limit)
+  defp maybe_stop_spider_by_timeout(spider_name, current, limit)
        when current <= limit and is_integer(limit) do
-    Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved",
-      spider_name: spider_name,
-      crawl_id: crawl_id
-    )
+    Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved")
 
     Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)
   end
