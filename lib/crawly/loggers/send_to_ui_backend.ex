@@ -19,12 +19,18 @@ defmodule Crawly.Loggers.SendToUiBackend do
         {_level, _group_leader, {Logger, message, _timestamp, metadata}},
         %{destination: {node, module, function}} = state
       ) do
+    {mod, _fun, _arity} = Keyword.get(metadata, :mfa, {:undefined, nil, nil})
+
     case Keyword.get(metadata, :crawl_id, nil) do
       nil ->
         :ignore
 
       crawl_id ->
-        :rpc.cast(node, module, function, [crawl_id, message])
+        :rpc.cast(node, module, function, [
+          crawl_id,
+          message,
+          Atom.to_string(mod)
+        ])
     end
 
     {:ok, state}
