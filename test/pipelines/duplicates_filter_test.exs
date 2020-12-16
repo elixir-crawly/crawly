@@ -6,7 +6,7 @@ defmodule Pipelines.DuplicatesFilterTest do
   test "Drops duplicate items with the same item_id value through global config" do
     pipelines = [{Crawly.Pipelines.DuplicatesFilter, item_id: :id}]
     item = @valid
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {item, state} = Crawly.Utils.pipe(pipelines, item, state)
 
@@ -22,7 +22,7 @@ defmodule Pipelines.DuplicatesFilterTest do
   test "Drops duplicate items with the same item_id value through tuple config" do
     pipelines = [{Crawly.Pipelines.DuplicatesFilter, item_id: :id}]
     item = @valid
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {item, state} = Crawly.Utils.pipe(pipelines, item, state)
 
@@ -38,7 +38,7 @@ defmodule Pipelines.DuplicatesFilterTest do
   test "Inactive when item_id is not set" do
     pipelines = [Crawly.Pipelines.DuplicatesFilter]
     item = @valid
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {item, state} = Crawly.Utils.pipe(pipelines, item, state)
 

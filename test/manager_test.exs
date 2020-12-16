@@ -31,7 +31,7 @@ defmodule ManagerTest do
 
   test "it is possible to add more workers to a spider" do
     spider_name = Manager.TestSpider
-    :ok = Crawly.Engine.start_spider(spider_name)
+    :ok = Crawly.Engine.start_spider(spider_name, crawl_id: "add_workers_test")
     initial_number_of_workers = 1
 
     assert initial_number_of_workers ==

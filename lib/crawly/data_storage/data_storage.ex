@@ -29,8 +29,8 @@ defmodule Crawly.DataStorage do
 
   defstruct workers: %{}, pid_spiders: %{}
 
-  def start_worker(spider_name) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name})
+  def start_worker(spider_name, crawl_id) do
+    GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end
 
   @spec store(atom(), map()) :: :ok
@@ -55,42 +55,23 @@ defmodule Crawly.DataStorage do
   def handle_call({:store, spider, item}, _from, state) do
     %{workers: workers} = state
 
-    {pid, new_workers} =
+    message =
       case Map.get(workers, spider) do
         nil ->
-          {:ok, pid} =
-            DynamicSupervisor.start_child(
-              Crawly.DataStorage.WorkersSup,
-              {Crawly.DataStorage.Worker, [spider_name: spider]}
-            )
-
-          {pid, Map.put(workers, spider, pid)}
+          {:error, :data_storage_worker_not_running}
 
         pid ->
-          {pid, workers}
+          Crawly.DataStorage.Worker.store(pid, item)
       end
 
-    Crawly.DataStorage.Worker.store(pid, item)
-    {:reply, :ok, %{state | workers: new_workers}}
+    {:reply, message, state}
   end
 
-  def handle_call({:start_worker, spider_name}, _from, state) do
+  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
-          {:ok, pid} =
-            DynamicSupervisor.start_child(
-              Crawly.DataStorage.WorkersSup,
-              %{
-                id: :undefined,
-                restart: :temporary,
-                start:
-                  {Crawly.DataStorage.Worker, :start_link,
-                   [[spider_name: spider_name]]}
-              }
-            )
-
-          Process.monitor(pid)
+          pid = do_start_worker(spider_name, crawl_id)
 
           new_workers = Map.put(state.workers, spider_name, pid)
           new_spider_pids = Map.put(state.pid_spiders, pid, spider_name)
@@ -131,5 +112,22 @@ defmodule Crawly.DataStorage do
     new_state = %{state | workers: new_workers, pid_spiders: new_pid_spiders}
 
     {:noreply, new_state}
+  end
+
+  defp do_start_worker(spider_name, crawl_id) do
+    {:ok, pid} =
+      DynamicSupervisor.start_child(
+        Crawly.DataStorage.WorkersSup,
+        %{
+          id: :undefined,
+          restart: :temporary,
+          start:
+            {Crawly.DataStorage.Worker, :start_link,
+             [[spider_name: spider_name, crawl_id: crawl_id]]}
+        }
+      )
+
+    Process.monitor(pid)
+    pid
   end
 end

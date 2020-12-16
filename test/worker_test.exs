@@ -8,7 +8,8 @@ defmodule WorkerTest do
 
       spider_name = Elixir.TestWorker
 
-      {:ok, storage_pid} = Crawly.DataStorage.start_worker(spider_name)
+      {:ok, storage_pid} =
+        Crawly.DataStorage.start_worker(spider_name, "crawl_id")
 
       {:ok, workers_sup} =
         DynamicSupervisor.start_link(strategy: :one_for_one, name: spider_name)
@@ -16,7 +17,7 @@ defmodule WorkerTest do
       {:ok, pid} =
         DynamicSupervisor.start_child(
           spider_name,
-          {Crawly.Worker, [spider_name]}
+          {Crawly.Worker, [spider_name: spider_name, crawl_id: "crawl_id"]}
         )
 
       on_exit(fn ->
@@ -53,7 +54,9 @@ defmodule WorkerTest do
     setup do
       :meck.expect(Crawly.Utils, :send_after, fn _, _, _ -> :ignore end)
       spider_name = Worker.CrashingTestSpider
-      {:ok, storage_pid} = Crawly.DataStorage.start_worker(spider_name)
+
+      {:ok, storage_pid} =
+        Crawly.DataStorage.start_worker(spider_name, "crawl_id")
 
       {:ok, workers_sup} =
         DynamicSupervisor.start_link(strategy: :one_for_one, name: spider_name)
@@ -61,11 +64,11 @@ defmodule WorkerTest do
       {:ok, pid} =
         DynamicSupervisor.start_child(
           spider_name,
-          {Crawly.Worker, [spider_name]}
+          {Crawly.Worker, [spider_name: spider_name, crawl_id: "crawl_id"]}
         )
 
       {:ok, requests_storage_pid} =
-        Crawly.RequestsStorage.start_worker(spider_name)
+        Crawly.RequestsStorage.start_worker(spider_name, "crawl_id")
 
       :ok =
         Crawly.RequestsStorage.store(

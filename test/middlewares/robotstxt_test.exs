@@ -13,7 +13,7 @@ defmodule Middlewares.RobotsTxtTest do
 
     middlewares = [Crawly.Middlewares.RobotsTxt]
     req = @valid
-    state = %{spider_name: :test_spider}
+    state = %{spider_name: :test_spider, crawl_id: "123"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end

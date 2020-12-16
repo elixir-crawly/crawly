@@ -1,15 +1,7 @@
 # Experimental UI
 
-We believe that web scraping is a process. It might seem easy to extract first 
-data items, however we believe that the data delivery requires a bit more efforts or
-a process which supports it!
-
-Our aim is to provide you with the following services:
-
-1. Schedule (start and stop) your spiders on a cloud
-2. View running jobs (performance based analysis)
-3. View and validate scraped items for quality assurance and data analysis purposes.
-4. View individual items and compare them with the actual website.
+If you are interested in our attempts to make crawling more predictable,
+have a glance on: https://github.com/oltarasenko/crawly_ui
 
 ## Setting it up
 
@@ -32,37 +24,19 @@ For setting up erlang-node-discovery
           ]
 ```
 
-## Testing it locally with a docker-compose
+## Setting up logger
 
-CrawlyUI ships with a docker compose which brings up UI, worker and database
-nodes, so everything is ready for testing with just one command.
+You can send logs to CrawlyUI as well. In order to do that you have
+to add the following (changing your node name of course) to your config:
+``` 
+# tell logger to load a LoggerFileBackend processes
+config :logger,
+  backends: [
+    :console,
+    {Crawly.Loggers.SendToUiBackend, :send_log_to_ui}
+  ],
+  level: :debug
 
-In order to try it:
-1. clone crawly_ui repo: `git clone git@github.com:oltarasenko/crawly_ui.git`
-2. build ui and worker nodes: `docker-compose build`
-3. apply migrations: `docker-compose run ui bash -c "/crawlyui/bin/ec eval \"CrawlyUI.ReleaseTasks.migrate\""`
-4. run it all: `docker-compose up`
+config :logger, :send_log_to_ui, destination: {:"ui@127.0.0.1", CrawlyUI, :store_log}
 
-## Live demo
-
-Live demo is available as well. However it might be a bit unstable due to our continuous release process.
-Please give it a try and let us know what do you think
-
-[Live Demo](http://18.216.221.122/)  
-
-## Items browser
-
-One of the cool features of the CrawlyUI is items browser which allows comparing
-extracted data with a target website loaded in the IFRAME. However, as sites may block iframes, a workaround browser extension may be used to ignore X-Frame headers.
-For example:
-[Chrome extension](https://chrome.google.com/webstore/detail/ignore-x-frame-headers/gleekbfjekiniecknbkamfmkohkpodhe)
-
-## Gallery
-
-![Main Page](documentation/assets/main_page.png?raw=true)
-
-![Items browser](documentation/assets/items_page.png?raw=true)
-
-![Items browser search](documentation/assets/item_with_filters.png?raw=true)
-
-![Items browser](documentation/assets/item_preview_example.png?raw=true)
+```

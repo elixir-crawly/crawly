@@ -32,6 +32,5 @@ config :crawly,
     retry_codes: [500, 404],
     max_retries: 2,
     ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
-  ]
-
-config :logger, level: :debug
+  ],
+  log_dir: "/tmp/spider_logs"
