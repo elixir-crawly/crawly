@@ -55,6 +55,21 @@ defmodule Crawly.Manager do
   def init([spider_name, options]) do
     crawl_id = Keyword.get(options, :crawl_id)
     Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
+
+    itemcount_limit =
+      Keyword.get(
+        options,
+        :closespider_itemcount,
+        get_default_limit(:closespider_itemcount, spider_name)
+      )
+
+    closespider_timeout_limit =
+      Keyword.get(
+        options,
+        :closespider_timeout,
+        get_default_limit(:closespider_timeout, spider_name)
+      )
+
     # Start DataStorage worker
     {:ok, data_storage_pid} =
       Crawly.DataStorage.start_worker(spider_name, crawl_id)
@@ -69,7 +84,11 @@ defmodule Crawly.Manager do
 
     # Start workers
     num_workers =
-      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
+      Keyword.get(
+        options,
+        :concurrent_requests_per_domain,
+        Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
+      )
 
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
@@ -93,6 +112,8 @@ defmodule Crawly.Manager do
      %{
        name: spider_name,
        crawl_id: crawl_id,
+       itemcount_limit: itemcount_limit,
+       closespider_timeout_limit: closespider_timeout_limit,
        tref: tref,
        prev_scraped_cnt: 0,
        workers: worker_pids
@@ -152,27 +173,17 @@ defmodule Crawly.Manager do
 
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    itemcount_limit =
-      :closespider_itemcount
-      |> Utils.get_settings(state.name)
-      |> maybe_convert_to_integer()
-
     maybe_stop_spider_by_itemcount_limit(
       state.name,
       items_count,
-      itemcount_limit
+      state.itemcount_limit
     )
 
     # Close spider in case if it's not scraping items fast enough
-    closespider_timeout_limit =
-      :closespider_timeout
-      |> Utils.get_settings(state.name)
-      |> maybe_convert_to_integer()
-
     maybe_stop_spider_by_timeout(
       state.name,
       delta,
-      closespider_timeout_limit
+      state.closespider_timeout_limit
     )
 
     tref =
@@ -223,5 +234,13 @@ defmodule Crawly.Manager do
         Crawly.RequestsStorage.store(spider_name, request)
       end
     )
+  end
+
+  # Get a closespider_itemcount or closespider_timeout_limit from config or spider
+  # settings.
+  defp get_default_limit(limit_name, spider_name) do
+    limit_name
+    |> Utils.get_settings(spider_name)
+    |> maybe_convert_to_integer()
   end
 end

@@ -27,9 +27,14 @@ defmodule Crawly.Engine do
 
   ### Reserved Options
   - `:crawl_id` (binary). Optional, automatically generated if not set.
+  - `:closespider_itemcount` (integer | disabled). Optional, overrides the close
+    spider item count on startup.
+  - `:closespider_timeout` (integer | disabled). Optional, overrides the close
+                            spider timeout on startup.
+  - `:concurrent_requests_per_domain` (integer). Optional, overrides the number of
+     workers for a given spider
 
-
-  ### Backward compatability
+  ### Backward compatibility
   If the 2nd positional argument is a binary, it will be set as the `:crawl_id`. Deprecated, will be removed in the future.
   """
   @type crawl_id_opt :: {:crawl_id, binary()}

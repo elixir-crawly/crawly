@@ -105,7 +105,7 @@ defmodule Crawly.RequestsStorage.Worker do
       GenServer.call(pid, command)
     catch
       error, reason ->
-        Logger.debug("Could not fetch a request: #{inspect(reason)}")
+        Logger.debug("Could not get response: #{inspect(reason)}")
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))
     end
   end
