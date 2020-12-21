@@ -60,7 +60,10 @@ defmodule RequestStorageTest do
              Crawly.RequestsStorage.stats(:unkown)
 
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.store(%{}, :unkown)
+             Crawly.RequestsStorage.store(
+               :unkown,
+               Crawly.Utils.request_from_url("http://example.com")
+             )
   end
 
   test "Duplicated requests are filtered out", context do
