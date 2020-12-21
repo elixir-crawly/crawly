@@ -88,6 +88,12 @@ historical archival.
    - `iex(1)> Crawly.Engine.start_spider(EslSpider)`
 6. Results can be seen with: `$ cat /tmp/EslSpider.jl`
 
+## Need more help?
+I have decided to create a public telegram channel, so it's now possible to be connected, and it's possible to ask questions
+and get answers faster!
+
+Please join me on: https://t.me/elixir_crawly
+
 ## Browser rendering
 
 Crawly can be configured in the way that all fetched pages will be browser rendered,
@@ -103,11 +109,6 @@ The CrawlyUI project is an add-on that aims to provide an interface for managing
 
 Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui) 
 or try it online [CrawlyUIDemo](http://crawlyui.com)
-
-![](documentation/assets/main_page.png?raw=true)
-![](documentation/assets/items_page.png?raw=true)
-![](documentation/assets/item_with_filters.png?raw=true)
-![](documentation/assets/item_preview_example.png?raw=true)
 
 See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#content)
 
