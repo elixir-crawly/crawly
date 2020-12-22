@@ -16,7 +16,7 @@ defmodule Middlewares.DomainFilterTest do
   test "Filters out requests that do not contain a spider's base_url" do
     middlewares = [Crawly.Middlewares.DomainFilter]
     req = %Crawly.Request{url: "https://www.some_url.com"}
-    state = %{spider_name: :test_spider}
+    state = %{spider_name: :test_spider, crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
@@ -28,7 +28,7 @@ defmodule Middlewares.DomainFilterTest do
       url: "https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html"
     }
 
-    state = %{spider_name: :test_spider}
+    state = %{spider_name: :test_spider, crawl_id: "id"}
 
     {maybe_request, _state} = Crawly.Utils.pipe(middlewares, req, state)
     assert %Crawly.Request{} = maybe_request
@@ -42,7 +42,7 @@ defmodule Middlewares.DomainFilterTest do
         "https://twitter.com?share=https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html"
     }
 
-    state = %{spider_name: :test_spider}
+    state = %{spider_name: :test_spider, crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
@@ -54,7 +54,7 @@ defmodule Middlewares.DomainFilterTest do
       url: "/blog"
     }
 
-    state = %{spider_name: :test_spider}
+    state = %{spider_name: :test_spider, crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end

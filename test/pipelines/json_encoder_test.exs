@@ -6,7 +6,7 @@ defmodule Pipelines.JSONEncoderTest do
   test "Converts a given map to a json string" do
     pipelines = [Crawly.Pipelines.JSONEncoder]
     item = @valid
-    state = %{}
+    state = %{spider_name: Test, crawl_id: "test"}
 
     {item, _state} = Crawly.Utils.pipe(pipelines, item, state)
 

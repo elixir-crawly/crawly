@@ -52,42 +52,19 @@ defmodule Crawly.Manager do
 
   @impl true
   def init([spider_name, options]) do
-    # Getting spider start urls
-    init = spider_name.init(options)
-
+    crawl_id = Keyword.get(options, :crawl_id)
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
     # Start DataStorage worker
-    {:ok, data_storage_pid} = Crawly.DataStorage.start_worker(spider_name)
+    {:ok, data_storage_pid} =
+      Crawly.DataStorage.start_worker(spider_name, crawl_id)
+
     Process.link(data_storage_pid)
 
     # Start RequestsWorker for a given spider
     {:ok, request_storage_pid} =
-      Crawly.RequestsStorage.start_worker(spider_name)
+      Crawly.RequestsStorage.start_worker(spider_name, crawl_id)
 
     Process.link(request_storage_pid)
-
-    # Store start urls
-    Enum.each(
-      Keyword.get(init, :start_requests, []),
-      fn
-        %Crawly.Request{} = request ->
-          Crawly.RequestsStorage.store(spider_name, request)
-
-        request ->
-          # We should not attempt to store something which is not a request
-          Logger.error(
-            "#{inspect(request)} does not seem to be a request. Ignoring."
-          )
-
-          :ignore
-      end
-    )
-
-    Enum.each(
-      Keyword.get(init, :start_urls, []),
-      fn url ->
-        Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
-      end
-    )
 
     # Start workers
     num_workers =
@@ -97,13 +74,9 @@ defmodule Crawly.Manager do
       Enum.map(1..num_workers, fn _x ->
         DynamicSupervisor.start_child(
           spider_name,
-          {Crawly.Worker, [spider_name]}
+          {Crawly.Worker, [spider_name: spider_name, crawl_id: crawl_id]}
         )
       end)
-
-    Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
-    )
 
     # Schedule basic service operations for given spider manager
     timeout =
@@ -111,8 +84,57 @@ defmodule Crawly.Manager do
 
     tref = Process.send_after(self(), :operations, timeout)
 
+    Logger.debug(
+      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
+    )
+
     {:ok,
-     %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
+     %{
+       name: spider_name,
+       crawl_id: crawl_id,
+       tref: tref,
+       prev_scraped_cnt: 0,
+       workers: worker_pids
+     }, {:continue, {:startup, options}}}
+  end
+
+  @impl true
+  def handle_continue({:startup, options}, state) do
+    # Getting spider start urls
+    init = state.name.init(options)
+    spider_name = state.name
+    # Store start urls
+    start_requests = Keyword.get(init, :start_requests, [])
+    {sync_start_req, async_start_req} = Enum.split(start_requests, 1000)
+
+    store_req_fun = fn
+      %Crawly.Request{} = request ->
+        Crawly.RequestsStorage.store(spider_name, request)
+
+      request ->
+        # We should not attempt to store something which is not a request
+        Logger.error(
+          "#{inspect(request)} does not seem to be a request. Ignoring."
+        )
+
+        :ignore
+    end
+
+    Enum.each(sync_start_req, store_req_fun)
+    Task.start_link(fn -> Enum.each(async_start_req, store_req_fun) end)
+
+    start_urls = Keyword.get(init, :start_urls, [])
+    {sync_start_urls, async_start_urls} = Enum.split(start_urls, 1000)
+
+    store_url_fun = fn url ->
+      Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
+    end
+
+    Enum.each(sync_start_urls, store_url_fun)
+    Task.start_link(fn -> Enum.each(async_start_urls, store_url_fun) end)
+
+    # return state as unchanged
+    {:noreply, state}
   end
 
   @impl true
@@ -120,7 +142,10 @@ defmodule Crawly.Manager do
     Logger.info("Adding #{num_of_workers} workers for #{state.name}")
 
     Enum.each(1..num_of_workers, fn _ ->
-      DynamicSupervisor.start_child(state.name, {Crawly.Worker, [state.name]})
+      DynamicSupervisor.start_child(
+        state.name,
+        {Crawly.Worker, [spider_name: state.name, crawl_id: state.crawl_id]}
+      )
     end)
 
     {:noreply, state}
@@ -134,6 +159,7 @@ defmodule Crawly.Manager do
     {:stored_items, items_count} = Crawly.DataStorage.stats(state.name)
 
     delta = items_count - state.prev_scraped_cnt
+
     Logger.info("Current crawl speed is: #{delta} items/min")
 
     itemcount_limit =
@@ -169,8 +195,12 @@ defmodule Crawly.Manager do
     {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
   end
 
-  defp maybe_stop_spider_by_itemcount_limit(spider_name, current, limit)
-       when current > limit do
+  defp maybe_stop_spider_by_itemcount_limit(
+         spider_name,
+         current,
+         limit
+       )
+       when current >= limit do
     Logger.info(
       "Stopping #{inspect(spider_name)}, closespider_itemcount achieved"
     )
@@ -181,7 +211,7 @@ defmodule Crawly.Manager do
   defp maybe_stop_spider_by_itemcount_limit(_, _, _), do: :ok
 
   defp maybe_stop_spider_by_timeout(spider_name, current, limit)
-       when current < limit and is_integer(limit) do
+       when current <= limit and is_integer(limit) do
     Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved")
 
     Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)

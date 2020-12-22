@@ -55,6 +55,9 @@ defmodule Crawly.Engine do
       Enum.into(opts, %{})
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
+    # Filter all logs related to a given spider
+    set_spider_log(spider_name, opts[:crawl_id])
+
     GenServer.call(
       __MODULE__,
       {:start_spider, spider_name, opts[:crawl_id], Map.to_list(opts)}
@@ -227,5 +230,16 @@ defmodule Crawly.Engine do
 
     (known ++ new)
     |> Enum.dedup_by(& &1)
+  end
+
+  defp set_spider_log(spider_name, crawl_id) do
+    log_dir = Crawly.Utils.get_settings(:log_dir, spider_name, "/tmp")
+    Logger.add_backend({LoggerFileBackend, :debug})
+
+    Logger.configure_backend({LoggerFileBackend, :debug},
+      path: "/#{log_dir}/#{spider_name}/#{crawl_id}.log",
+      level: :debug,
+      metadata_filter: [crawl_id: crawl_id]
+    )
   end
 end
