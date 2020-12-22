@@ -67,25 +67,6 @@ defmodule Crawly.Manager do
 
     Process.link(request_storage_pid)
 
-    # Add start requests to the requests storage
-    init = spider_name.init(options)
-
-    start_requests_from_req = Keyword.get(init, :start_requests, [])
-
-    start_requests_from_urls =
-      init
-      |> Keyword.get(:start_urls, [])
-      |> Crawly.Utils.requests_from_urls()
-
-    start_requests = start_requests_from_req ++ start_requests_from_urls
-
-    # Split start requests, so it's possible to initialize a part of them in async
-    # manner
-    {start_req, async_start_req} =
-      Enum.split(start_requests, @start_request_split_size)
-
-    :ok = store_requests(spider_name, start_req)
-
     # Start workers
     num_workers =
       Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
@@ -115,13 +96,32 @@ defmodule Crawly.Manager do
        tref: tref,
        prev_scraped_cnt: 0,
        workers: worker_pids
-     }, {:continue, {:startup, {spider_name, async_start_req}}}}
+     }, {:continue, {:startup, options}}}
   end
 
   @impl true
-  def handle_continue({:startup, {spider_name, async_start_req}}, state) do
+  def handle_continue({:startup, options}, state) do
+    # Add start requests to the requests storage
+    init = state.name.init(options)
+
+    start_requests_from_req = Keyword.get(init, :start_requests, [])
+
+    start_requests_from_urls =
+      init
+      |> Keyword.get(:start_urls, [])
+      |> Crawly.Utils.requests_from_urls()
+
+    start_requests = start_requests_from_req ++ start_requests_from_urls
+
+    # Split start requests, so it's possible to initialize a part of them in async
+    # manner
+    {start_req, async_start_req} =
+      Enum.split(start_requests, @start_request_split_size)
+
+    :ok = do_store_requests(state.name, start_req)
+
     Task.start(fn ->
-      store_requests(spider_name, async_start_req)
+      do_store_requests(state.name, async_start_req)
     end)
 
     {:noreply, state}
@@ -216,7 +216,7 @@ defmodule Crawly.Manager do
 
   defp maybe_convert_to_integer(value) when is_integer(value), do: value
 
-  defp store_requests(spider_name, requests) do
+  defp do_store_requests(spider_name, requests) do
     Enum.each(
       requests,
       fn request ->
