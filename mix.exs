@@ -73,6 +73,7 @@ defmodule Crawly.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
+      {:floki, "~> 0.26.0", only: :test},
       {:logger_file_backend, "~> 0.0.11"}
     ]
   end

@@ -174,6 +174,65 @@ defmodule Crawly.Utils do
     )
   end
 
+  @doc """
+  General purpose requests extractor
+
+  Takes html body of the page, base_url and a list of url filters and produces
+  new requests to follow.
+
+  The code below extracts all links from a page, and tries to match each of them
+  with a list of filters, making a request from each matched link.
+
+  NOTE: This function is created in order to spiders creation, however it's less
+  performant comparing to the approach when links are extracted directly (e.g.
+  from the pagination, etc). So to summarize, it's slow, but in most cases that
+  will not be noticeable.
+  """
+  @spec extract_requests(page_body, base_url, list_of_filters) :: result
+        when page_body: String.t(),
+             base_url: String.t(),
+             list_of_filters: String.t(),
+             result: [Crawly.Request.t()]
+  def extract_requests(page_body, base_url, filters) do
+    case :code.module_status(Floki) do
+      :loaded ->
+        links =
+          page_body
+          |> Floki.parse_document!()
+          |> Floki.find("a")
+          |> Floki.attribute("href")
+          |> Enum.filter(fn href ->
+            Enum.any?(filters, &String.contains?(href, &1))
+          end)
+
+        absolute_urls =
+          Enum.reduce(
+            links,
+            [],
+            fn url, acc ->
+              parsed_merge = URI.merge(base_url, url)
+
+              case parsed_merge.scheme in ["http", "https"] do
+                true ->
+                  [parsed_merge |> to_string() | acc]
+
+                false ->
+                  acc
+              end
+            end
+          )
+
+        Crawly.Utils.requests_from_urls(absolute_urls)
+
+      _ ->
+        Logger.error(
+          "Floki is required in order to use general links extractor"
+        )
+
+        []
+    end
+  end
+
   ##############################################################################
   # Private functions
   ##############################################################################

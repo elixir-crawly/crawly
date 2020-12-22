@@ -95,6 +95,104 @@ defmodule UtilsTest do
            )
   end
 
+  describe "Extract Requests tests" do
+    setup do
+      html = """
+        <html>
+          <a href="/blog/">Blog</a>
+          <a href="/shop">Shop</a>
+          <a href="/shop/item/1">Item1</a>
+          <a href="/shop/item/2">Item2</a>
+          <a href="http://example.com/blog-page/2">Item2</a>
+          <a href="https://other-site.com/blog-page/1">Other site</a>
+          <a href="mailto:someone@examplesite.com">Email Us</a>
+        </html>
+      """
+
+      {:ok, html: html}
+    end
+
+    test "Extract requests only matching a given filters", %{html: html} do
+      base_url = "http://example.com"
+
+      expected_requests =
+        Crawly.Utils.requests_from_urls([
+          "http://example.com/shop/item/1",
+          "http://example.com/shop/item/2"
+        ])
+
+      assert Enum.sort(expected_requests) ==
+               Enum.sort(
+                 Crawly.Utils.extract_requests(html, base_url, ["/item/"])
+               )
+    end
+
+    test "It's possible to extract requests from the page", %{html: html} do
+      base_url = "http://example.com"
+
+      expected_requests =
+        Crawly.Utils.requests_from_urls([
+          "http://example.com/shop/item/1",
+          "http://example.com/shop/item/2"
+        ])
+
+      assert Enum.sort(expected_requests) ==
+               Enum.sort(
+                 Crawly.Utils.extract_requests(html, base_url, ["/item/"])
+               )
+    end
+
+    test "multiple filters", %{html: html} do
+      base_url = "http://example.com"
+
+      expected_requests =
+        Crawly.Utils.requests_from_urls([
+          "http://example.com/shop/item/1",
+          "http://example.com/shop/item/2",
+          "http://example.com/blog/"
+        ])
+
+      assert Enum.sort(expected_requests) ==
+               Enum.sort(
+                 Crawly.Utils.extract_requests(html, base_url, [
+                   "/item/",
+                   "/blog/"
+                 ])
+               )
+    end
+
+    test "non http/https links are ignored", %{html: html} do
+      base_url = "http://example.com"
+
+      assert [] ==
+               Crawly.Utils.extract_requests(html, base_url, ["examplesite"])
+    end
+
+    test "Works with absolute urls", %{html: html} do
+      base_url = "http://example.com"
+
+      expected_requests =
+        Crawly.Utils.requests_from_urls([
+          "http://example.com/blog-page/2"
+        ])
+
+      assert expected_requests ==
+               Crawly.Utils.extract_requests(html, base_url, ["/blog-page/2"])
+    end
+
+    test "Works with absolute urls leading to other sites", %{html: html} do
+      base_url = "http://example.com"
+
+      expected_requests =
+        Crawly.Utils.requests_from_urls([
+          "https://other-site.com/blog-page/1"
+        ])
+
+      assert expected_requests ==
+               Crawly.Utils.extract_requests(html, base_url, ["/blog-page/1"])
+    end
+  end
+
   defp expected_request(url) do
     %Crawly.Request{
       url: url,
