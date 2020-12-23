@@ -49,8 +49,13 @@ defmodule Crawly.RequestsStorage do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(spider_name, request) do
+  def store(spider_name, %Crawly.Request{} = request) do
     store(spider_name, [request])
+  end
+
+  def store(_spider_name, request) do
+    Logger.error("#{inspect(request)} does not seem to be a request. Ignoring.")
+    {:error, :not_request}
   end
 
   @doc """

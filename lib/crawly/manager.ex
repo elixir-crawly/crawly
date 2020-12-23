@@ -28,6 +28,7 @@ defmodule Crawly.Manager do
   require Logger
 
   @timeout 60_000
+  @start_request_split_size 50
 
   use GenServer
 
@@ -100,40 +101,29 @@ defmodule Crawly.Manager do
 
   @impl true
   def handle_continue({:startup, options}, state) do
-    # Getting spider start urls
+    # Add start requests to the requests storage
     init = state.name.init(options)
-    spider_name = state.name
-    # Store start urls
-    start_requests = Keyword.get(init, :start_requests, [])
-    {sync_start_req, async_start_req} = Enum.split(start_requests, 1000)
 
-    store_req_fun = fn
-      %Crawly.Request{} = request ->
-        Crawly.RequestsStorage.store(spider_name, request)
+    start_requests_from_req = Keyword.get(init, :start_requests, [])
 
-      request ->
-        # We should not attempt to store something which is not a request
-        Logger.error(
-          "#{inspect(request)} does not seem to be a request. Ignoring."
-        )
+    start_requests_from_urls =
+      init
+      |> Keyword.get(:start_urls, [])
+      |> Crawly.Utils.requests_from_urls()
 
-        :ignore
-    end
+    start_requests = start_requests_from_req ++ start_requests_from_urls
 
-    Enum.each(sync_start_req, store_req_fun)
-    Task.start_link(fn -> Enum.each(async_start_req, store_req_fun) end)
+    # Split start requests, so it's possible to initialize a part of them in async
+    # manner
+    {start_req, async_start_req} =
+      Enum.split(start_requests, @start_request_split_size)
 
-    start_urls = Keyword.get(init, :start_urls, [])
-    {sync_start_urls, async_start_urls} = Enum.split(start_urls, 1000)
+    :ok = do_store_requests(state.name, start_req)
 
-    store_url_fun = fn url ->
-      Crawly.RequestsStorage.store(spider_name, Crawly.Request.new(url))
-    end
+    Task.start(fn ->
+      do_store_requests(state.name, async_start_req)
+    end)
 
-    Enum.each(sync_start_urls, store_url_fun)
-    Task.start_link(fn -> Enum.each(async_start_urls, store_url_fun) end)
-
-    # return state as unchanged
     {:noreply, state}
   end
 
@@ -225,4 +215,13 @@ defmodule Crawly.Manager do
     do: String.to_integer(value)
 
   defp maybe_convert_to_integer(value) when is_integer(value), do: value
+
+  defp do_store_requests(spider_name, requests) do
+    Enum.each(
+      requests,
+      fn request ->
+        Crawly.RequestsStorage.store(spider_name, request)
+      end
+    )
+  end
 end

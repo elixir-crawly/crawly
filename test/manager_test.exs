@@ -64,7 +64,7 @@ defmodule ManagerTest do
   test "Closespider itemcount is respected" do
     Process.register(self(), :spider_closed_callback_test)
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    Process.sleep(501)
+    Process.sleep(1_000)
     assert_receive :itemcount_limit
   end
 
@@ -72,11 +72,9 @@ defmodule ManagerTest do
     Process.register(self(), :close_by_timeout_listener)
 
     :ok = Crawly.Engine.start_spider(Manager.CloseByTimeoutSpider)
-    Process.sleep(501)
+    Process.sleep(1_000)
     assert_receive :itemcount_timeout
   end
-
-  #
 
   test "Can't start already started spider" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
@@ -180,8 +178,6 @@ defmodule Manager.CloseByTimeoutSpider do
 
   def override_settings() do
     on_spider_closed_callback = fn reason ->
-      IO.puts("Stopped #{reason}")
-
       case Process.whereis(:close_by_timeout_listener) do
         nil ->
           :nothing_to_do
