@@ -10,16 +10,25 @@ defmodule Crawly.Worker do
   # define the default worker fetch interval.
   @default_backoff 10_000
 
-  defstruct backoff: @default_backoff, spider_name: nil
+  defstruct backoff: @default_backoff, spider_name: nil, crawl_id: nil
 
-  def start_link([spider_name]) do
-    GenServer.start_link(__MODULE__, [spider_name])
+  def start_link(spider_name: spider_name, crawl_id: crawl_id) do
+    GenServer.start_link(__MODULE__,
+      spider_name: spider_name,
+      crawl_id: crawl_id
+    )
   end
 
-  def init([spider_name]) do
+  def init(spider_name: spider_name, crawl_id: crawl_id) do
+    Logger.metadata(crawl_id: crawl_id, spider_name: spider_name)
     Crawly.Utils.send_after(self(), :work, 0)
 
-    {:ok, %Crawly.Worker{spider_name: spider_name, backoff: @default_backoff}}
+    {:ok,
+     %Crawly.Worker{
+       crawl_id: crawl_id,
+       spider_name: spider_name,
+       backoff: @default_backoff
+     }}
   end
 
   def handle_info(:work, state) do
@@ -42,12 +51,12 @@ defmodule Crawly.Worker do
 
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
-              Logger.debug(fn ->
+              Logger.debug(
                 "Crawly worker could not process the request to #{
                   inspect(request.url)
                 }
                   reason: #{inspect(reason)}"
-              end)
+              )
 
               @default_backoff
 

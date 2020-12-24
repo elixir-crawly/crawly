@@ -2,7 +2,7 @@ defmodule Pipelines.CSVEncoderTest do
   use ExUnit.Case, async: false
 
   @item %{first: "some", second: "data"}
-  @state %{}
+  @state %{spider_name: Test, crawl_id: "test"}
 
   test "Converts a single-level map to a csv string with fields config" do
     pipelines = [{Crawly.Pipelines.CSVEncoder, fields: [:first, :second]}]

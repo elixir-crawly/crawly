@@ -11,7 +11,6 @@ defmodule Crawly.Middlewares.AutoCookiesManager do
   ]
   ```
   """
-  require Logger
 
   def run(request, state) do
     known_cookies = Map.get(state, :cookies_manager_seen_cookies, MapSet.new())
