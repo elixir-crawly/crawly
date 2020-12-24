@@ -28,7 +28,7 @@ defmodule Crawly.Spider do
               Crawly.ParsedItem.t()
 
   @callback override_settings() :: Crawly.Settings.t()
-
+  @optional_callbacks parse_item: 1
   defmacro __using__(_opts) do
     quote do
       require Logger
