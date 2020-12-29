@@ -133,6 +133,8 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 2. Blog post about using Crawly inside a machine learning project with Tensorflow (Tensorflex): https://www.erlang-solutions.com/blog/how-to-build-a-machine-learning-project-in-elixir.html
 3. Web scraping with Crawly and Elixir. Browser rendering: https://medium.com/@oltarasenko/web-scraping-with-elixir-and-crawly-browser-rendering-afcaacf954e8
 4. Web scraping with Elixir and Crawly. Extracting data behind authentication: https://oltarasenko.medium.com/web-scraping-with-elixir-and-crawly-extracting-data-behind-authentication-a52584e9cf13
+5. [What is web scraping, and why you might want to use it?](https://oltarasenko.medium.com/what-is-web-scraping-and-why-you-might-want-to-use-it-a0e4b621f6d0?sk=3145cceff095523c88e72e3ddb456016)
+6. [Using Elixir and Crawly for price monitoring](https://oltarasenko.medium.com/using-elixir-and-crawly-for-price-monitoring-7364d345fc64?sk=9788899eb8e1d1dd6614d022eda350e8)
 
 ## Example projects
 
