@@ -120,7 +120,7 @@ defmodule Manager.TestSpider do
 
   def override_settings() do
     [
-      on_spider_closed_callback: fn reason ->
+      on_spider_closed_callback: fn _spider_name, _crawl_id, reason ->
         :persistent_term.put(:spider_stop_reason, reason)
       end
     ]
