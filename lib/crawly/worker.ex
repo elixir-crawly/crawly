@@ -120,22 +120,7 @@ defmodule Crawly.Worker do
     try do
       # get parsers
       parsers = Crawly.Utils.get_settings(:parsers, spider_name, nil)
-
-      parsed_item =
-        if parsers != nil do
-          case Crawly.Utils.pipe(parsers, %{}, %{
-                 spider_name: spider_name,
-                 response: response
-               }) do
-            {false, _} ->
-              %{}
-
-            {parsed, _new_state} ->
-              parsed
-          end
-        else
-          spider_name.parse_item(response)
-        end
+      parsed_item = do_parse(parsers, spider_name, response)
 
       {:ok, {parsed_item, response, spider_name}}
     catch
@@ -149,6 +134,28 @@ defmodule Crawly.Worker do
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))
 
         {:error, reason}
+    end
+  end
+
+  defp do_parse(nil, spider_name, response),
+    do: spider_name.parse_item(response)
+
+  defp do_parse(parsers, spider_name, response) when is_list(parsers) do
+    case Crawly.Utils.pipe(parsers, %{}, %{
+           spider_name: spider_name,
+           response: response
+         }) do
+      {false, _} ->
+        Logger.debug(
+          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{
+            inspect(spider_name)
+          }"
+        )
+
+        throw(:dropped_parse_item)
+
+      {parsed, _new_state} ->
+        parsed
     end
   end
 
