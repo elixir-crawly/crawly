@@ -240,6 +240,10 @@ defmodule WorkerTest do
         Crawly.Utils.request_from_url("https://www.example.com")
       end)
 
+      :meck.expect(TestSpider, :parse_item, fn _response ->
+        :ignore
+      end)
+
       :meck.expect(
         HTTPoison,
         :get,
@@ -264,10 +268,6 @@ defmodule WorkerTest do
     end
 
     test "when parsers are declared, a spider's parse_item callback is not called" do
-      :meck.expect(TestSpider, :parse_item, fn _response ->
-        :ignore
-      end)
-
       :meck.expect(TestSpider, :override_settings, fn ->
         [parsers: []]
       end)
@@ -280,11 +280,7 @@ defmodule WorkerTest do
       refute :meck.called(TestSpider, :parse_item, [:_])
     end
 
-    test "when parsers are declared, adds new requests and items" do
-      :meck.expect(TestSpider, :parse_item, fn _response ->
-        :ignore
-      end)
-
+    test "spiders work with declared custom parsers" do
       :meck.expect(TestSpider, :override_settings, fn ->
         [parsers: [Worker.TestParser]]
       end)
