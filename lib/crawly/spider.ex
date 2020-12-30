@@ -7,10 +7,11 @@ defmodule Crawly.Spider do
   2. `init/1` same as init, but also takes a list of options sent from Engine
   3. `base_url/0` function responsible for filtering out requests not related to
       a given website
-  4. `parse_item/1` function which is responsible for parsing the downloaded
+  4. `override_settings/0` function that is called each time a setting is referenced internally. Allows overriding of Crawly configuration at the spider-level.
+  5. `parse_item/1` function which is responsible for parsing the downloaded
      request and converting it into items which can be stored and new requests
      which can be scheduled
-  5. `custom_settings/0` an optional callback which can be used in order to
+  6. `custom_settings/0` an optional callback which can be used in order to
       provide custom spider specific settings. Should define a list with custom
       settings and their values. These values will take precedence over the
       global settings defined in the config.
