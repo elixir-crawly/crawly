@@ -12,7 +12,7 @@ defmodule Crawly.Fetchers.Splash do
   requests, and  cleans up the final responses, by removing the Splash parts
   from the response.
 
-  It's possible to start splash severver in any documented way. One of the options
+  It's possible to start splash server in any documented way. One of the options
   is to run it locally with a help of docker:
   docker run -it -p 8050:8050 scrapinghub/splash
 
