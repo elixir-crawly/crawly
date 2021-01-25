@@ -77,9 +77,15 @@ defmodule EngineTest do
   end
 
   describe "crawl_id tagging" do
-    test "Engine automatically tags a job on startup" do
+    test "get_crawl_id/1 can retrieve crawl_id of spider by module" do
+      # creates a runtime spider with name "TestSpider"
       :ok = Crawly.Engine.start_spider(TestSpider)
       assert Crawly.Engine.get_crawl_id(TestSpider)
+    end
+
+    test "get_crawl_id/1 can retrieve crawl_id of spider by name" do
+      :ok = Crawly.Engine.start_spider(TestSpider, name: "myspider")
+      assert Crawly.Engine.get_crawl_id("myspider")
     end
 
     test "Engine will use a tag from external system if set" do
