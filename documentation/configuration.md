@@ -105,6 +105,13 @@ default: Crawly.Fetchers.HTTPoisonFetcher
 
 Allows to specify a custom HTTP client which will be performing request to the crawler target.
 
+### log_dir :: String.t()
+
+default: /tmp
+
+Set spider logs directory. All spiders have their own dedicated log file 
+stored under the `log_dir` folder.
+
 ### port :: pos_integer()
 
 default: 4001

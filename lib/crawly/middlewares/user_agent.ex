@@ -16,7 +16,6 @@ defmodule Crawly.Middlewares.UserAgent do
   ]
   ```
   """
-  require Logger
 
   def run(request, state, opts \\ []) do
     opts = Enum.into(opts, %{user_agents: nil})

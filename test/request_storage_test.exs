@@ -8,7 +8,7 @@ defmodule RequestStorageTest do
   end
 
   setup do
-    {:ok, pid} = Crawly.RequestsStorage.start_worker(:test_spider)
+    {:ok, pid} = Crawly.RequestsStorage.start_worker(:test_spider, "crawl_id")
 
     on_exit(fn ->
       :ok =
@@ -60,7 +60,10 @@ defmodule RequestStorageTest do
              Crawly.RequestsStorage.stats(:unkown)
 
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.store(%{}, :unkown)
+             Crawly.RequestsStorage.store(
+               :unkown,
+               Crawly.Utils.request_from_url("http://example.com")
+             )
   end
 
   test "Duplicated requests are filtered out", context do
@@ -74,7 +77,7 @@ defmodule RequestStorageTest do
   end
 
   test "Stopped workers are removed from request storage state", _context do
-    {:ok, pid} = Crawly.RequestsStorage.start_worker(:other)
+    {:ok, pid} = Crawly.RequestsStorage.start_worker(:other, "crawl_id")
     state = :sys.get_state(Process.whereis(Crawly.RequestsStorage))
     assert Enum.count(state.pid_spiders) == 2
     assert Enum.count(state.workers) == 2

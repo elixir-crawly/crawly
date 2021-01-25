@@ -13,7 +13,7 @@ defmodule Crawly.RequestsStorage.Worker do
 
   use GenServer
 
-  defstruct requests: [], count: 0, spider_name: nil
+  defstruct requests: [], count: 0, spider_name: nil, crawl_id: nil
 
   alias Crawly.RequestsStorage.Worker
 
@@ -33,14 +33,14 @@ defmodule Crawly.RequestsStorage.Worker do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(pid, request), do: GenServer.call(pid, {:store, request})
+  def store(pid, request), do: do_call(pid, {:store, request})
 
   @doc """
   Pop a request out of requests storage
   """
   @spec pop(pid()) :: Crawly.Request.t() | nil
   def pop(pid) do
-    GenServer.call(pid, :pop)
+    do_call(pid, :pop)
   end
 
   @doc """
@@ -48,17 +48,17 @@ defmodule Crawly.RequestsStorage.Worker do
   """
   @spec stats(pid()) :: {:stored_requests, non_neg_integer()}
   def stats(pid) do
-    GenServer.call(pid, :stats)
+    do_call(pid, :stats)
   end
 
-  def start_link(spider_name) do
+  def start_link(spider_name, crawl_id) do
+    GenServer.start_link(__MODULE__, [spider_name, crawl_id])
+  end
+
+  def init([spider_name, crawl_id]) do
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
     Logger.debug("Starting requests storage worker for #{spider_name}...")
-
-    GenServer.start_link(__MODULE__, spider_name)
-  end
-
-  def init(spider_name) do
-    {:ok, %Worker{requests: [], spider_name: spider_name}}
+    {:ok, %Worker{requests: [], spider_name: spider_name, crawl_id: crawl_id}}
   end
 
   # Store the given request
@@ -98,5 +98,15 @@ defmodule Crawly.RequestsStorage.Worker do
 
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_requests, state.count}, state}
+  end
+
+  defp do_call(pid, command) do
+    try do
+      GenServer.call(pid, command)
+    catch
+      error, reason ->
+        Logger.debug("Could not get response: #{inspect(reason)}")
+        Logger.debug(Exception.format(:error, error, __STACKTRACE__))
+    end
   end
 end

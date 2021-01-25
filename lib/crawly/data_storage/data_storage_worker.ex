@@ -14,10 +14,13 @@ defmodule Crawly.DataStorage.Worker do
 
   use GenServer
 
-  defstruct stored_items: 0, spider_name: nil
+  defstruct stored_items: 0, spider_name: nil, crawl_id: nil
 
-  def start_link(spider_name: spider_name) do
-    GenServer.start_link(__MODULE__, spider_name: spider_name)
+  def start_link(spider_name: spider_name, crawl_id: crawl_id) do
+    GenServer.start_link(__MODULE__,
+      spider_name: spider_name,
+      crawl_id: crawl_id
+    )
   end
 
   @spec stats(pid()) :: {:stored_items, non_neg_integer()}
@@ -28,8 +31,9 @@ defmodule Crawly.DataStorage.Worker do
     GenServer.cast(pid, {:store, item})
   end
 
-  def init(spider_name: spider_name) do
-    {:ok, %Worker{spider_name: spider_name}}
+  def init(spider_name: spider_name, crawl_id: crawl_id) do
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
+    {:ok, %Worker{spider_name: spider_name, crawl_id: crawl_id}}
   end
 
   def handle_cast({:store, item}, state) do

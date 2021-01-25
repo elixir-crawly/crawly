@@ -49,8 +49,13 @@ defmodule Crawly.RequestsStorage do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(spider_name, request) do
+  def store(spider_name, %Crawly.Request{} = request) do
     store(spider_name, [request])
+  end
+
+  def store(_spider_name, request) do
+    Logger.error("#{inspect(request)} does not seem to be a request. Ignoring.")
+    {:error, :not_request}
   end
 
   @doc """
@@ -81,11 +86,12 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Starts a worker for a given spider
   """
-  @spec start_worker(spider_name) :: result
+  @spec start_worker(spider_name, crawl_id) :: result
         when spider_name: atom(),
+             crawl_id: String.t(),
              result: {:ok, pid()} | {:error, :already_started}
-  def start_worker(spider_name) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name})
+  def start_worker(spider_name, crawl_id) do
+    GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end
 
   def start_link([]) do
@@ -137,7 +143,7 @@ defmodule Crawly.RequestsStorage do
     {:reply, msg, state}
   end
 
-  def handle_call({:start_worker, spider_name}, _from, state) do
+  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
@@ -148,7 +154,8 @@ defmodule Crawly.RequestsStorage do
                 id: :undefined,
                 restart: :temporary,
                 start:
-                  {Crawly.RequestsStorage.Worker, :start_link, [spider_name]}
+                  {Crawly.RequestsStorage.Worker, :start_link,
+                   [spider_name, crawl_id]}
               }
             )
 

@@ -27,9 +27,14 @@ defmodule Crawly.Engine do
 
   ### Reserved Options
   - `:crawl_id` (binary). Optional, automatically generated if not set.
+  - `:closespider_itemcount` (integer | disabled). Optional, overrides the close
+    spider item count on startup.
+  - `:closespider_timeout` (integer | disabled). Optional, overrides the close
+                            spider timeout on startup.
+  - `:concurrent_requests_per_domain` (integer). Optional, overrides the number of
+     workers for a given spider
 
-
-  ### Backward compatability
+  ### Backward compatibility
   If the 2nd positional argument is a binary, it will be set as the `:crawl_id`. Deprecated, will be removed in the future.
   """
   @type crawl_id_opt :: {:crawl_id, binary()}
@@ -54,6 +59,9 @@ defmodule Crawly.Engine do
     opts =
       Enum.into(opts, %{})
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
+
+    # Filter all logs related to a given spider
+    set_spider_log(spider_name, opts[:crawl_id])
 
     GenServer.call(
       __MODULE__,
@@ -227,5 +235,16 @@ defmodule Crawly.Engine do
 
     (known ++ new)
     |> Enum.dedup_by(& &1)
+  end
+
+  defp set_spider_log(spider_name, crawl_id) do
+    log_dir = Crawly.Utils.get_settings(:log_dir, spider_name, "/tmp")
+    Logger.add_backend({LoggerFileBackend, :debug})
+
+    Logger.configure_backend({LoggerFileBackend, :debug},
+      path: "/#{log_dir}/#{spider_name}/#{crawl_id}.log",
+      level: :debug,
+      metadata_filter: [crawl_id: crawl_id]
+    )
   end
 end
