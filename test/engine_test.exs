@@ -8,28 +8,19 @@ defmodule EngineTest do
     end)
   end
 
-  test "list_known_spiders/0 lists all spiders and their current status in the engine" do
-    Engine.init([])
-    Engine.refresh_spider_list()
-    spiders = Engine.list_known_spiders()
-    assert [_ | _] = spiders
-    assert status = Enum.find(spiders, fn s -> s.name == TestSpider end)
-    assert status.status == :stopped
-
-    # test a started spider
+  test "list_started_spiders/0 lists all spiders" do
+    assert [] = Engine.list_started_spiders()
     Engine.start_spider(TestSpider)
-
-    assert started_status =
-             Engine.list_known_spiders()
-             |> Enum.find(fn s -> s.name == TestSpider end)
-
-    assert :started = started_status.status
-    assert started_status.pid
-
-    # stop spider
+    assert [started] = Engine.list_started_spiders()
+    assert is_pid(started.pid)
     Engine.stop_spider(TestSpider)
-    spiders = Engine.list_known_spiders()
-    assert Enum.all?(spiders, fn s -> s.status == :stopped end)
+    assert [] = Engine.list_known_spiders()
+  end
+
+  test "list_spider_templates/0 lists all spider template modules" do
+    assert [] = Engine.list_spider_templates()
+    Engine.refresh_spider_list()
+    assert [TestSpider] = Engine.list_spider_templates()
   end
 
   test "start_spider/2 with :name option creates a runtime spider using a template module" do
