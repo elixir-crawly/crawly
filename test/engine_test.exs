@@ -4,7 +4,7 @@ defmodule EngineTest do
 
   setup do
     on_exit(fn ->
-      Crawly.Engine.stop_spider(TestSpider)
+      Engine.stop_spider(TestSpider)
     end)
   end
 
@@ -52,49 +52,49 @@ defmodule EngineTest do
   end
 
   test "start_spider/2 without :name option returns error if existing name is taken" do
-    assert :ok = Crawly.Engine.start_spider(TestSpider)
-    assert {:error, :already_started} = Crawly.Engine.start_spider(TestSpider)
+    assert :ok = Engine.start_spider(TestSpider)
+    assert {:error, :already_started} = Engine.start_spider(TestSpider)
   end
 
   test "start_spider/2 with clashing :name option returns error" do
-    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "SomeSpider")
+    assert :ok = Engine.start_spider(TestSpider, name: "SomeSpider")
 
     assert {:error, :already_started} =
-             Crawly.Engine.start_spider(TestSpider, name: "SomeSpider")
+             Engine.start_spider(TestSpider, name: "SomeSpider")
   end
 
   test "stop_spider/1 with string name stops spider with matching name" do
-    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider")
+    assert :ok = Engine.start_spider(TestSpider, name: "Test Spider")
 
-    assert :ok = Crawly.Engine.stop_spider("Test Spider")
-    assert [] = Crawly.Engine.list_known_spiders()
+    assert :ok = Engine.stop_spider("Test Spider")
+    assert [] = Engine.list_known_spiders()
   end
 
   test "stop_spider/1 with template name stops all spiders using that template" do
-    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider")
-    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider 2")
-    assert Crawly.Engine.list_known_spiders() |> length() == 2
+    assert :ok = Engine.start_spider(TestSpider, name: "Test Spider")
+    assert :ok = Engine.start_spider(TestSpider, name: "Test Spider 2")
+    assert Engine.list_known_spiders() |> length() == 2
 
-    assert :ok = Crawly.Engine.stop_spider(TestSpider)
-    assert [] = Crawly.Engine.list_known_spiders()
+    assert :ok = Engine.stop_spider(TestSpider)
+    assert [] = Engine.list_known_spiders()
   end
 
   describe "crawl_id tagging" do
     test "get_crawl_id/1 can retrieve crawl_id of spider by module" do
       # creates a runtime spider with name "TestSpider"
-      :ok = Crawly.Engine.start_spider(TestSpider)
-      assert Crawly.Engine.get_crawl_id(TestSpider)
+      :ok = Engine.start_spider(TestSpider)
+      assert Engine.get_crawl_id(TestSpider)
     end
 
     test "get_crawl_id/1 can retrieve crawl_id of spider by name" do
-      :ok = Crawly.Engine.start_spider(TestSpider, name: "myspider")
-      assert Crawly.Engine.get_crawl_id("myspider")
+      :ok = Engine.start_spider(TestSpider, name: "myspider")
+      assert Engine.get_crawl_id("myspider")
     end
 
     test "Engine will use a tag from external system if set" do
       tag = "custom_crawl_tag"
-      :ok = Crawly.Engine.start_spider(TestSpider, tag)
-      assert {:ok, tag} == Crawly.Engine.get_crawl_id(TestSpider)
+      :ok = Engine.start_spider(TestSpider, tag)
+      assert {:ok, tag} == Engine.get_crawl_id(TestSpider)
     end
   end
 end
