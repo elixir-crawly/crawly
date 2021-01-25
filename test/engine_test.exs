@@ -39,4 +39,39 @@ defmodule EngineTest do
 
     assert template == TestSpider
   end
+
+  test "start_spider/1 without :name option automatically sets the spider's string name" do
+    assert :ok = Crawly.Engine.start_spider(TestSpider)
+
+    # stringify the module name
+    assert [%{name: "TestSpider", template: ^TestSpider}] =
+             Crawly.Engine.list_known_spiders()
+  end
+
+  test "start_spider/2 without :name option returns error if existing name is taken" do
+    assert :ok = Crawly.Engine.start_spider(TestSpider)
+    assert {:error, :already_started} = Crawly.Engine.start_spider(TestSpider)
+  end
+
+  test "start_spider/2 with clashing :name option returns error" do
+    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "SomeSpider")
+
+    assert {:error, :already_started} =
+             Crawly.Engine.start_spider(TestSpider, name: "SomeSpider")
+  end
+
+  test "stop_spider/1 with string name stops spider with matching name" do
+    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider")
+
+    assert :ok = Crawly.Engine.stop_spider("Test Spider")
+    assert [] = Crawly.Engine.list_known_spiders()
+  end
+
+  test "stop_spider/1 with template name stops all spiders using that template" do
+    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider")
+    assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider 2")
+
+    assert :ok = Crawly.Engine.stop_spider(TestSpider)
+    assert [] = Crawly.Engine.list_known_spiders()
+  end
 end
