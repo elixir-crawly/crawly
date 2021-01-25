@@ -1,5 +1,6 @@
 defmodule UtilsTest do
   use ExUnit.Case
+  alias Crawly.Utils
 
   setup do
     on_exit(fn -> :meck.unload() end)
@@ -89,10 +90,7 @@ defmodule UtilsTest do
   end
 
   test "can find CrawlySpider behaviors" do
-    assert Enum.any?(
-             Crawly.Utils.list_spiders(),
-             fn x -> x == UtilsTestSpider end
-           )
+    assert Enum.any?(Utils.list_spiders(), &(&1 == TestSpider))
   end
 
   defp expected_request(url) do
@@ -108,5 +106,35 @@ defmodule UtilsTest do
       ],
       retries: 0
     }
+  end
+
+  describe "settings" do
+    setup do
+      :meck.expect(TestSpider, :override_settings, fn ->
+        [concurrent_requests_per_domain: 5]
+      end)
+
+      Application.ensure_all_started(Crawly)
+      Application.put_env(:crawly, :concurrent_requests_per_domain, 1)
+      Application.put_env(:crawly, :closespider_itemcount, 10)
+
+      on_exit(fn ->
+        Application.put_env(:crawly, :closespider_timeout, 20)
+        Application.put_env(:crawly, :closespider_itemcount, 100)
+      end)
+    end
+
+    test "settings from the spider are overriding globals" do
+      assert 5 ==
+               Utils.get_settings(:concurrent_requests_per_domain, TestSpider)
+    end
+
+    test "incomplete spider overrides do not break global settings" do
+      assert 10 == Utils.get_settings(:closespider_itemcount, TestSpider)
+    end
+
+    test "if no spider-level settings or global settings, returns default " do
+      assert 1 == Utils.get_settings(:my_custom_setting, TestSpider, 1)
+    end
   end
 end
