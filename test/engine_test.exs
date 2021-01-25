@@ -70,8 +70,22 @@ defmodule EngineTest do
   test "stop_spider/1 with template name stops all spiders using that template" do
     assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider")
     assert :ok = Crawly.Engine.start_spider(TestSpider, name: "Test Spider 2")
+    assert Crawly.Engine.list_known_spiders() |> length() == 2
 
     assert :ok = Crawly.Engine.stop_spider(TestSpider)
     assert [] = Crawly.Engine.list_known_spiders()
+  end
+
+  describe "crawl_id tagging" do
+    test "Engine automatically tags a job on startup" do
+      :ok = Crawly.Engine.start_spider(TestSpider)
+      assert Crawly.Engine.get_crawl_id(TestSpider)
+    end
+
+    test "Engine will use a tag from external system if set" do
+      tag = "custom_crawl_tag"
+      :ok = Crawly.Engine.start_spider(TestSpider, tag)
+      assert {:ok, tag} == Crawly.Engine.get_crawl_id(TestSpider)
+    end
   end
 end
