@@ -231,6 +231,90 @@ defmodule WorkerTest do
         false
     end
   end
+
+  describe "parsers" do
+    setup do
+      :meck.expect(Crawly.Utils, :send_after, fn _, _, _ -> :ignore end)
+
+      :meck.expect(Crawly.RequestsStorage, :pop, fn TestSpider ->
+        Crawly.Utils.request_from_url("https://www.example.com")
+      end)
+
+      :meck.expect(TestSpider, :parse_item, fn _response ->
+        :ignore
+      end)
+
+      :meck.expect(
+        HTTPoison,
+        :get,
+        fn _, _, _ ->
+          {
+            :ok,
+            %HTTPoison.Response{
+              status_code: 200,
+              body: "Some page",
+              headers: [],
+              request: %{}
+            }
+          }
+        end
+      )
+
+      on_exit(fn ->
+        :meck.unload()
+      end)
+
+      :ok
+    end
+
+    test "when parsers are declared, a spider's parse_item callback is not called" do
+      :meck.expect(TestSpider, :override_settings, fn ->
+        [parsers: []]
+      end)
+
+      Crawly.Worker.handle_info(:work, %{
+        spider_name: TestSpider,
+        backoff: 10_000
+      })
+
+      refute :meck.called(TestSpider, :parse_item, [:_])
+    end
+
+    test "spiders work with declared custom parsers" do
+      :meck.expect(TestSpider, :override_settings, fn ->
+        [parsers: [Worker.TestParser]]
+      end)
+
+      :meck.expect(Crawly.RequestsStorage, :store, fn _spider_name, _request ->
+        :ignore
+      end)
+
+      :meck.expect(Crawly.DataStorage, :store, fn _spider_name, _item ->
+        :ignore
+      end)
+
+      Crawly.Worker.handle_info(:work, %{
+        spider_name: TestSpider,
+        backoff: 10_000
+      })
+
+      assert :meck.called(Crawly.DataStorage, :store, [TestSpider, :_])
+
+      assert :meck.called(Crawly.RequestsStorage, :store, [
+               TestSpider,
+               :_
+             ])
+    end
+  end
+end
+
+defmodule Worker.TestParser do
+  def run(_output, state, _opts \\ []) do
+    {%{
+       requests: [Crawly.Utils.request_from_url("https://www.example.com/2")],
+       items: [%{something: "test"}]
+     }, state}
+  end
 end
 
 defmodule Worker.CrashingTestSpider do
