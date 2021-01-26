@@ -142,9 +142,9 @@ default: 4001
 Allows to specify a custom port to start the application. That is important when running more than one application in a single machine, in which case shall not use the same port as the others.
 
 ### on_spider_closed_callback :: function()
-
 default: :ignored
 
+A function that takes three arguments: spider_name, crawl_id and reason of spider stop.
 Allows to define a callback function which will be executed when spider finishes
 it's work.
 
