@@ -1,14 +1,11 @@
 defmodule RequestStorageTest do
   use ExUnit.Case, async: false
 
-  setup_all do
-    :meck.new(:test_spider, [:non_strict])
-    :meck.expect(:test_spider, :base_url, fn -> "example.com" end)
-    :ok
-  end
-
+  @name "my_test_spider"
+  @other_name "my_dead_test_spider"
+  @crawl_id "crawl_id"
   setup do
-    {:ok, pid} = Crawly.RequestsStorage.start_worker(:test_spider, "crawl_id")
+    {:ok, pid} = Crawly.RequestsStorage.start_worker(@name, @crawl_id)
 
     on_exit(fn ->
       :ok =
@@ -16,96 +13,55 @@ defmodule RequestStorageTest do
           Crawly.RequestsStorage.WorkersSup,
           pid
         )
-
-      # :ok = Crawly.RequestsStorage.WorkerSup.terminate_child(pid)
     end)
 
-    {:ok, %{crawler: :test_spider}}
+    {:ok, pid: pid}
   end
 
-  test "Request storage can store requests", context do
-    request = %Crawly.Request{
-      url: "http://example.com",
-      headers: [],
-      options: []
-    }
-
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-    {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
+  test "Request storage can store requests" do
+    request = %Crawly.Request{url: "http://example.com"}
+    :ok = Crawly.RequestsStorage.store(@name, request)
+    {:stored_requests, num} = Crawly.RequestsStorage.stats(@name)
     assert 1 == num
   end
 
-  test "Request storage returns request for given spider", context do
-    request = %Crawly.Request{
-      url: "http://example.com",
-      headers: [],
-      options: []
-    }
-
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-
-    returned_request = Crawly.RequestsStorage.pop(context.crawler)
-    assert request.url == returned_request.url
+  test "Request storage returns request for given spider" do
+    request = %Crawly.Request{url: "http://example.com"}
+    :ok = Crawly.RequestsStorage.store(@name, request)
+    assert request.url == Crawly.RequestsStorage.pop(@name).url
   end
 
-  test "Correct error returned if there are no requests in storage", context do
-    assert nil == Crawly.RequestsStorage.pop(context.crawler)
+  test "Returns nil if there are no requests in storage" do
+    assert nil == Crawly.RequestsStorage.pop(@name)
   end
 
-  test "Error for unknown spiders (storages)" do
+  test "Errors for unknown spiders for request storage" do
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.pop(:unkown)
+             Crawly.RequestsStorage.pop(@other_name)
 
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.stats(:unkown)
+             Crawly.RequestsStorage.stats(@other_name)
 
     assert {:error, :storage_worker_not_running} ==
              Crawly.RequestsStorage.store(
-               :unkown,
+               @other_name,
                Crawly.Utils.request_from_url("http://example.com")
              )
   end
 
-  test "Duplicated requests are filtered out", context do
-    request = Crawly.Utils.request_from_url("http://example.com")
+  test "Stopped workers are removed from request storage state" do
+    {:ok, pid} =
+      Crawly.RequestsStorage.start_worker(@other_name, "diff_crawl_id")
 
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-
-    {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
-    assert 1 == num
-  end
-
-  test "Stopped workers are removed from request storage state", _context do
-    {:ok, pid} = Crawly.RequestsStorage.start_worker(:other, "crawl_id")
-    state = :sys.get_state(Process.whereis(Crawly.RequestsStorage))
+    req_storage_pid = Process.whereis(Crawly.RequestsStorage)
+    state = :sys.get_state(req_storage_pid)
     assert Enum.count(state.pid_spiders) == 2
     assert Enum.count(state.workers) == 2
 
     TestUtils.stop_process(pid)
 
-    state = :sys.get_state(Process.whereis(Crawly.RequestsStorage))
+    state = :sys.get_state(req_storage_pid)
     assert Enum.count(state.pid_spiders) == 1
     assert Enum.count(state.workers) == 1
-  end
-
-  test "Outbound requests are filtered out", context do
-    request = Crawly.Utils.request_from_url("http://otherdomain.com")
-
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-    {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
-    assert 0 == num
-  end
-
-  test "Robots.txt is respected", context do
-    request = Crawly.Utils.request_from_url("http://example.com/filter")
-
-    :meck.expect(Gollum, :crawlable?, fn _, "http://example.com/filter" ->
-      :uncrawlable
-    end)
-
-    :ok = Crawly.RequestsStorage.store(context.crawler, request)
-    {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
-    assert 0 == num
   end
 end
