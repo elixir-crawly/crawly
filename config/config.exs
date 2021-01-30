@@ -45,6 +45,7 @@ config :crawly,
 
   # TODO: this looks outdated
   follow_redirect: true,
+  enable_file_logging: false,
 
   # Request middlewares
   middlewares: [
