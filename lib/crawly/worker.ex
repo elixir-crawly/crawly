@@ -118,7 +118,10 @@ defmodule Crawly.Worker do
              result: {:ok, next} | {:error, term()}
   defp parse_item({response, spider_name}) do
     try do
-      parsed_item = spider_name.parse_item(response)
+      # get parsers
+      parsers = Crawly.Utils.get_settings(:parsers, spider_name, nil)
+      parsed_item = do_parse(parsers, spider_name, response)
+
       {:ok, {parsed_item, response, spider_name}}
     catch
       error, reason ->
@@ -134,6 +137,28 @@ defmodule Crawly.Worker do
     end
   end
 
+  defp do_parse(nil, spider_name, response),
+    do: spider_name.parse_item(response)
+
+  defp do_parse(parsers, spider_name, response) when is_list(parsers) do
+    case Crawly.Utils.pipe(parsers, %{}, %{
+           spider_name: spider_name,
+           response: response
+         }) do
+      {false, _} ->
+        Logger.debug(
+          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{
+            inspect(spider_name)
+          }"
+        )
+
+        throw(:dropped_parse_item)
+
+      {parsed, _new_state} ->
+        parsed
+    end
+  end
+
   @spec process_parsed_item({parsed_item, response, spider_name}) :: result
         when spider_name: atom(),
              response: HTTPoison.Response.t(),
@@ -142,7 +167,6 @@ defmodule Crawly.Worker do
   defp process_parsed_item({parsed_item, response, spider_name}) do
     requests = Map.get(parsed_item, :requests, [])
     items = Map.get(parsed_item, :items, [])
-
     # Process all requests one by one
     Enum.each(
       requests,
