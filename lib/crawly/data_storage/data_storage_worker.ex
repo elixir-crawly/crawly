@@ -14,13 +14,21 @@ defmodule Crawly.DataStorage.Worker do
 
   use GenServer
 
-  defstruct stored_items: 0, spider_name: nil, crawl_id: nil
+  defstruct stored_items: 0,
+            spider_name: nil,
+            crawl_id: nil
 
-  def start_link(spider_name: spider_name, crawl_id: crawl_id) do
-    GenServer.start_link(__MODULE__,
-      spider_name: spider_name,
-      crawl_id: crawl_id
-    )
+  def start_link(spider_name, crawl_id),
+    do: GenServer.start_link(__MODULE__, [spider_name, crawl_id])
+
+  def init([spider_name, crawl_id]) do
+    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
+
+    {:ok,
+     %Worker{
+       spider_name: spider_name,
+       crawl_id: crawl_id
+     }}
   end
 
   @spec stats(pid()) :: {:stored_items, non_neg_integer()}
@@ -31,9 +39,8 @@ defmodule Crawly.DataStorage.Worker do
     GenServer.cast(pid, {:store, item})
   end
 
-  def init(spider_name: spider_name, crawl_id: crawl_id) do
-    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
-    {:ok, %Worker{spider_name: spider_name, crawl_id: crawl_id}}
+  def handle_call(:stats, _from, state) do
+    {:reply, {:stored_items, state.stored_items}, state}
   end
 
   def handle_cast({:store, item}, state) do
@@ -49,9 +56,5 @@ defmodule Crawly.DataStorage.Worker do
       end
 
     {:noreply, state}
-  end
-
-  def handle_call(:stats, _from, state) do
-    {:reply, {:stored_items, state.stored_items}, state}
   end
 end

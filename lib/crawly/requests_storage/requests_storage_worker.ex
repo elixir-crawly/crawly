@@ -13,15 +13,38 @@ defmodule Crawly.RequestsStorage.Worker do
 
   use GenServer
 
-  defstruct requests: [], count: 0, spider_name: nil, crawl_id: nil
+  defstruct requests: [],
+            count: 0,
+            spider_name: nil,
+            crawl_id: nil
 
   alias Crawly.RequestsStorage.Worker
+
+  def start_link(spider_name, crawl_id) do
+    GenServer.start_link(__MODULE__, [spider_name, crawl_id])
+  end
+
+  def init([spider_name, crawl_id]) do
+    Logger.metadata(
+      spider_name: spider_name,
+      crawl_id: crawl_id
+    )
+
+    Logger.debug("Starting requests storage worker for #{spider_name}...")
+
+    {:ok,
+     %Worker{
+       requests: [],
+       spider_name: spider_name,
+       crawl_id: crawl_id
+     }}
+  end
 
   @doc """
   Store requests
   """
   @spec store(spider_name, requests) :: :ok
-        when spider_name: atom(),
+        when spider_name: String.t(),
              requests: [Crawly.Request.t()]
   def store(pid, requests) when is_list(requests) do
     Enum.each(requests, fn request -> store(pid, request) end)
@@ -31,7 +54,7 @@ defmodule Crawly.RequestsStorage.Worker do
   Store individual request request
   """
   @spec store(spider_name, request) :: :ok
-        when spider_name: atom(),
+        when spider_name: String.t(),
              request: Crawly.Request.t()
   def store(pid, request), do: do_call(pid, {:store, request})
 
@@ -49,16 +72,6 @@ defmodule Crawly.RequestsStorage.Worker do
   @spec stats(pid()) :: {:stored_requests, non_neg_integer()}
   def stats(pid) do
     do_call(pid, :stats)
-  end
-
-  def start_link(spider_name, crawl_id) do
-    GenServer.start_link(__MODULE__, [spider_name, crawl_id])
-  end
-
-  def init([spider_name, crawl_id]) do
-    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
-    Logger.debug("Starting requests storage worker for #{spider_name}...")
-    {:ok, %Worker{requests: [], spider_name: spider_name, crawl_id: crawl_id}}
   end
 
   # Store the given request
@@ -104,6 +117,11 @@ defmodule Crawly.RequestsStorage.Worker do
     try do
       GenServer.call(pid, command)
     catch
+      :exit, _ ->
+        Logger.debug(
+          "Process exited. Request storage worker will abandon command."
+        )
+
       error, reason ->
         Logger.debug("Could not get response: #{inspect(reason)}")
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))

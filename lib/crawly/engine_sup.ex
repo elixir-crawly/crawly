@@ -11,28 +11,35 @@ defmodule Crawly.EngineSup do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def start_spider(spider_name, options) do
-    result =
-      case Code.ensure_loaded?(spider_name) do
-        true ->
-          # Given spider module exists in the namespace, we can proceed
-          {:ok, _sup_pid} =
-            DynamicSupervisor.start_child(
-              __MODULE__,
-              {Crawly.ManagerSup, [spider_name, options]}
-            )
+  # returns the spider manager pid
+  def start_spider(spider_template, options) do
+    case Code.ensure_loaded?(spider_template) do
+      true ->
+        # Given spider module exists in the namespace, we can proceed
 
-        false ->
-          {:error, "Spider: #{inspect(spider_name)} was not defined"}
-      end
+        case DynamicSupervisor.start_child(
+               __MODULE__,
+               {Registry, [keys: :unique, name: Crawly.Engine.Registry]}
+             ) do
+          {:error, {:already_started, _}} -> :ok
+          {:ok, _pid} -> :ok
+        end
 
-    result
+        DynamicSupervisor.start_child(
+          __MODULE__,
+          {Crawly.ManagerSup, [spider_template, options]}
+        )
+
+      false ->
+        {:error,
+         "Spider template module: #{inspect(spider_template)} was not defined"}
+    end
   end
 
   def stop_spider(pid) do
-    DynamicSupervisor.terminate_child(
-      __MODULE__,
-      pid
-    )
+    DynamicSupervisor.terminate_child(__MODULE__, pid)
   end
+
+  def via(spider_name),
+    do: {:via, Registry, {Crawly.Engine.Registry, spider_name}}
 end

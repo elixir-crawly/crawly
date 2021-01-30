@@ -29,32 +29,37 @@ defmodule Crawly.DataStorage do
 
   defstruct workers: %{}, pid_spiders: %{}
 
+  def start_link([]) do
+    Logger.debug("Starting data storage")
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_) do
+    {:ok, %Crawly.DataStorage{workers: %{}, pid_spiders: %{}}}
+  end
+
+  @spec start_worker(String.t(), String.t()) :: :ok
   def start_worker(spider_name, crawl_id) do
+    Logger.debug(
+      "Starting worker for #{inspect(spider_name)}. crawl_id: #{
+        inspect(crawl_id)
+      }"
+    )
+
     GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end
 
-  @spec store(atom(), map()) :: :ok
+  @spec store(String.t(), map()) :: :ok
   def store(spider, item) do
     GenServer.call(__MODULE__, {:store, spider, item})
   end
 
+  @spec stats(String.t()) :: :ok
   def stats(spider) do
     GenServer.call(__MODULE__, {:stats, spider})
   end
 
-  def start_link([]) do
-    Logger.debug("Starting data storage")
-
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
-
-  def init(_args) do
-    {:ok, %Crawly.DataStorage{workers: %{}, pid_spiders: %{}}}
-  end
-
-  def handle_call({:store, spider, item}, _from, state) do
-    %{workers: workers} = state
-
+  def handle_call({:store, spider, item}, _from, %{workers: workers} = state) do
     message =
       case Map.get(workers, spider) do
         nil ->
@@ -122,8 +127,7 @@ defmodule Crawly.DataStorage do
           id: :undefined,
           restart: :temporary,
           start:
-            {Crawly.DataStorage.Worker, :start_link,
-             [[spider_name: spider_name, crawl_id: crawl_id]]}
+            {Crawly.DataStorage.Worker, :start_link, [spider_name, crawl_id]}
         }
       )
 

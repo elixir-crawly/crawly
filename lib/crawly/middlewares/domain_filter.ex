@@ -18,7 +18,8 @@ defmodule Crawly.Middlewares.DomainFilter do
   require Logger
 
   def run(request, state, _opts \\ []) do
-    base_url = state.spider_name.base_url()
+    %{template: template} = Crawly.Engine.get_spider_info(state.spider_name)
+    base_url = template.base_url()
     parsed_url = URI.parse(request.url)
     host = parsed_url.host
 

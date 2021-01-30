@@ -33,28 +33,28 @@ defmodule Crawly.RequestsStorage do
   alias Crawly.RequestsStorage
 
   @doc """
-  Store requests in related child worker
+  Stores a request for a given spider.
   """
   @spec store(spider_name, requests) :: result
-        when spider_name: atom(),
-             requests: [Crawly.Request.t()],
-             result: :ok | {:error, :storage_worker_not_running}
-  def store(spider_name, requests) when is_list(requests) do
-    GenServer.call(__MODULE__, {:store, {spider_name, requests}})
-  end
+        when spider_name: String.t(),
+             requests: [Crawly.Request.t()] | Crawly.Request.t(),
+             result:
+               :ok
+               | {:error, :storage_worker_not_running}
+               | {:error, :not_request}
 
-  @doc """
-  Store request in related child worker
-  """
-  @spec store(spider_name, request) :: :ok
-        when spider_name: atom(),
-             request: Crawly.Request.t()
-  def store(spider_name, %Crawly.Request{} = request) do
-    store(spider_name, [request])
-  end
+  def store(_spider_name, []), do: :ok
 
-  def store(_spider_name, request) do
-    Logger.error("#{inspect(request)} does not seem to be a request. Ignoring.")
+  def store(spider_name, [%Crawly.Request{} | _] = reqs),
+    do: GenServer.call(__MODULE__, {:store, {spider_name, reqs}})
+
+  def store(spider_name, %Crawly.Request{} = req), do: store(spider_name, [req])
+
+  def store(spider_name, request) do
+    Logger.error(
+      "#{inspect(request)} for #{inspect(spider_name)} does not seem to be a request. Ignoring."
+    )
+
     {:error, :not_request}
   end
 
@@ -62,7 +62,7 @@ defmodule Crawly.RequestsStorage do
   Pop a request out of requests storage
   """
   @spec pop(spider_name) :: result
-        when spider_name: atom(),
+        when spider_name: String.t(),
              result:
                nil
                | Crawly.Request.t()
@@ -75,7 +75,7 @@ defmodule Crawly.RequestsStorage do
   Get statistics from the requests storage
   """
   @spec stats(spider_name) :: result
-        when spider_name: atom(),
+        when spider_name: String.t(),
              result:
                {:stored_requests, non_neg_integer()}
                | {:error, :storage_worker_not_running}
@@ -87,11 +87,14 @@ defmodule Crawly.RequestsStorage do
   Starts a worker for a given spider
   """
   @spec start_worker(spider_name, crawl_id) :: result
-        when spider_name: atom(),
+        when spider_name: String.t(),
              crawl_id: String.t(),
              result: {:ok, pid()} | {:error, :already_started}
   def start_worker(spider_name, crawl_id) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
+    GenServer.call(
+      __MODULE__,
+      {:start_worker, spider_name, crawl_id}
+    )
   end
 
   def start_link([]) do
@@ -143,7 +146,11 @@ defmodule Crawly.RequestsStorage do
     {:reply, msg, state}
   end
 
-  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
+  def handle_call(
+        {:start_worker, spider_name, crawl_id},
+        _from,
+        state
+      ) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->

@@ -46,15 +46,21 @@ defmodule Crawly.Manager do
     end
   end
 
-  def start_link([spider_name, options]) do
-    Logger.debug("Starting the manager for #{spider_name}")
-    GenServer.start_link(__MODULE__, [spider_name, options])
+  def start_link([spider_template, options]) do
+    GenServer.start_link(__MODULE__, [spider_template, options])
   end
 
   @impl true
-  def init([spider_name, options]) do
+  def init([spider_template, options]) do
     crawl_id = Keyword.get(options, :crawl_id)
-    Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
+    spider_name = Keyword.get(options, :name)
+    Logger.debug("Starting the manager for #{spider_name}")
+
+    Logger.metadata(
+      spider_name: spider_name,
+      spider_template: spider_template,
+      crawl_id: crawl_id
+    )
 
     itemcount_limit =
       Keyword.get(
@@ -72,13 +78,16 @@ defmodule Crawly.Manager do
 
     # Start DataStorage worker
     {:ok, data_storage_pid} =
-      Crawly.DataStorage.start_worker(spider_name, crawl_id)
+      Crawly.DataStorage.start_worker(spider_template, spider_name, crawl_id)
 
     Process.link(data_storage_pid)
 
     # Start RequestsWorker for a given spider
     {:ok, request_storage_pid} =
-      Crawly.RequestsStorage.start_worker(spider_name, crawl_id)
+      Crawly.RequestsStorage.start_worker(
+        spider_name,
+        crawl_id
+      )
 
     Process.link(request_storage_pid)
 
@@ -90,11 +99,17 @@ defmodule Crawly.Manager do
         Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
       )
 
+    registry_name = Crawly.EngineSup.via(spider_name)
+
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
         DynamicSupervisor.start_child(
-          spider_name,
-          {Crawly.Worker, [spider_name: spider_name, crawl_id: crawl_id]}
+          registry_name,
+          {Crawly.Worker,
+           [
+             spider_name: spider_name,
+             crawl_id: crawl_id
+           ]}
         )
       end)
 
@@ -105,11 +120,14 @@ defmodule Crawly.Manager do
     tref = Process.send_after(self(), :operations, timeout)
 
     Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
+      "Started #{Enum.count(worker_pids)} workers for #{spider_name} (#{
+        spider_template
+      })"
     )
 
     {:ok,
      %{
+       template: spider_template,
        name: spider_name,
        crawl_id: crawl_id,
        itemcount_limit: itemcount_limit,
@@ -123,7 +141,7 @@ defmodule Crawly.Manager do
   @impl true
   def handle_continue({:startup, options}, state) do
     # Add start requests to the requests storage
-    init = state.name.init(options)
+    init = state.template.init(options)
 
     start_requests_from_req = Keyword.get(init, :start_requests, [])
 
@@ -152,9 +170,11 @@ defmodule Crawly.Manager do
   def handle_cast({:add_workers, num_of_workers}, state) do
     Logger.info("Adding #{num_of_workers} workers for #{state.name}")
 
+    registry_name = Crawly.EngineSup.via(state.name)
+
     Enum.each(1..num_of_workers, fn _ ->
       DynamicSupervisor.start_child(
-        state.name,
+        registry_name,
         {Crawly.Worker, [spider_name: state.name, crawl_id: state.crawl_id]}
       )
     end)
