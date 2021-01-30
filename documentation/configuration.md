@@ -135,6 +135,12 @@ default: /tmp
 Set spider logs directory. All spiders have their own dedicated log file
 stored under the `log_dir` folder.
 
+### enable_file_logging :: String.t()
+
+default: false
+
+Allows to enable or disable file logging.
+
 ### port :: pos_integer()
 
 default: 4001
