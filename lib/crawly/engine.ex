@@ -241,17 +241,19 @@ defmodule Crawly.Engine do
   end
 
   defp set_spider_log(spider_name, crawl_id) do
-    log_dir = Crawly.Utils.get_settings(:log_dir, spider_name, "/tmp")
+    log_dir = Crawly.Utils.get_settings(:log_dir, spider_name, System.tmp_dir())
     current_unix_timestamp = :os.system_time(:second)
 
     if Crawly.Utils.get_settings(:log_to_file, spider_name) do
       Logger.add_backend({LoggerFileBackend, :debug})
-
+      log_file_path = "/#{log_dir}/#{spider_name}/#{current_unix_timestamp}_#{crawl_id}.log"
       Logger.configure_backend({LoggerFileBackend, :debug},
-        path: "/#{log_dir}/#{spider_name}/#{current_unix_timestamp}_#{crawl_id}.log",
+        path: log_file_path,
         level: :debug,
         metadata_filter: [crawl_id: crawl_id]
       )
+
+      Logger.debug("Writing logs to /#{log_file_path}")
     end
   end
 end
