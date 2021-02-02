@@ -8,6 +8,10 @@ defmodule Middlewares.DomainFilterTest do
       "https://www.erlang-solutions.com"
     end)
 
+    :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+      %{template: :test_spider}
+    end)
+
     on_exit(fn ->
       :meck.unload()
     end)
