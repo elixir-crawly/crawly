@@ -4,6 +4,8 @@ defmodule Pipelines.Experimental.SendToUITest do
   @item %{title: "Title", author: "Me"}
 
   test "job tag is not re-generated if pipeline was re-executed" do
+    :meck.expect(Crawly.Engine, :get_crawl_id, fn _ -> {:ok, "some id"} end)
+
     pipelines = [
       {Crawly.Pipelines.Experimental.SendToUI, ui_node: :"ui@127.0.0.1"}
     ]

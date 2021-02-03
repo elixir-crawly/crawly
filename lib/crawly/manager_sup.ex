@@ -11,11 +11,11 @@ defmodule Crawly.ManagerSup do
   def init([spider_template, options]) do
     spider_name = Keyword.get(options, :name)
 
-    name = Crawly.EngineSup.via(spider_name)
+    worker_pool_name = Crawly.Manager.worker_pool_via(spider_name)
 
     children = [
       # This supervisor is used to spawn Worker processes
-      {DynamicSupervisor, strategy: :one_for_one, name: name},
+      {DynamicSupervisor, strategy: :one_for_one, name: worker_pool_name},
 
       # Starts spider manager process
       {Crawly.Manager, [spider_template, options]}

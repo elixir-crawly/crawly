@@ -2,7 +2,7 @@ defmodule ManagerTest do
   use ExUnit.Case, async: false
 
   alias Crawly.Engine
-
+  @spider_name "my_test_spider"
   setup do
     :meck.expect(Crawly.RequestsStorage.Worker, :pop, fn _pid ->
       Crawly.Request.new("http://example.com")
@@ -13,15 +13,15 @@ defmodule ManagerTest do
     end)
 
     on_exit(fn ->
-      Engine.running_spiders()
-      |> Map.keys()
-      |> Enum.each(fn spider ->
-        Engine.stop_spider(spider, :stopped_by_on_exit)
+      Engine.list_started_spiders()
+      |> Enum.each(fn info ->
+        Engine.stop_spider(info.name, :stopped_by_on_exit)
       end)
 
-      :persistent_term.erase(:spider_stop_reason)
       :meck.unload()
     end)
+
+    :ok
   end
 
   test "manager does not crash with high number of urls" do
@@ -31,32 +31,30 @@ defmodule ManagerTest do
       end
 
     assert :ok =
-             Crawly.Engine.start_spider(Manager.TestSpider, start_urls: urls)
+             Crawly.Engine.start_spider(TestSpider,
+               name: @spider_name,
+               start_urls: urls
+             )
+
+    :timer.sleep(200)
+    assert %{status: :running} = Crawly.Engine.get_spider_info(@spider_name)
   end
 
-  test "it is possible to add more workers to a spider" do
-    spider_name = Manager.TestSpider
+  test "it is possible to add/remove workers to a spider" do
+    Crawly.Engine.start_spider(TestSpider,
+      name: @spider_name,
+      concurrent_requests_per_domain: 1,
+      closespider_itemcount: :disabled,
+      closespider_timeout: :disabled
+    )
 
-    :ok =
-      Crawly.Engine.start_spider(spider_name,
-        crawl_id: "add_workers_test",
-        concurrent_requests_per_domain: 1
-      )
+    :timer.sleep(100)
 
-    initial_number_of_workers = 1
+    assert %{workers: 1, status: :running} =
+             Crawly.Engine.get_spider_info(@spider_name)
 
-    assert initial_number_of_workers ==
-             DynamicSupervisor.count_children(spider_name)[:workers]
-
-    workers = 2
-    assert :ok == Crawly.Manager.add_workers(spider_name, workers)
-
-    pid = Crawly.Engine.get_manager(spider_name)
-    state = :sys.get_state(pid)
-    assert spider_name == state.name
-
-    assert initial_number_of_workers + workers ==
-             DynamicSupervisor.count_children(spider_name)[:workers]
+    assert :ok == Crawly.Manager.add_workers(@spider_name, 2)
+    assert %{workers: 3} = Crawly.Engine.get_spider_info(@spider_name)
   end
 
   test "returns error when spider doesn't exist" do
@@ -64,119 +62,67 @@ defmodule ManagerTest do
              Crawly.Manager.add_workers(Manager.NonExistentSpider, 2)
   end
 
-  test "Closespider itemcount is respected" do
-    :meck.expect(Crawly.DataStorage, :stats, fn _ -> {:stored_items, 5} end)
+  describe "spider stop reason" do
+    setup do
+      :meck.expect(TestSpider, :override_settings, fn ->
+        [
+          on_spider_closed_callback: fn reason ->
+            :persistent_term.put(:spider_stop_reason, reason)
+          end
+        ]
+      end)
 
-    :ok =
-      Crawly.Engine.start_spider(Manager.TestSpider,
+      on_exit(fn ->
+        :persistent_term.erase(:spider_stop_reason)
+      end)
+    end
+
+    test "Closespider itemcount is respected" do
+      :meck.expect(Crawly.DataStorage, :stats, fn _ -> {:stored_items, 5} end)
+
+      Crawly.Engine.start_spider(TestSpider,
+        name: @spider_name,
         closespider_itemcount: 1,
         closespider_timeout: :disabled
       )
 
-    Process.sleep(700)
-    assert :persistent_term.get(:spider_stop_reason) == :itemcount_limit
-  end
+      Process.sleep(1000)
 
-  test "Closespider timeout is respected" do
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    Process.sleep(600)
-    assert :persistent_term.get(:spider_stop_reason) == :itemcount_timeout
-  end
+      assert :persistent_term.get(:spider_stop_reason) ==
+               :itemcount_limit
+    end
 
-  test "Can't start already started spider" do
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
+    test "Closespider timeout is respected" do
+      Crawly.Engine.start_spider(TestSpider, closespider_itemcount: :disabled)
+      Process.sleep(1000)
+      assert :persistent_term.get(:spider_stop_reason) == :itemcount_timeout
+    end
 
-    assert {:error, :spider_already_started} ==
-             Crawly.Engine.start_spider(Manager.TestSpider)
-  end
+    test "Spider closed callback is called when spider is stopped" do
+      Crawly.Engine.start_spider(TestSpider, name: @spider_name)
+      :timer.sleep(100)
+      Crawly.Engine.stop_spider(@spider_name, :manual_stop)
+      :timer.sleep(100)
+      assert :persistent_term.get(:spider_stop_reason) == :manual_stop
+    end
 
-  test "Spider closed callback is called when spider is stopped" do
-    :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    :ok = Crawly.Engine.stop_spider(Manager.TestSpider, :manual_stop)
-    assert :persistent_term.get(:spider_stop_reason) == :manual_stop
-  end
+    test "It's possible to start a spider with start_requests" do
+      pid = self()
 
-  test "It's possible to start a spider with start_requests" do
-    pid = self()
+      :meck.expect(Crawly.RequestsStorage, :store, fn _spider, request ->
+        send(pid, {:performing_request, request})
+      end)
 
-    :meck.expect(Crawly.RequestsStorage, :store, fn _spider, request ->
-      send(pid, {:performing_request, request})
-    end)
+      :ok =
+        Crawly.Engine.start_spider(TestSpider,
+          name: @spider_name,
+          closespider_itemcount: :disabled,
+          closespider_timeout: :disabled
+        )
 
-    :ok =
-      Crawly.Engine.start_spider(Manager.StartRequestsTestSpider,
-        closespider_itemcount: :disabled,
-        closespider_timeout: :disabled
-      )
-
-    Process.sleep(100)
-    assert_receive {:performing_request, req}
-    assert req.url == "https://www.example.com/blog.html"
-  end
-end
-
-defmodule Manager.TestSpider do
-  use Crawly.Spider
-
-  def override_settings() do
-    [
-      on_spider_closed_callback: fn reason ->
-        :persistent_term.put(:spider_stop_reason, reason)
-      end
-    ]
-  end
-
-  def base_url() do
-    "https://www.example.com"
-  end
-
-  def init(opts) do
-    start_urls =
-      Keyword.get(opts, :start_urls, ["https://www.example.com/blog.html"])
-
-    [start_urls: start_urls]
-  end
-
-  def parse_item(_response) do
-    path = Enum.random(1..100)
-
-    %{
-      :items => [
-        %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
-      ],
-      :requests => [
-        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
-      ]
-    }
-  end
-end
-
-defmodule Manager.StartRequestsTestSpider do
-  use Crawly.Spider
-
-  def base_url() do
-    "https://www.example.com"
-  end
-
-  def init() do
-    [
-      start_requests: [
-        Crawly.Request.new("https://www.example.com/blog.html"),
-        "Incorrect request"
-      ]
-    ]
-  end
-
-  def parse_item(_response) do
-    path = Enum.random(1..100)
-
-    %{
-      :items => [
-        %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
-      ],
-      :requests => [
-        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
-      ]
-    }
+      Process.sleep(100)
+      assert_receive {:performing_request, req}
+      assert req.url == "https://www.example.com/blog.html"
+    end
   end
 end

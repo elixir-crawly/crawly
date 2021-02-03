@@ -10,8 +10,8 @@ defmodule Crawly.Application do
     # List all child processes to be supervised
 
     children = [
-      worker(Crawly.Engine, []),
-      supervisor(Crawly.EngineSup, []),
+      {Crawly.Engine, []},
+      {Crawly.EngineSup, []},
       {Crawly.DataStorage, []},
       {Crawly.RequestsStorage, []},
       {DynamicSupervisor,
@@ -21,7 +21,9 @@ defmodule Crawly.Application do
       {Plug.Cowboy,
        scheme: :http,
        plug: Crawly.API.Router,
-       options: [port: Application.get_env(:crawly, :port, 4001)]}
+       options: [port: Application.get_env(:crawly, :port, 4001)]},
+      {Registry, [keys: :unique, name: Crawly.Engine.WorkerPoolRegistry]},
+      {Registry, [keys: :unique, name: Crawly.Engine.ManagerRegistry]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

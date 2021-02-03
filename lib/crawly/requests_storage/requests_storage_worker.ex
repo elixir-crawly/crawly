@@ -50,9 +50,6 @@ defmodule Crawly.RequestsStorage.Worker do
     Enum.each(requests, fn request -> store(pid, request) end)
   end
 
-  @doc """
-  Store individual request request
-  """
   @spec store(spider_name, request) :: :ok
         when spider_name: String.t(),
              request: Crawly.Request.t()

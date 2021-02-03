@@ -35,7 +35,7 @@ defmodule Crawly.DataStorage do
   end
 
   def init(_) do
-    {:ok, %Crawly.DataStorage{workers: %{}, pid_spiders: %{}}}
+    {:ok, %Crawly.DataStorage{}}
   end
 
   @spec start_worker(String.t(), String.t()) :: :ok

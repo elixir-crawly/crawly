@@ -16,7 +16,7 @@ defmodule Pipelines.DuplicatesFilterTest do
     assert item == @valid
 
     # run again with same item and updated state should drop the item
-    assert {false, state} = Crawly.Utils.pipe(pipelines, item, state)
+    assert {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
 
   test "Drops duplicate items with the same item_id value through tuple config" do
@@ -32,7 +32,7 @@ defmodule Pipelines.DuplicatesFilterTest do
     assert item == @valid
 
     # run again with same item and updated state should drop the item
-    assert {false, state} = Crawly.Utils.pipe(pipelines, item, state)
+    assert {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
   end
 
   test "Inactive when item_id is not set" do

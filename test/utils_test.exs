@@ -142,15 +142,16 @@ defmodule UtilsTest do
         %{template: TestSpider}
       end)
 
-      assert 2 == Utils.get_settings(:my_custom_setting, "TestSpider", 2)
+      assert 5 ==
+               Utils.get_settings(:concurrent_requests_per_domain, "TestSpider")
     end
 
-    test "returns :error tuple if runtime spider is not running, even if default is given" do
+    test "returns default value if runtime spider is not running" do
       :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
         nil
       end)
 
-      assert {:error, :spider_not_found} ==
+      assert 1 ==
                Utils.get_settings(:my_custom_setting, "TestSpider", 1)
     end
   end

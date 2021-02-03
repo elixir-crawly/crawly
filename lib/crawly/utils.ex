@@ -188,8 +188,6 @@ defmodule Crawly.Utils do
        when is_binary(spider_name) do
     with %{template: template} <- Crawly.Engine.get_spider_info(spider_name) do
       get_spider_setting(setting_name, template)
-    else
-      nil -> {:error, :spider_not_found}
     end
   end
 

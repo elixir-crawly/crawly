@@ -3,7 +3,7 @@ defmodule Crawly.EngineSup do
   @moduledoc false
   use DynamicSupervisor
 
-  def start_link do
+  def start_link(_) do
     DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
@@ -15,16 +15,6 @@ defmodule Crawly.EngineSup do
   def start_spider(spider_template, options) do
     case Code.ensure_loaded?(spider_template) do
       true ->
-        # Given spider module exists in the namespace, we can proceed
-
-        case DynamicSupervisor.start_child(
-               __MODULE__,
-               {Registry, [keys: :unique, name: Crawly.Engine.Registry]}
-             ) do
-          {:error, {:already_started, _}} -> :ok
-          {:ok, _pid} -> :ok
-        end
-
         DynamicSupervisor.start_child(
           __MODULE__,
           {Crawly.ManagerSup, [spider_template, options]}
@@ -39,7 +29,4 @@ defmodule Crawly.EngineSup do
   def stop_spider(pid) do
     DynamicSupervisor.terminate_child(__MODULE__, pid)
   end
-
-  def via(spider_name),
-    do: {:via, Registry, {Crawly.Engine.Registry, spider_name}}
 end

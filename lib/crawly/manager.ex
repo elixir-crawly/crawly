@@ -2,7 +2,7 @@ defmodule Crawly.Manager do
   @moduledoc """
   Crawler manager module
 
-  This module is responsible for spawning all processes related to
+  This module is responsible from spawning all processes related to
   a given Crawler.
 
   The manager spawns the following processes tree.
@@ -32,29 +32,111 @@ defmodule Crawly.Manager do
 
   use GenServer
 
-  alias Crawly.{Engine, Utils}
+  alias Crawly.{Utils, Manager}
 
+  defstruct template: nil,
+            name: nil,
+            crawl_id: nil,
+            itemcount_limit: nil,
+            closespider_timeout_limit: nil,
+            tref: nil,
+            prev_scraped_cnt: 0,
+            workers: nil
+
+  @type t :: %__MODULE__{
+          template: module(),
+          name: String.t(),
+          crawl_id: String.t(),
+          itemcount_limit: integer(),
+          closespider_timeout_limit: integer(),
+          tref: integer(),
+          prev_scraped_cnt: integer(),
+          workers: [pid()]
+        }
+
+  # a nested map
+  @doc """
+  Obtains the `:via` name of given spider's manager from the `Crawly.Engine.ManagerPoolRegistry`
+  """
+  @spec manager_via(String.t()) :: nil | term()
+  def manager_via(spider_name),
+    do: {:via, Registry, {Crawly.Engine.ManagerRegistry, spider_name}}
+
+  @doc """
+  Obtains the `:via` name of given spider's worker pool from the `Crawly.Engine.WorkerPoolRegistry`
+  """
+  @spec worker_pool_via(String.t()) :: nil | term()
+  def worker_pool_via(spider_name),
+    do: {:via, Registry, {Crawly.Engine.WorkerPoolRegistry, spider_name}}
+
+  @doc """
+  Obtains the PID of a given spider's manager
+  """
+  @spec manager_pid(String.t()) :: nil | pid()
+  def manager_pid(name),
+    do:
+      Registry.lookup(Crawly.Engine.ManagerRegistry, name)
+      |> registry_lookup_result()
+
+  @doc """
+  Obtains the PID of a given spider's worker pool
+  """
+  @spec worker_pool_pid(String.t()) :: nil | pid()
+  def worker_pool_pid(name),
+    do:
+      Registry.lookup(Crawly.Engine.WorkerPoolRegistry, name)
+      |> registry_lookup_result()
+
+  # format the result of Registry.Lookup
+  defp registry_lookup_result([]), do: nil
+  defp registry_lookup_result([{pid, _result} | _]), do: pid
+
+  @doc """
+  Syncronously adds workers to a spider's worker pool.
+  """
   @spec add_workers(module(), non_neg_integer()) ::
-          :ok | {:error, :spider_non_exist}
+          :ok | {:error, :spider_not_found}
   def add_workers(spider_name, num_of_workers) do
-    case Engine.get_manager(spider_name) do
+    case manager_pid(spider_name) do
       {:error, reason} ->
         {:error, reason}
 
+      nil ->
+        {:error, :spider_not_found}
+
       pid ->
-        GenServer.cast(pid, {:add_workers, num_of_workers})
+        GenServer.call(pid, {:add_workers, num_of_workers})
+    end
+  end
+
+  @doc """
+  Syncronously obtains the manager's state from a given spider.
+  """
+  @spec get_state(String.t()) ::
+          __MODULE__.t() | {:error, :spider_not_found}
+  def get_state(spider_name) do
+    case manager_pid(spider_name) do
+      nil ->
+        {:error, :spider_not_found}
+
+      pid ->
+        GenServer.call(pid, :get_state)
     end
   end
 
   def start_link([spider_template, options]) do
-    GenServer.start_link(__MODULE__, [spider_template, options])
+    spider_name = Keyword.get(options, :name)
+
+    GenServer.start_link(__MODULE__, [spider_template, options],
+      name: manager_via(spider_name)
+    )
   end
 
   @impl true
   def init([spider_template, options]) do
     crawl_id = Keyword.get(options, :crawl_id)
     spider_name = Keyword.get(options, :name)
-    Logger.debug("Starting the manager for #{spider_name}")
+    Logger.debug("Starting the manager from #{spider_name}")
 
     Logger.metadata(
       spider_name: spider_name,
@@ -62,6 +144,19 @@ defmodule Crawly.Manager do
       crawl_id: crawl_id
     )
 
+    {:ok,
+     %Manager{
+       template: spider_template,
+       name: spider_name,
+       crawl_id: crawl_id
+     }, {:continue, {:config, options}}}
+  end
+
+  @impl true
+  def handle_continue(
+        {:config, options},
+        %{name: spider_name} = state
+      ) do
     itemcount_limit =
       Keyword.get(
         options,
@@ -76,20 +171,44 @@ defmodule Crawly.Manager do
         get_default_limit(:closespider_timeout, spider_name)
       )
 
+    # Schedule basic service operations from given spider manager
+    timeout =
+      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+
+    tref = Process.send_after(self(), :operations, timeout)
+
+    {:noreply,
+     %{
+       state
+       | itemcount_limit: itemcount_limit,
+         closespider_timeout_limit: closespider_timeout_limit,
+         tref: tref
+     }, {:continue, {:start_workers, options}}}
+  end
+
+  @impl true
+  def handle_continue(
+        {:start_workers, options},
+        %{crawl_id: crawl_id, name: spider_name, template: spider_template} =
+          state
+      ) do
     # Start DataStorage worker
-    {:ok, data_storage_pid} =
-      Crawly.DataStorage.start_worker(spider_template, spider_name, crawl_id)
+    case Crawly.DataStorage.start_worker(spider_name, crawl_id) do
+      {:ok, data_storage_pid} ->
+        Process.link(data_storage_pid)
 
-    Process.link(data_storage_pid)
+      {:error, :already_started} ->
+        :ignore
+    end
 
-    # Start RequestsWorker for a given spider
-    {:ok, request_storage_pid} =
-      Crawly.RequestsStorage.start_worker(
-        spider_name,
-        crawl_id
-      )
+    # Start RequestsWorker from a given spider
+    case Crawly.RequestsStorage.start_worker(spider_name, crawl_id) do
+      {:ok, request_storage_pid} ->
+        Process.link(request_storage_pid)
 
-    Process.link(request_storage_pid)
+      {:error, :already_started} ->
+        :ignore
+    end
 
     # Start workers
     num_workers =
@@ -99,7 +218,7 @@ defmodule Crawly.Manager do
         Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
       )
 
-    registry_name = Crawly.EngineSup.via(spider_name)
+    registry_name = worker_pool_via(spider_name)
 
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
@@ -113,33 +232,21 @@ defmodule Crawly.Manager do
         )
       end)
 
-    # Schedule basic service operations for given spider manager
-    timeout =
-      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
-
-    tref = Process.send_after(self(), :operations, timeout)
-
     Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name} (#{
+      "Started #{Enum.count(worker_pids)} workers from #{spider_name} (#{
         spider_template
       })"
     )
 
-    {:ok,
+    {:noreply,
      %{
-       template: spider_template,
-       name: spider_name,
-       crawl_id: crawl_id,
-       itemcount_limit: itemcount_limit,
-       closespider_timeout_limit: closespider_timeout_limit,
-       tref: tref,
-       prev_scraped_cnt: 0,
-       workers: worker_pids
-     }, {:continue, {:startup, options}}}
+       state
+       | workers: worker_pids
+     }, {:continue, {:start_requests, options}}}
   end
 
   @impl true
-  def handle_continue({:startup, options}, state) do
+  def handle_continue({:start_requests, options}, state) do
     # Add start requests to the requests storage
     init = state.template.init(options)
 
@@ -167,19 +274,24 @@ defmodule Crawly.Manager do
   end
 
   @impl true
-  def handle_cast({:add_workers, num_of_workers}, state) do
-    Logger.info("Adding #{num_of_workers} workers for #{state.name}")
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
+  end
 
-    registry_name = Crawly.EngineSup.via(state.name)
+  @impl true
+  def handle_call({:add_workers, num_of_workers}, _from, state) do
+    Logger.info("Adding #{num_of_workers} workers from #{state.name}")
+
+    worker_pool_name = worker_pool_via(state.name)
 
     Enum.each(1..num_of_workers, fn _ ->
       DynamicSupervisor.start_child(
-        registry_name,
+        worker_pool_name,
         {Crawly.Worker, [spider_name: state.name, crawl_id: state.crawl_id]}
       )
     end)
 
-    {:noreply, state}
+    {:reply, :ok, state}
   end
 
   @impl true

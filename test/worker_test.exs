@@ -6,7 +6,7 @@ defmodule WorkerTest do
       :meck.expect(Crawly.RequestsStorage, :pop, fn _ -> nil end)
       :meck.expect(Crawly.RequestsStorage, :store, fn _, _ -> :ok end)
 
-      spider_name = Elixir.TestWorker
+      spider_name = TestSpider
 
       {:ok, storage_pid} =
         Crawly.DataStorage.start_worker(spider_name, "crawl_id")
@@ -53,10 +53,15 @@ defmodule WorkerTest do
   describe "Check different incorrect status codes from HTTP client" do
     setup do
       :meck.expect(Crawly.Utils, :send_after, fn _, _, _ -> :ignore end)
-      spider_name = Worker.CrashingTestSpider
+
+      :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+        %{template: TestSpider}
+      end)
+
+      spider_name = TestSpider
 
       {:ok, storage_pid} =
-        Crawly.DataStorage.start_worker(spider_name, "crawl_id")
+        Crawly.DataStorage.start_worker(TestSpider, "crawl_id")
 
       {:ok, workers_sup} =
         DynamicSupervisor.start_link(strategy: :one_for_one, name: spider_name)
@@ -230,26 +235,5 @@ defmodule WorkerTest do
       1000 ->
         false
     end
-  end
-end
-
-defmodule Worker.CrashingTestSpider do
-  use Crawly.Spider
-
-  @impl Crawly.Spider
-  def base_url() do
-    "https://www.example.com"
-  end
-
-  @impl Crawly.Spider
-  def init() do
-    [
-      start_urls: ["https://www.example.com"]
-    ]
-  end
-
-  @impl Crawly.Spider
-  def parse_item(_response) do
-    {[], []}
   end
 end
