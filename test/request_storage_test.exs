@@ -8,11 +8,15 @@ defmodule RequestStorageTest do
     {:ok, pid} = Crawly.RequestsStorage.start_worker(@name, @crawl_id)
 
     on_exit(fn ->
-      :ok =
+      req_storage_pid = Process.whereis(Crawly.RequestsStorage)
+      state = :sys.get_state(req_storage_pid)
+
+      for {_, worker_pid} <- state.workers do
         DynamicSupervisor.terminate_child(
           Crawly.RequestsStorage.WorkersSup,
-          pid
+          worker_pid
         )
+      end
     end)
 
     {:ok, pid: pid}
