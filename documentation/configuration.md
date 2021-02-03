@@ -133,7 +133,13 @@ Allows to specify a custom HTTP client which will be performing request to the c
 default: /tmp
 
 Set spider logs directory. All spiders have their own dedicated log file
-stored under the `log_dir` folder.
+stored under the `log_dir` folder. This option is ignored if `log_to_file` is not set to `true`.
+
+### log_to_file :: String.t()
+
+default: false
+
+Enables or disables file logging.
 
 ### port :: pos_integer()
 
