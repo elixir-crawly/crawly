@@ -108,7 +108,7 @@ defmodule UtilsTest do
     }
   end
 
-  describe "settings" do
+  describe "override settings" do
     setup do
       :meck.expect(TestSpider, :override_settings, fn ->
         [concurrent_requests_per_domain: 5]
@@ -135,6 +135,23 @@ defmodule UtilsTest do
 
     test "if no spider-level settings or global settings, returns default " do
       assert 1 == Utils.get_settings(:my_custom_setting, TestSpider, 1)
+    end
+
+    test "correct settings returned for runtime spider" do
+      :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+        %{template: TestSpider}
+      end)
+
+      assert 2 == Utils.get_settings(:my_custom_setting, "TestSpider", 2)
+    end
+
+    test "returns :error tuple if runtime spider is not running, even if default is given" do
+      :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+        nil
+      end)
+
+      assert {:error, :spider_not_found} ==
+               Utils.get_settings(:my_custom_setting, "TestSpider", 1)
     end
   end
 end

@@ -180,14 +180,17 @@ defmodule Crawly.Utils do
   @spec get_spider_setting(spider_name, setting_name) :: result
         when spider_name: atom() | String.t(),
              setting_name: atom(),
-             result: nil | term()
+             result: nil | term() | {:error, :spider_not_found}
 
   defp get_spider_setting(_setting_name, nil), do: nil
 
   defp get_spider_setting(setting_name, spider_name)
        when is_binary(spider_name) do
-    info = Crawly.Engine.get_spider_info(spider_name)
-    get_spider_setting(setting_name, info.template)
+    with %{template: template} <- Crawly.Engine.get_spider_info(spider_name) do
+      get_spider_setting(setting_name, template)
+    else
+      nil -> {:error, :spider_not_found}
+    end
   end
 
   # for when calling a module directly
