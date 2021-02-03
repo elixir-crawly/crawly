@@ -33,10 +33,12 @@ defmodule ManagerTest do
     assert :ok =
              Crawly.Engine.start_spider(TestSpider,
                name: @spider_name,
-               start_urls: urls
+               start_urls: urls,
+               closespider_itemcount: :disabled,
+               closespider_timeout: :disabled
              )
 
-    :timer.sleep(200)
+    :timer.sleep(400)
     assert %{status: :running} = Crawly.Engine.get_spider_info(@spider_name)
   end
 
