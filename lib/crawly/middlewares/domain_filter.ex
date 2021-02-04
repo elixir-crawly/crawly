@@ -18,21 +18,36 @@ defmodule Crawly.Middlewares.DomainFilter do
   require Logger
 
   def run(request, state, _opts \\ []) do
-    %{template: template} = Crawly.Engine.get_spider_info(state.spider_name)
-    base_url = template.base_url()
-    parsed_url = URI.parse(request.url)
-    host = parsed_url.host
+    info =
+      state.spider_name
+      |> Crawly.Engine.get_spider_info()
 
-    case host != nil and String.contains?(base_url, host) do
-      false ->
+    base_url =
+      if info != nil and info.template != nil,
+        do: info.template.base_url(),
+        else: nil
+
+    host =
+      request.url
+      |> URI.parse()
+      |> Map.get(:host)
+
+    case do_filter(base_url, host) do
+      :ok ->
+        {request, state}
+
+      :drop ->
         Logger.debug(
           "Dropping request: #{inspect(request.url)} (domain filter)"
         )
 
         {false, state}
-
-      true ->
-        {request, state}
     end
   end
+
+  defp do_filter("" <> base_url, "" <> host) do
+    if String.contains?(base_url, host), do: :ok, else: :drop
+  end
+
+  defp do_filter(_base_url, _host), do: :drop
 end

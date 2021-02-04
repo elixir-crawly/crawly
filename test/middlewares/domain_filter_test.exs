@@ -8,8 +8,12 @@ defmodule Middlewares.DomainFilterTest do
       "https://www.erlang-solutions.com"
     end)
 
-    :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+    :meck.expect(Crawly.Engine, :get_spider_info, fn "test_spider" ->
       %{template: :test_spider}
+    end)
+
+    :meck.expect(Crawly.Engine, :get_spider_info, fn _ ->
+      nil
     end)
 
     on_exit(fn ->
@@ -17,10 +21,18 @@ defmodule Middlewares.DomainFilterTest do
     end)
   end
 
+  test "drops request if unable to obtain spider template from engine" do
+    middlewares = [Crawly.Middlewares.DomainFilter]
+    req = %Crawly.Request{url: "https://www.some_url.com"}
+    state = %{spider_name: "unknown_spider", crawl_id: "id"}
+
+    assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
+  end
+
   test "Filters out requests that do not contain a spider's base_url" do
     middlewares = [Crawly.Middlewares.DomainFilter]
     req = %Crawly.Request{url: "https://www.some_url.com"}
-    state = %{spider_name: :test_spider, crawl_id: "id"}
+    state = %{spider_name: "test_spider", crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
@@ -32,7 +44,7 @@ defmodule Middlewares.DomainFilterTest do
       url: "https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html"
     }
 
-    state = %{spider_name: :test_spider, crawl_id: "id"}
+    state = %{spider_name: "test_spider", crawl_id: "id"}
 
     {maybe_request, _state} = Crawly.Utils.pipe(middlewares, req, state)
     assert %Crawly.Request{} = maybe_request
@@ -46,7 +58,7 @@ defmodule Middlewares.DomainFilterTest do
         "https://twitter.com?share=https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html"
     }
 
-    state = %{spider_name: :test_spider, crawl_id: "id"}
+    state = %{spider_name: "test_spider", crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
@@ -58,7 +70,7 @@ defmodule Middlewares.DomainFilterTest do
       url: "/blog"
     }
 
-    state = %{spider_name: :test_spider, crawl_id: "id"}
+    state = %{spider_name: "test_spider", crawl_id: "id"}
 
     assert {false, _state} = Crawly.Utils.pipe(middlewares, req, state)
   end
