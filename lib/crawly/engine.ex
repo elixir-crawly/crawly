@@ -61,8 +61,9 @@ defmodule Crawly.Engine do
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
     # Filter all logs related to a given spider
-    if Crawly.Utils.get_settings(:log_to_file, spider_name) do
-      configure_spider_logs(spider_name, opts[:crawl_id])
+    case {Crawly.Utils.get_settings(:log_to_file, spider_name), Code.ensure_loaded?(LoggerFileBackend)} do
+      {true, true} -> configure_spider_logs(spider_name, opts[:crawl_id])
+      {true, false} -> Logger.warn(":logger_file_backend should be installed as a peer dependency if log_to_file config is set to true")
     end
 
     GenServer.call(
@@ -243,33 +244,31 @@ defmodule Crawly.Engine do
   end
 
   defp configure_spider_logs(spider_name, crawl_id) do
-    if Code.ensure_loaded?(LoggerFileBackend) do
-      log_dir =
-        Crawly.Utils.get_settings(
-          :log_dir,
-          spider_name,
-          System.tmp_dir()
-        )
-
-      current_unix_timestamp = :os.system_time(:second)
-
-      Logger.add_backend({LoggerFileBackend, :debug})
-
-      log_file_path =
-        Path.join([
-          log_dir,
-          inspect(spider_name),
-          # underscore separates the timestamp and the crawl_id
-          inspect(current_unix_timestamp) <> "_" <> crawl_id
-        ]) <> ".log"
-
-      Logger.configure_backend({LoggerFileBackend, :debug},
-        path: log_file_path,
-        level: :debug,
-        metadata_filter: [crawl_id: crawl_id]
+    log_dir =
+      Crawly.Utils.get_settings(
+        :log_dir,
+        spider_name,
+        System.tmp_dir()
       )
 
-      Logger.debug("Writing logs to #{log_file_path}")
-    end
+    current_unix_timestamp = :os.system_time(:second)
+
+    Logger.add_backend({LoggerFileBackend, :debug})
+
+    log_file_path =
+      Path.join([
+        log_dir,
+        inspect(spider_name),
+        # underscore separates the timestamp and the crawl_id
+        inspect(current_unix_timestamp) <> "_" <> crawl_id
+      ]) <> ".log"
+
+    Logger.configure_backend({LoggerFileBackend, :debug},
+      path: log_file_path,
+      level: :debug,
+      metadata_filter: [crawl_id: crawl_id]
+    )
+
+    Logger.debug("Writing logs to #{log_file_path}")
   end
 end
