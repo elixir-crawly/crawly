@@ -70,6 +70,7 @@ defmodule Crawly.Engine do
         Logger.warn(
           ":logger_file_backend https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend must be installed as a peer dependency if log_to_file config is set to true"
         )
+
       _ ->
         false
     end
