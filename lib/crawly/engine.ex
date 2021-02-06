@@ -62,7 +62,7 @@ defmodule Crawly.Engine do
 
     # Filter all logs related to a given spider
     case {Crawly.Utils.get_settings(:log_to_file, spider_name),
-          Code.ensure_loaded?(LoggerFileBackend)} do
+          Crawly.Utils.ensure_loaded?(LoggerFileBackend)} do
       {true, true} ->
         configure_spider_logs(spider_name, opts[:crawl_id])
 

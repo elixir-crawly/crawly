@@ -55,4 +55,50 @@ defmodule EngineTest do
 
     assert :meck.num_calls(Logger, :configure_backend, :_) == 1
   end
+
+  test "LoggerFileBackend is not configured when module is not loaded" do
+    :meck.expect(TestSpider, :override_settings, fn ->
+      [log_dir: "/my_tmp_dir", log_to_file: true]
+    end)
+
+    :meck.expect(Crawly.Utils, :ensure_loaded?, fn _ ->
+      false
+    end)
+
+    :meck.expect(Logger, :configure_backend, fn {_, :debug}, opts ->
+      log_file_path = Keyword.get(opts, :path)
+      assert log_file_path =~ "TestSpider"
+      assert log_file_path =~ "/my_tmp_dir"
+    end)
+
+    Crawly.Engine.init([])
+    Crawly.Engine.refresh_spider_list()
+
+    # test a started spider
+    Crawly.Engine.start_spider(TestSpider)
+    assert :meck.num_calls(Logger, :configure_backend, :_) == 0
+  end
+
+  test "LoggerFileBackend is configured when module is loaded" do
+    :meck.expect(TestSpider, :override_settings, fn ->
+      [log_dir: "/my_tmp_dir", log_to_file: true]
+    end)
+
+    :meck.expect(Crawly.Utils, :ensure_loaded?, fn _ ->
+      true
+    end)
+
+    :meck.expect(Logger, :configure_backend, fn {_, :debug}, opts ->
+      log_file_path = Keyword.get(opts, :path)
+      assert log_file_path =~ "TestSpider"
+      assert log_file_path =~ "/my_tmp_dir"
+    end)
+
+    Crawly.Engine.init([])
+    Crawly.Engine.refresh_spider_list()
+
+    # test a started spider
+    Crawly.Engine.start_spider(TestSpider)
+    assert :meck.num_calls(Logger, :configure_backend, :_) == 1
+  end
 end
