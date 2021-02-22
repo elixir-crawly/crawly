@@ -63,7 +63,7 @@ defmodule Crawly.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 1.7"},
-      {:uuid, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"},
       {:poison, "~> 3.1"},
       {:gollum, "~> 0.4.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
