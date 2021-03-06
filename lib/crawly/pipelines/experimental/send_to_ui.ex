@@ -15,11 +15,7 @@ defmodule Crawly.Pipelines.Experimental.SendToUI do
 
     spider_name = state.spider_name |> Atom.to_string()
 
-    ui_module =
-      case Keyword.get(opts, :ui_module) do
-        nil -> CrawlyUI
-        module -> module
-      end
+    ui_module = Keyword.get(opts, :ui_module, CrawlyUI)
 
     case Keyword.get(opts, :ui_node) do
       nil ->
