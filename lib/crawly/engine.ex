@@ -27,9 +27,14 @@ defmodule Crawly.Engine do
 
   ### Reserved Options
   - `:crawl_id` (binary). Optional, automatically generated if not set.
+  - `:closespider_itemcount` (integer | disabled). Optional, overrides the close
+    spider item count on startup.
+  - `:closespider_timeout` (integer | disabled). Optional, overrides the close
+                            spider timeout on startup.
+  - `:concurrent_requests_per_domain` (integer). Optional, overrides the number of
+     workers for a given spider
 
-
-  ### Backward compatability
+  ### Backward compatibility
   If the 2nd positional argument is a binary, it will be set as the `:crawl_id`. Deprecated, will be removed in the future.
   """
   @type crawl_id_opt :: {:crawl_id, binary()}
@@ -56,7 +61,9 @@ defmodule Crawly.Engine do
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
     # Filter all logs related to a given spider
-    set_spider_log(spider_name, opts[:crawl_id])
+    if Crawly.Utils.get_settings(:log_to_file, spider_name) do
+      configure_spider_logs(spider_name, opts[:crawl_id])
+    end
 
     GenServer.call(
       __MODULE__,
@@ -89,12 +96,7 @@ defmodule Crawly.Engine do
              result:
                :ok | {:error, :spider_not_running} | {:error, :spider_not_found}
   def stop_spider(spider_name, reason \\ :ignore) do
-    case Crawly.Utils.get_settings(:on_spider_closed_callback, spider_name) do
-      nil -> :ignore
-      fun -> apply(fun, [reason])
-    end
-
-    GenServer.call(__MODULE__, {:stop_spider, spider_name})
+    GenServer.call(__MODULE__, {:stop_spider, spider_name, reason})
   end
 
   @spec list_known_spiders() :: [spider_info()]
@@ -192,13 +194,21 @@ defmodule Crawly.Engine do
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
-  def handle_call({:stop_spider, spider_name}, _form, state) do
+  def handle_call({:stop_spider, spider_name, reason}, _form, state) do
     {msg, new_started_spiders} =
       case Map.pop(state.started_spiders, spider_name) do
         {nil, _} ->
           {{:error, :spider_not_running}, state.started_spiders}
 
-        {{pid, _crawl_id}, new_started_spiders} ->
+        {{pid, crawl_id}, new_started_spiders} ->
+          case Crawly.Utils.get_settings(
+                 :on_spider_closed_callback,
+                 spider_name
+               ) do
+            nil -> :ignore
+            fun -> apply(fun, [spider_name, crawl_id, reason])
+          end
+
           Crawly.EngineSup.stop_spider(pid)
 
           {:ok, new_started_spiders}
@@ -232,14 +242,32 @@ defmodule Crawly.Engine do
     |> Enum.dedup_by(& &1)
   end
 
-  defp set_spider_log(spider_name, crawl_id) do
-    log_dir = Crawly.Utils.get_settings(:log_dir, spider_name, "/tmp")
+  defp configure_spider_logs(spider_name, crawl_id) do
+    log_dir =
+      Crawly.Utils.get_settings(
+        :log_dir,
+        spider_name,
+        System.tmp_dir()
+      )
+
+    current_unix_timestamp = :os.system_time(:second)
+
     Logger.add_backend({LoggerFileBackend, :debug})
 
+    log_file_path =
+      Path.join([
+        log_dir,
+        inspect(spider_name),
+        # underscore separates the timestamp and the crawl_id
+        inspect(current_unix_timestamp) <> "_" <> crawl_id
+      ]) <> ".log"
+
     Logger.configure_backend({LoggerFileBackend, :debug},
-      path: "/#{log_dir}/#{spider_name}/#{crawl_id}.log",
+      path: log_file_path,
       level: :debug,
       metadata_filter: [crawl_id: crawl_id]
     )
+
+    Logger.debug("Writing logs to #{log_file_path}")
   end
 end
