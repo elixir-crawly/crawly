@@ -24,7 +24,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.12.0"},
+         {:crawly, "~> 0.13.0"},
          {:floki, "~> 0.26.0"}
        ]
    end
@@ -43,18 +43,18 @@ historical archival.
      def base_url(), do: "https://www.erlang-solutions.com"
 
      @impl Crawly.Spider
-     def init(), do: [start_urls: ["https://www.erlang-solutions.com/blog.html"]]
+     def init(), do: [start_urls: ["https://www.erlang-solutions.com/blog/"]]
 
      @impl Crawly.Spider
      def parse_item(response) do
        {:ok, document} = Floki.parse_document(response.body)
-       hrefs = document |> Floki.find("a.more") |> Floki.attribute("href")
+       hrefs = document |> Floki.find("a.btn-link") |> Floki.attribute("href")
 
        requests =
          Utils.build_absolute_urls(hrefs, base_url())
          |> Utils.requests_from_urls()
 
-       title = document |> Floki.find("article.blog_post h1") |> Floki.text()
+       title = document |> Floki.find("h1.page-title-sm") |> Floki.text()
 
        %{
          :requests => requests,
@@ -92,7 +92,7 @@ historical archival.
 I have decided to create a public telegram channel, so it's now possible to be connected, and it's possible to ask questions
 and get answers faster!
 
-Please join me on: https://t.me/elixir_crawly
+Please join me on: https://t.me/crawlyelixir
 
 ## Browser rendering
 
