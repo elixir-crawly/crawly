@@ -207,4 +207,12 @@ defmodule Crawly.Utils do
       end
     end)
   end
+
+  @doc """
+  Wrapper function for Code.ensure_loaded?/1 to allow mocking
+  """
+  @spec ensure_loaded?(atom) :: boolean
+  def ensure_loaded?(module) do
+    Code.ensure_loaded?(module)
+  end
 end

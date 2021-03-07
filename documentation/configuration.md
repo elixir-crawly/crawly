@@ -139,7 +139,7 @@ stored under the `log_dir` folder. This option is ignored if `log_to_file` is no
 
 default: false
 
-Enables or disables file logging.
+Enables or disables file logging. If set to `true`, make sure to add `:logger_file_backend` https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend as a dependency to your project.
 
 ### port :: pos_integer()
 
