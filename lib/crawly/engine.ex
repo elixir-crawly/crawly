@@ -61,8 +61,18 @@ defmodule Crawly.Engine do
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
     # Filter all logs related to a given spider
-    if Crawly.Utils.get_settings(:log_to_file, spider_name) do
-      configure_spider_logs(spider_name, opts[:crawl_id])
+    case {Crawly.Utils.get_settings(:log_to_file, spider_name),
+          Crawly.Utils.ensure_loaded?(LoggerFileBackend)} do
+      {true, true} ->
+        configure_spider_logs(spider_name, opts[:crawl_id])
+
+      {true, false} ->
+        Logger.warn(
+          ":logger_file_backend https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend must be installed as a peer dependency if log_to_file config is set to true"
+        )
+
+      _ ->
+        false
     end
 
     GenServer.call(
