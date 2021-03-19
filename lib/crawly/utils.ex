@@ -92,10 +92,21 @@ defmodule Crawly.Utils do
         end
       catch
         error, reason ->
+          call =
+            case args do
+              nil ->
+                "#{inspect(module)}.run(#{inspect(item)}, #{inspect(state)})"
+
+              _ ->
+                "#{inspect(module)}.run(#{inspect(item)}, #{inspect(state)}, #{
+                  inspect(args)
+                })"
+            end
+
           Logger.error(
-            "Pipeline crash: #{module}, error: #{inspect(error)}, reason: #{
-              inspect(reason)
-            }, args: #{inspect(args)}"
+            "Pipeline crash by call: #{call}\n#{
+              Exception.format(error, reason, __STACKTRACE__)
+            }"
           )
 
           {item, state}
@@ -121,9 +132,8 @@ defmodule Crawly.Utils do
   defined as settings_override inside the spider. Settings defined on spider are
   taking precedence over the global settings defined in the config.
   """
-  @spec get_settings(setting_name, spider_name, default) :: result
+  @spec get_settings(setting_name, Crawly.spider(), default) :: result
         when setting_name: atom(),
-             spider_name: atom(),
              default: term(),
              result: term()
 
@@ -144,7 +154,7 @@ defmodule Crawly.Utils do
   Returns a list of known modules which implements Crawly.Spider behaviour
   """
   @spec list_spiders() :: [module()]
-  def list_spiders() do
+  def list_spiders do
     Enum.reduce(
       get_modules_from_applications(),
       [],
@@ -177,9 +187,8 @@ defmodule Crawly.Utils do
   ##############################################################################
   # Private functions
   ##############################################################################
-  @spec get_spider_setting(spider_name, setting_name) :: result
-        when spider_name: atom(),
-             setting_name: atom(),
+  @spec get_spider_setting(Crawly.spider(), setting_name) :: result
+        when setting_name: atom(),
              result: nil | term()
 
   defp get_spider_setting(_setting_name, nil), do: nil
