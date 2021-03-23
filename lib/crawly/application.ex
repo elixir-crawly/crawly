@@ -10,8 +10,8 @@ defmodule Crawly.Application do
     # List all child processes to be supervised
 
     children = [
-      worker(Crawly.Engine, []),
-      supervisor(Crawly.EngineSup, []),
+      {Crawly.Engine, []},
+      {DynamicSupervisor, strategy: :one_for_one, name: Crawly.EngineSup},
       {Crawly.DataStorage, []},
       {Crawly.RequestsStorage, []},
       {DynamicSupervisor,
