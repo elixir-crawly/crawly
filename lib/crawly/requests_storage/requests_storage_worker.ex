@@ -18,22 +18,14 @@ defmodule Crawly.RequestsStorage.Worker do
   alias Crawly.RequestsStorage.Worker
 
   @doc """
-  Store requests
+  Store individual request or multiple requests
   """
-  @spec store(spider_name, requests) :: :ok
-        when spider_name: atom(),
-             requests: [Crawly.Request.t()]
-  def store(pid, requests) when is_list(requests) do
-    Enum.each(requests, fn request -> store(pid, request) end)
-  end
+  @spec store(Crawly.spider(), Crawly.Request.t() | [Crawly.Request.t()]) :: :ok
+  def store(pid, %Crawly.Request{} = request), do: store(pid, [request])
 
-  @doc """
-  Store individual request request
-  """
-  @spec store(spider_name, request) :: :ok
-        when spider_name: atom(),
-             request: Crawly.Request.t()
-  def store(pid, request), do: do_call(pid, {:store, request})
+  def store(pid, requests) when is_list(requests) do
+    do_call(pid, {:store, requests})
+  end
 
   @doc """
   Pop a request out of requests storage
@@ -57,28 +49,17 @@ defmodule Crawly.RequestsStorage.Worker do
 
   def init([spider_name, crawl_id]) do
     Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
-    Logger.debug("Starting requests storage worker for #{spider_name}...")
+
+    Logger.debug(
+      "Starting requests storage worker for #{inspect(spider_name)}..."
+    )
+
     {:ok, %Worker{requests: [], spider_name: spider_name, crawl_id: crawl_id}}
   end
 
-  # Store the given request
-  def handle_call({:store, request}, _from, state) do
-    middlewares = request.middlewares
-
-    new_state =
-      case Crawly.Utils.pipe(middlewares, request, state) do
-        {false, new_state} ->
-          new_state
-
-        {new_request, new_state} ->
-          # Process request here....
-          %{
-            new_state
-            | count: state.count + 1,
-              requests: [new_request | state.requests]
-          }
-      end
-
+  # Store the given requests
+  def handle_call({:store, requests}, _from, state) do
+    new_state = Enum.reduce(requests, state, &pipe_request/2)
     {:reply, :ok, new_state}
   end
 
@@ -101,12 +82,24 @@ defmodule Crawly.RequestsStorage.Worker do
   end
 
   defp do_call(pid, command) do
-    try do
-      GenServer.call(pid, command)
-    catch
-      error, reason ->
-        Logger.debug("Could not get response: #{inspect(reason)}")
-        Logger.debug(Exception.format(:error, error, __STACKTRACE__))
+    GenServer.call(pid, command)
+  catch
+    error, reason ->
+      Logger.debug(Exception.format(error, reason, __STACKTRACE__))
+  end
+
+  defp pipe_request(request, state) do
+    case Crawly.Utils.pipe(request.middlewares, request, state) do
+      {false, new_state} ->
+        new_state
+
+      {new_request, new_state} ->
+        # Process request here....
+        %{
+          new_state
+          | count: state.count + 1,
+            requests: [new_request | state.requests]
+        }
     end
   end
 end

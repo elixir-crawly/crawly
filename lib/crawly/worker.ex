@@ -177,12 +177,7 @@ defmodule Crawly.Worker do
     )
 
     # Process all items one by one
-    Enum.each(
-      items,
-      fn item ->
-        Crawly.DataStorage.store(spider_name, item)
-      end
-    )
+    Enum.each(items, &Crawly.DataStorage.store(spider_name, &1))
 
     {:ok, :done}
   end

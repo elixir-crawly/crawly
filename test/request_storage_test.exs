@@ -100,8 +100,9 @@ defmodule RequestStorageTest do
   test "Robots.txt is respected", context do
     request = Crawly.Utils.request_from_url("http://example.com/filter")
 
-    :meck.expect(Gollum, :crawlable?, fn _, "http://example.com/filter" ->
-      :uncrawlable
+    :meck.expect(Gollum, :crawlable?, fn
+      _, "http://example.com/filter" -> :uncrawlable
+      _, _url -> :crawlable
     end)
 
     :ok = Crawly.RequestsStorage.store(context.crawler, request)

@@ -47,7 +47,7 @@ defmodule Crawly.Manager do
   end
 
   def start_link([spider_name, options]) do
-    Logger.debug("Starting the manager for #{spider_name}")
+    Logger.debug("Starting the manager for #{inspect(spider_name)}")
     GenServer.start_link(__MODULE__, [spider_name, options])
   end
 
@@ -105,7 +105,7 @@ defmodule Crawly.Manager do
     tref = Process.send_after(self(), :operations, timeout)
 
     Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{spider_name}"
+      "Started #{Enum.count(worker_pids)} workers for #{inspect(spider_name)}"
     )
 
     {:ok,
@@ -136,13 +136,13 @@ defmodule Crawly.Manager do
 
     # Split start requests, so it's possible to initialize a part of them in async
     # manner
-    {start_req, async_start_req} =
+    {start_reqs, async_start_reqs} =
       Enum.split(start_requests, @start_request_split_size)
 
-    :ok = do_store_requests(state.name, start_req)
+    :ok = Crawly.RequestsStorage.store(state.name, start_reqs)
 
     Task.start(fn ->
-      do_store_requests(state.name, async_start_req)
+      Crawly.RequestsStorage.store(state.name, async_start_reqs)
     end)
 
     {:noreply, state}
@@ -150,7 +150,7 @@ defmodule Crawly.Manager do
 
   @impl true
   def handle_cast({:add_workers, num_of_workers}, state) do
-    Logger.info("Adding #{num_of_workers} workers for #{state.name}")
+    Logger.info("Adding #{num_of_workers} workers for #{inspect(state.name)}")
 
     Enum.each(1..num_of_workers, fn _ ->
       DynamicSupervisor.start_child(
@@ -226,15 +226,6 @@ defmodule Crawly.Manager do
     do: String.to_integer(value)
 
   defp maybe_convert_to_integer(value) when is_integer(value), do: value
-
-  defp do_store_requests(spider_name, requests) do
-    Enum.each(
-      requests,
-      fn request ->
-        Crawly.RequestsStorage.store(spider_name, request)
-      end
-    )
-  end
 
   # Get a closespider_itemcount or closespider_timeout_limit from config or spider
   # settings.
