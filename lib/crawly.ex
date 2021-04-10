@@ -79,8 +79,9 @@ defmodule Crawly do
 
       _ ->
         # spider provided, send response through  parse_item callback, pipe through the pipelines
-        with {:ok, {parsed_result, _, _}} <- Crawly.Worker.parse_item({response, opts[:with]}),
-              pipelines <-
+        with {:ok, {parsed_result, _, _}} <-
+               Crawly.Worker.parse_item({response, opts[:with]}),
+             pipelines <-
                Crawly.Utils.get_settings(
                  :pipelines,
                  opts[:with]
