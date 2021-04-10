@@ -69,15 +69,7 @@ defmodule Crawly do
       )
 
     {%{} = request, _} = Crawly.Utils.pipe(request0.middlewares, request0, %{})
-
-    {fetcher, client_options} =
-      Crawly.Utils.get_settings(
-        :fetcher,
-        opts[:with],
-        {Crawly.Fetchers.HTTPoisonFetcher, []}
-      )
-
-    {:ok, response} = fetcher.fetch(request, client_options)
+    {:ok, {response, _}} = Crawly.Worker.get_response({request, opts[:with]})
 
     case opts[:with] do
       nil ->
@@ -86,8 +78,8 @@ defmodule Crawly do
 
       _ ->
         # spider provided, send response through  parse_item callback, pipe through the pipelines
-        with parsed_result <- parse(response, opts[:with]),
-             pipelines <-
+        with {:ok, {parsed_result, _, _}} <- Crawly.Worker.parse_item({response, opts[:with]}),
+              pipelines <-
                Crawly.Utils.get_settings(
                  :pipelines,
                  opts[:with]
