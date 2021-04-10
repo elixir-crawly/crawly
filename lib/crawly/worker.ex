@@ -83,10 +83,10 @@ defmodule Crawly.Worker do
 
     {fetcher, options} =
       case Crawly.Utils.get_settings(
-        :fetcher,
-        spider_name,
-        {Crawly.Fetchers.HTTPoisonFetcher, []}
-      ) do
+             :fetcher,
+             spider_name,
+             {Crawly.Fetchers.HTTPoisonFetcher, []}
+           ) do
         {module, args} ->
           {module, args}
 
