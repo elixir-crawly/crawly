@@ -32,25 +32,20 @@ defmodule Crawly.RequestsStorage do
 
   alias Crawly.RequestsStorage
 
-  @doc """
-  Store requests in related child worker
-  """
-  @spec store(spider_name, requests) :: result
-        when spider_name: atom(),
-             requests: [Crawly.Request.t()],
-             result: :ok | {:error, :storage_worker_not_running}
-  def store(spider_name, requests) when is_list(requests) do
-    GenServer.call(__MODULE__, {:store, {spider_name, requests}})
-  end
+  @batch_call_max_count 50
 
   @doc """
-  Store request in related child worker
+  Store individual request or multiple requests in related child worker
   """
-  @spec store(spider_name, request) :: :ok
-        when spider_name: atom(),
-             request: Crawly.Request.t()
-  def store(spider_name, %Crawly.Request{} = request) do
-    store(spider_name, [request])
+  @spec store(Crawly.spider(), Crawly.Request.t() | [Crawly.Request.t()]) ::
+          :ok | {:error, :storage_worker_not_running}
+  def store(spider_name, %Crawly.Request{} = request),
+    do: GenServer.call(__MODULE__, {:store, {spider_name, [request]}})
+
+  def store(spider_name, requests) when is_list(requests) do
+    requests
+    |> Stream.chunk_every(@batch_call_max_count)
+    |> Enum.each(&GenServer.call(__MODULE__, {:store, {spider_name, &1}}))
   end
 
   def store(_spider_name, request) do
@@ -61,12 +56,8 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Pop a request out of requests storage
   """
-  @spec pop(spider_name) :: result
-        when spider_name: atom(),
-             result:
-               nil
-               | Crawly.Request.t()
-               | {:error, :storage_worker_not_running}
+  @spec pop(Crawly.spider()) ::
+          nil | Crawly.Request.t() | {:error, :storage_worker_not_running}
   def pop(spider_name) do
     GenServer.call(__MODULE__, {:pop, spider_name})
   end
@@ -74,11 +65,9 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Get statistics from the requests storage
   """
-  @spec stats(spider_name) :: result
-        when spider_name: atom(),
-             result:
-               {:stored_requests, non_neg_integer()}
-               | {:error, :storage_worker_not_running}
+  @spec stats(Crawly.spider()) ::
+          {:stored_requests, non_neg_integer()}
+          | {:error, :storage_worker_not_running}
   def stats(spider_name) do
     GenServer.call(__MODULE__, {:stats, spider_name})
   end
@@ -86,10 +75,8 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Starts a worker for a given spider
   """
-  @spec start_worker(spider_name, crawl_id) :: result
-        when spider_name: atom(),
-             crawl_id: String.t(),
-             result: {:ok, pid()} | {:error, :already_started}
+  @spec start_worker(Crawly.spider(), crawl_id :: String.t()) ::
+          {:ok, pid()} | {:error, :already_started}
   def start_worker(spider_name, crawl_id) do
     GenServer.call(__MODULE__, {:start_worker, spider_name, crawl_id})
   end

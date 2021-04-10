@@ -95,12 +95,7 @@ defmodule Crawly.Pipelines.WriteToFile do
     {:ok, io_device} =
       File.open(
         Path.join([folder, filename]),
-        [
-          :binary,
-          :write,
-          :delayed_write,
-          :utf8
-        ]
+        [:binary, :write, :delayed_write, :utf8]
       )
 
     io_device
@@ -116,13 +111,10 @@ defmodule Crawly.Pipelines.WriteToFile do
       IO.write(io, "\n")
     catch
       error, reason ->
-        stacktrace = :erlang.get_stacktrace()
-
         Logger.error(
-          "Could not write item: #{inspect(error)}, reason: #{inspect(reason)}, stacktrace: #{
-            inspect(stacktrace)
-          }
-          "
+          "Could not write item: #{inspect(item)} to io: #{inspect(io)}\n#{
+            Exception.format(error, reason, __STACKTRACE__)
+          }"
         )
     end
   end

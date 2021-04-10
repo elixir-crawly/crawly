@@ -33,13 +33,10 @@ defmodule CrawlyTest do
   test "fetch/2 with :with option provided returns the response, parsed_item result, and processed ParsedItems",
        %{spider_module: spider_module} do
     assert {%HTTPoison.Response{}, parsed_item_res, parsed_items,
-            pipeline_state} =
+            _pipeline_state} =
              Crawly.fetch("http://example.com", with: spider_module)
 
-    assert %{
-             items: [_],
-             requests: requests
-           } = parsed_item_res
+    assert %{items: [_], requests: _requests} = parsed_item_res
 
     assert [encoded] = parsed_items
     assert encoded =~ "hello"
