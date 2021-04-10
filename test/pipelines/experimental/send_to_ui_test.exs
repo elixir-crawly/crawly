@@ -3,6 +3,12 @@ defmodule Pipelines.Experimental.SendToUITest do
 
   @item %{title: "Title", author: "Me"}
 
+  setup do
+    Crawly.Engine.start_spider(PipelineTestSpider)
+    on_exit(fn -> Crawly.Engine.stop_spider(PipelineTestSpider) end)
+    :ok
+  end
+
   test "job tag is not re-generated if pipeline was re-executed" do
     pipelines = [
       {Crawly.Pipelines.Experimental.SendToUI, ui_node: :"ui@127.0.0.1"}

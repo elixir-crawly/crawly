@@ -1,7 +1,7 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
-  @version "0.12.0"
+  @version "0.13.0"
 
   def project do
     [
@@ -63,7 +63,7 @@ defmodule Crawly.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 1.7"},
-      {:uuid, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"},
       {:poison, "~> 3.1"},
       {:gollum, "~> 0.4.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
@@ -73,7 +73,7 @@ defmodule Crawly.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
-      {:logger_file_backend, "~> 0.0.11"}
+      {:logger_file_backend, "~> 0.0.11", only: [:test, :dev]}
     ]
   end
 

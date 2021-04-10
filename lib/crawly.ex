@@ -33,6 +33,7 @@ defmodule Crawly do
   @type parsed_item_result :: Crawly.ParsedItem.t()
   @type parsed_items :: list(any())
   @type pipeline_state :: %{optional(atom()) => any()}
+  @type spider :: module()
 
   @spec fetch(url, opts) ::
           HTTPoison.Response.t()

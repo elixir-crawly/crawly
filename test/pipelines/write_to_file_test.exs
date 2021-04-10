@@ -131,7 +131,7 @@ defmodule Pipelines.WriteToFileTest do
       File,
       :open,
       fn path, _opts ->
-        send(test_pid, path)
+        {:ok, send(test_pid, path)}
       end
     )
 
@@ -175,7 +175,7 @@ defmodule Pipelines.WriteToFileTest do
       File,
       :open,
       fn path, _opts ->
-        send(test_pid, path)
+        {:ok, send(test_pid, path)}
       end
     )
 

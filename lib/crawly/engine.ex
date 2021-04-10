@@ -10,12 +10,13 @@ defmodule Crawly.Engine do
 
   @type t :: %__MODULE__{
           started_spiders: started_spiders(),
-          known_spiders: [module()]
+          known_spiders: [Crawly.spider()]
         }
-  @type started_spiders() :: %{optional(module()) => identifier()}
+
+  @type started_spiders() :: %{optional(Crawly.spider()) => identifier()}
 
   @type spider_info() :: %{
-          name: module(),
+          name: Crawly.spider(),
           status: :stopped | :started,
           pid: identifier() | nil
         }
@@ -38,9 +39,8 @@ defmodule Crawly.Engine do
   If the 2nd positional argument is a binary, it will be set as the `:crawl_id`. Deprecated, will be removed in the future.
   """
   @type crawl_id_opt :: {:crawl_id, binary()}
-  @spec start_spider(spider_name, opts) :: result
-        when spider_name: module(),
-             opts: [crawl_id_opt],
+  @spec start_spider(Crawly.spider(), opts) :: result
+        when opts: [crawl_id_opt],
              result:
                :ok
                | {:error, :spider_already_started}
@@ -61,8 +61,18 @@ defmodule Crawly.Engine do
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
     # Filter all logs related to a given spider
-    if Crawly.Utils.get_settings(:log_to_file, spider_name) do
-      configure_spider_logs(spider_name, opts[:crawl_id])
+    case {Crawly.Utils.get_settings(:log_to_file, spider_name),
+          Crawly.Utils.ensure_loaded?(LoggerFileBackend)} do
+      {true, true} ->
+        configure_spider_logs(spider_name, opts[:crawl_id])
+
+      {true, false} ->
+        Logger.warn(
+          ":logger_file_backend https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend must be installed as a peer dependency if log_to_file config is set to true"
+        )
+
+      _ ->
+        false
     end
 
     GenServer.call(
@@ -71,8 +81,7 @@ defmodule Crawly.Engine do
     )
   end
 
-  @spec get_manager(module()) ::
-          pid() | {:error, :spider_not_found}
+  @spec get_manager(Crawly.spider()) :: pid() | {:error, :spider_not_found}
   def get_manager(spider_name) do
     case Map.fetch(running_spiders(), spider_name) do
       :error ->
@@ -91,7 +100,7 @@ defmodule Crawly.Engine do
     end
   end
 
-  @spec stop_spider(module(), reason) :: result
+  @spec stop_spider(Crawly.spider(), reason) :: result
         when reason: :itemcount_limit | :itemcount_timeout | atom(),
              result:
                :ok | {:error, :spider_not_running} | {:error, :spider_not_found}
@@ -109,25 +118,26 @@ defmodule Crawly.Engine do
     GenServer.call(__MODULE__, :running_spiders)
   end
 
-  @spec get_spider_info(module()) :: spider_info()
-  def get_spider_info(name) do
-    GenServer.call(__MODULE__, {:get_spider, name})
+  @spec get_spider_info(Crawly.spider()) :: spider_info() | nil
+  def get_spider_info(spider_name) do
+    GenServer.call(__MODULE__, {:get_spider, spider_name})
   end
 
   def refresh_spider_list() do
     GenServer.cast(__MODULE__, :refresh_spider_list)
   end
 
-  def start_link() do
+  def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @spec get_crawl_id(atom()) :: {:error, :spider_not_running} | {:ok, binary()}
+  @spec get_crawl_id(Crawly.spider()) ::
+          {:error, :spider_not_running} | {:ok, binary()}
   def get_crawl_id(spider_name) do
     GenServer.call(__MODULE__, {:get_crawl_id, spider_name})
   end
 
-  @spec init(any) :: {:ok, __MODULE__.t()}
+  @spec init(any) :: {:ok, t()}
   def init(_args) do
     spiders = get_updated_known_spider_list()
 
@@ -165,7 +175,8 @@ defmodule Crawly.Engine do
   end
 
   def handle_call(:list_known_spiders, _from, state) do
-    {:reply, format_spider_info(state), state}
+    return = Enum.map(state.known_spiders, &format_spider_info(&1, state))
+    {:reply, return, state}
   end
 
   def handle_call(
@@ -217,22 +228,29 @@ defmodule Crawly.Engine do
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
+  def handle_call({:get_spider, spider_name}, _from, state) do
+    return =
+      if Enum.member?(state.known_spiders, spider_name) do
+        format_spider_info(spider_name, state)
+      end
+
+    {:reply, return, state}
+  end
+
   def handle_cast(:refresh_spider_list, state) do
     updated = get_updated_known_spider_list(state.known_spiders)
     {:noreply, %Crawly.Engine{state | known_spiders: updated}}
   end
 
   # this function generates a spider_info map for each spider known
-  defp format_spider_info(state) do
-    Enum.map(state.known_spiders, fn s ->
-      pid = Map.get(state.started_spiders, s)
+  defp format_spider_info(spider_name, state) do
+    pid = Map.get(state.started_spiders, spider_name)
 
-      %{
-        name: s,
-        status: if(is_nil(pid), do: :stopped, else: :started),
-        pid: pid
-      }
-    end)
+    %{
+      name: spider_name,
+      status: if(is_nil(pid), do: :stopped, else: :started),
+      pid: pid
+    }
   end
 
   defp get_updated_known_spider_list(known \\ []) do
