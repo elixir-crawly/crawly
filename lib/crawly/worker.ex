@@ -71,6 +71,7 @@ defmodule Crawly.Worker do
     {:noreply, %{state | backoff: new_backoff}}
   end
 
+  @doc false
   @spec get_response({request, spider_name}) :: result
         when request: Crawly.Request.t(),
              spider_name: atom(),
@@ -89,9 +90,6 @@ defmodule Crawly.Worker do
            ) do
         {module, args} ->
           {module, args}
-
-        {module} ->
-          {module, nil}
 
         module ->
           {module, nil}
@@ -119,6 +117,7 @@ defmodule Crawly.Worker do
     end
   end
 
+  @doc false
   @spec parse_item({response, spider_name}) :: result
         when response: HTTPoison.Response.t(),
              spider_name: atom(),
