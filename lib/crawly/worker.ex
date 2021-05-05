@@ -88,10 +88,10 @@ defmodule Crawly.Worker do
              spider_name,
              {Crawly.Fetchers.HTTPoisonFetcher, []}
            ) do
-        {module, args} ->
+        {module, args} when is_list(args) and is_atom(module) ->
           {module, args}
 
-        module ->
+        module when is_atom(module) ->
           {module, nil}
       end
 
