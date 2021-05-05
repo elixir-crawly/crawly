@@ -238,7 +238,7 @@ defmodule Crawly.Utils do
         {module, nil}
 
       {module} ->
-        raise "A #{setting} cannot be defined in the form {#{module}}"
+        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{module}}`. Only the forms `{module, options}` and `module` are valid"
     end
   end
 end
