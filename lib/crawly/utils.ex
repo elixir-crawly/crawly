@@ -225,12 +225,16 @@ defmodule Crawly.Utils do
     Code.ensure_loaded?(module)
   end
 
-  def unwrap_module_and_options(setting, spider_name \\ nil, default_value \\ nil) do
+  def unwrap_module_and_options(
+        setting,
+        spider_name \\ nil,
+        default_value \\ nil
+      ) do
     case Crawly.Utils.get_settings(
-            setting,
-            spider_name,
-            default_value
-          ) do
+           setting,
+           spider_name,
+           default_value
+         ) do
       {module, args} when is_list(args) and is_atom(module) ->
         {module, args}
 
@@ -238,7 +242,9 @@ defmodule Crawly.Utils do
         {module, nil}
 
       {module} ->
-        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{module}}`. Only the forms `{module, options}` and `module` are valid"
+        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{
+                module
+              }}`. Only the forms `{module, options}` and `module` are valid"
     end
   end
 end
