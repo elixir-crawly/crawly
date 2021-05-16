@@ -225,6 +225,8 @@ defmodule Crawly.Utils do
     Code.ensure_loaded?(module)
   end
 
+  @spec unwrap_module_and_options(term) ::
+          {atom, nil | maybe_improper_list}
   def unwrap_module_and_options(setting) do
     case setting do
       {module, args} when is_list(args) and is_atom(module) ->
