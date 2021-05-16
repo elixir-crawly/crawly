@@ -83,11 +83,12 @@ defmodule Crawly.Worker do
     # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
 
     {fetcher, options} =
-      Crawly.Utils.unwrap_module_and_options(
+      Crawly.Utils.get_settings(
         :fetcher,
         spider_name,
         {Crawly.Fetchers.HTTPoisonFetcher, []}
       )
+      |> Crawly.Utils.unwrap_module_and_options()
 
     retry_options = Crawly.Utils.get_settings(:retry, spider_name, [])
     retry_codes = Keyword.get(retry_options, :retry_codes, [])
