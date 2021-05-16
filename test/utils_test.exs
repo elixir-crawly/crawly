@@ -103,7 +103,11 @@ defmodule UtilsTest do
         {Crawly.Fetchers.HTTPoisonFetcher}
       end
     )
-    assert catch_error(Crawly.Utils.unwrap_module_and_options(:fetcher))
+
+    assert catch_error(
+             Crawly.Utils.get_settings(:fetcher, nil, nil)
+             |> Crawly.Utils.unwrap_module_and_options()
+           )
   end
 
   defp expected_request(url) do
