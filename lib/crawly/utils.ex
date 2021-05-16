@@ -225,16 +225,8 @@ defmodule Crawly.Utils do
     Code.ensure_loaded?(module)
   end
 
-  def unwrap_module_and_options(
-        setting,
-        spider_name \\ nil,
-        default_value \\ nil
-      ) do
-    case Crawly.Utils.get_settings(
-           setting,
-           spider_name,
-           default_value
-         ) do
+  def unwrap_module_and_options(setting) do
+    case setting do
       {module, args} when is_list(args) and is_atom(module) ->
         {module, args}
 
