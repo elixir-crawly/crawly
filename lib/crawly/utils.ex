@@ -235,9 +235,9 @@ defmodule Crawly.Utils do
       module when is_atom(module) ->
         {module, nil}
 
-      {module} ->
+      x ->
         raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{
-                module
+                inspect(x)
               }}`. Only the forms `{module, options}` and `module` are valid"
     end
   end
