@@ -225,6 +225,9 @@ defmodule Crawly.Utils do
     Code.ensure_loaded?(module)
   end
 
+  @doc """
+  Function to get setting module in proper data structure
+  """
   @spec unwrap_module_and_options(term) ::
           {atom, nil | maybe_improper_list}
   def unwrap_module_and_options(setting) do
