@@ -229,14 +229,14 @@ defmodule Crawly.Utils do
   Function to get setting module in proper data structure
   """
   @spec unwrap_module_and_options(term) ::
-          {atom, nil | maybe_improper_list}
+          {atom, maybe_improper_list}
   def unwrap_module_and_options(setting) do
     case setting do
       {module, args} when is_list(args) and is_atom(module) ->
         {module, args}
 
       module when is_atom(module) ->
-        {module, nil}
+        {module, []}
 
       x ->
         raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{
