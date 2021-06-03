@@ -71,21 +71,24 @@ defmodule Crawly.Worker do
     {:noreply, %{state | backoff: new_backoff}}
   end
 
+  @doc false
   @spec get_response({request, spider_name}) :: result
         when request: Crawly.Request.t(),
              spider_name: atom(),
              response: HTTPoison.Response.t(),
              result: {:ok, {response, spider_name}} | {:error, term()}
-  defp get_response({request, spider_name}) do
+  def get_response({request, spider_name}) do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
     # if not set, log warning for explicit config preferred,
     # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
+
     {fetcher, options} =
       Crawly.Utils.get_settings(
         :fetcher,
         spider_name,
         {Crawly.Fetchers.HTTPoisonFetcher, []}
       )
+      |> Crawly.Utils.unwrap_module_and_options()
 
     retry_options = Crawly.Utils.get_settings(:retry, spider_name, [])
     retry_codes = Keyword.get(retry_options, :retry_codes, [])
@@ -109,6 +112,7 @@ defmodule Crawly.Worker do
     end
   end
 
+  @doc false
   @spec parse_item({response, spider_name}) :: result
         when response: HTTPoison.Response.t(),
              spider_name: atom(),
@@ -116,7 +120,7 @@ defmodule Crawly.Worker do
              parsed_item: Crawly.ParsedItem.t(),
              next: {parsed_item, response, spider_name},
              result: {:ok, next} | {:error, term()}
-  defp parse_item({response, spider_name}) do
+  def parse_item({response, spider_name}) do
     try do
       # get parsers
       parsers = Crawly.Utils.get_settings(:parsers, spider_name, nil)

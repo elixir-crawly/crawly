@@ -95,6 +95,21 @@ defmodule UtilsTest do
            )
   end
 
+  test "Invalid module options format" do
+    :meck.expect(
+      Crawly.Utils,
+      :get_settings,
+      fn :fetcher, nil, nil ->
+        {Crawly.Fetchers.HTTPoisonFetcher}
+      end
+    )
+
+    assert catch_error(
+             Crawly.Utils.get_settings(:fetcher, nil, nil)
+             |> Crawly.Utils.unwrap_module_and_options()
+           )
+  end
+
   defp expected_request(url) do
     %Crawly.Request{
       url: url,
