@@ -69,20 +69,20 @@ the spider behaviour (it's required to implement `parse_item/1`, `init/0`,
 `base_url/0` callbacks)
 
 This is the code for our first spider. Save it in a file named
-homebase.ex under the lib/tutorial/spiders directory of your project.
+books_to_scrape.ex under the lib/tutorial/spiders directory of your project.
 
 ```elixir
-defmodule Homebase do
+defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://www.homebase.co.uk"
+  def base_url(), do: "https://books.toscrape.com/catalogue/category/books/"
 
   @impl Crawly.Spider
   def init() do
     [
       start_urls: [
-        "https://www.homebase.co.uk/our-range/tools"
+
       ]
     ]
   end
@@ -109,6 +109,49 @@ some functions:
 3. parse_item(): function which will be called to handle response
    downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
 
+As it is, the init function returns an empty array for `start_urls` which we will
+fix now. If you already know what urls, you want to start crawling, you can place them in
+the array, else you can pick the urls you want to start with from a particular page
+on your website of interest, in this case `https://books.toscrape.com`.
+
+Go ahead and modify your `init` to look this way.
+
+```elixir
+  @impl Crawly.Spider
+  def init() do
+    # Get all the cateory URLs to use as our starting point
+    response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")
+
+    {:ok, document} = Floki.parse_document(response.body)
+
+    # Extract product category URLs
+    product_categories_urls =
+      document
+      |> Floki.find("div.side_categories")
+      |> Floki.find("ul.nav-list > li > ul > li")
+      |> Floki.find("a")
+      |> Floki.attribute("href")
+      |> Enum.uniq()
+      |> Enum.map(&build_absolute_url/1)
+
+    [
+      start_urls: product_categories_urls
+    ]
+  end
+```
+
+We also need to add the `build_absolute_url/1` function which is used to build an absolute url from relative urls
+
+```elixir
+  defp build_absolute_url(url) do
+    URI.merge(base_url(), url) |> to_string()
+  end
+```
+
+In the init function, the spider first loads a page using `Crawly.fetch/1`, the uses Floki to get the urls for the book categories.
+Using the shell, you can try selecting elements using Floki with the response. That gives you a faster way to test out your selectors
+before hand. You can also use your browser developer tools to inspect the HTML and come up with a selector.
+
 ## How to run our spider
 
 To put our spider to work, go to the project’s top level directory and
@@ -117,22 +160,22 @@ run:
 1. `iex -S mix` - It will start the Elixir application which we have
    created, and will open interactive console.
 2. Execute the following command in the opened Elixir console:
-   `Crawly.Engine.start_spider(Homebase)`
+   `Crawly.Engine.start_spider(BooksToScrape)`
 
 You will get an output similar to this:
 
 ```
-iex(2)> Crawly.Engine.start_spider(Homebase)
+iex(2)> Crawly.Engine.start_spider(BooksToScrape)
 
-14:07:50.188 [debug] Starting the manager for Elixir.Homebase
+14:07:50.188 [debug] Starting the manager for Elixir.BooksToScrape
 
-14:07:50.188 [debug] Starting requests storage worker for Elixir.Homebase...
+14:07:50.188 [debug] Starting requests storage worker for Elixir.BooksToScrape...
 
-14:07:50.987 [debug] Started 4 workers for Elixir.Homebase
+14:07:50.987 [debug] Started 4 workers for Elixir.BooksToScrape
 :ok
 
 14:08:50.990 [info]  Current crawl speed is: 0 items/min
-14:08:50.990 [info]  Stopping Homebase, itemcount timeout achieved
+14:08:50.990 [info]  Stopping BooksToScrape, itemcount timeout achieved
 ```
 
 ## What just happened under the hood?
@@ -160,92 +203,100 @@ selectors in Crawly shell.
 1. Start the Elixir shell using `iex -S mix` command.
 2. Now you can fetch a given HTTP response using the following
    command:
-   `response = Crawly.fetch("https://www.homebase.co.uk/our-range/tools")`
+   `response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")`
 
 You will see something like:
 
 ```
 %HTTPoison.Response{
-  body: "[response body here...]"
+  body: "[response body here]",
   headers: [
-    {"Date", "Fri, 17 Apr 2020 10:34:35 GMT"},
-    {"Content-Type", "text/html; charset=utf-8"},
-    {"Transfer-Encoding", "chunked"},
+    {"Server", "nginx/1.17.7"},
+    {"Date", "Mon, 16 Aug 2021 19:58:15 GMT"},
+    {"Content-Type", "text/html"},
+    {"Content-Length", "50607"},
     {"Connection", "keep-alive"},
-    {"Set-Cookie",
-     "__cfduid=d4c96698cfcfdfc9c1ef44ecb162b1cce1587119674; expires=Sun, 17-May-20 10:34:34 GMT; path=/; domain=.homebase.co.uk; HttpOnly; SameSite=Lax; Secure"},
-    {"Cache-Control", "no-cache, no-store"},
-    {"Pragma", "no-cache"},
-    {"Expires", "-1"},
     {"Vary", "Accept-Encoding"},
-    ...,
-    {"cf-request-id", "02294d6d6f0000ffd430ad9200000001"}
-  ], 
+    {"Last-Modified", "Thu, 25 Mar 2021 13:59:05 GMT"},
+    {"Accept-Ranges", "bytes"},
+    {"Strict-Transport-Security", "max-age=15724800; includeSubDomains"}
+  ],
   request: %HTTPoison.Request{
     body: "",
     headers: [],
     method: :get,
     options: [],
     params: %{},
-    url: "https://www.homebase.co.uk/our-range/tools"
+    url: "https://books.toscrape.com/catalogue/category/books_1/index.html"
   },
-  request_url: "https://www.homebase.co.uk/our-range/tools",
+  request_url: "https://books.toscrape.com/catalogue/category/books_1/index.html",
   status_code: 200
 }
 ```
 
-Using the shell, you can try selecting elements using Floki with the
-response. Let's say that we want to extract all product categories links from the
-page above:
-
-```
-{:ok, document} = Floki.parse_document(response.body)
-document |> Floki.find("section.wrapper") |> Floki.find("div.article-tiles.article-tiles--wide a") |> Floki.attribute("href")
-
-["/our-range/tools/power-tools", "/our-range/tools/garage-storage",
- "/our-range/tools/hand-tools", "/our-range/tools/tool-storage",
- "/our-range/tools/ladders", "/our-range/tools/safety-equipment-and-workwear",
- "/our-range/tools/work-benches"]
-```
-
-The result of running the command above is a list of elements which
-contain href attribute of links selected with
-`a.category-block-heading__title` CSS selector. These URLs will be
-used in order to feed Crawly with requests to follow.
-
-In order to find the proper CSS selectors to use, you might find
-useful opening the target page from the shell in your web browser. You
-can use your browser developer tools to inspect the HTML and come up
-with a selector.
-
-Now let's navigate to one of the Homebase product pages and extract
+Now let's navigate to one of the Book Category pages and extract
 data from it.
 
 ```
-response = Crawly.fetch("https://www.homebase.co.uk/bosch-universalimpact-800-corded-hammer-drill_p494894")
+response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books/travel_2/index.html")
 
 ```
 
-Extract the `title` with:
+All books on the page are enclosed in a `.product_pod` class. We can the select the class and pick the information we want from it.
 
 ```
-{:ok, document} = Floki.parse_document(response.body)
-document |> Floki.find(".page-title h1") |> Floki.text()
-"Bosch UniversalImpact 800 Corded Hammer Drill"
+items =
+  document
+  |> Floki.find(".product_pod")
+  |> Enum.map(fn x ->
+    %{
+      title: Floki.find(x, "h3 a") |> Floki.attribute("title"),
+      price: Floki.find(x, ".product_price .price_color") |> Floki.text()
+    }
+  end)
 ```
 
-Extract the `SKU` with:
+Here we select all products using the class name, iterate through it and pick the title using `Floki.find(x, "h3 a") |> Floki.attribute("title")`
+and pick the price using `Floki.find(x, ".product_price .price_color") |> Floki.text()`. The full text of the book name is only contained
+in the title attribute and not in the text node of the tag, hence our use of the title attribute.
+
+Also, the data is paginated and we are not only interested in the first page, we have to tell crawly to also visit the next page
+by creating a request struct with the url of the next page and other necessary data.
 
 ```
-document |> Floki.find(".product-header-heading span") |> Floki.text
-"SKU:  494894"
+next_url =
+  document 
+  |> Floki.find(".next a") 
+  |> Floki.attribute("href")
+  |> Floki.text()
+
+next_request =
+  case next_url do
+    "" ->
+      []
+
+    url ->
+      new_request =
+        build_absolute_url(response.request.url, url)
+        |> Crawly.Utils.request_from_url()
+
+      [new_request]
+  end
 ```
 
-Extract the `price` with:
+Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist. We then create a request struct
+by piping the url we got from Floki to `build_absolute_url/2` and `Crawly.Utils.request_from_url`.
 
-```
-document |> Floki.find(".price-value [itemprop=priceCurrency]") |> Floki.text
-"£82"
+Notice that we have not declared the function `build_absolute_url/2` yet, what we had earlier was `build_absolute_url/1`. This new function is necessary
+as we want to build this url, using the url of the current response being processed as base.
+
+We can now go ahead and add the `build_absolute_url/2` function to our code.
+
+```elixir
+## Build absolute url supplying a different url as base
+defp build_absolute_url(base_url, url) do
+  URI.merge(base_url, url) |> to_string()
+end
 ```
 
 ## Extracting data in our spider
@@ -255,18 +306,31 @@ just makes an `empty run`. Let’s integrate the extraction logic above
 into our spider.
 
 ```elixir
-defmodule Homebase do
+defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://www.homebase.co.uk"
+  def base_url(), do: "https://books.toscrape.com/catalogue/category/books/"
 
   @impl Crawly.Spider
   def init() do
+    # Get all the cateory URLs to use as our starting point
+    response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")
+
+    {:ok, document} = Floki.parse_document(response.body)
+
+    # Extract product category URLs
+    product_categories_urls =
+      document
+      |> Floki.find("div.side_categories")
+      |> Floki.find("ul.nav-list > li > ul > li")
+      |> Floki.find("a")
+      |> Floki.attribute("href")
+      |> Enum.uniq()
+      |> Enum.map(&build_absolute_url/1)
+
     [
-      start_urls: [
-        "https://www.homebase.co.uk/our-range/tools"
-      ]
+      start_urls: product_categories_urls
     ]
   end
 
@@ -275,48 +339,53 @@ defmodule Homebase do
     # Parse response body to document
     {:ok, document} = Floki.parse_document(response.body)
 
-    # Extract product category URLs
-    product_categories =
+    category =
       document
-      |> Floki.find("section.wrapper")
-      |> Floki.find("div.article-tiles.article-tiles--wide a")
-      |> Floki.attribute("href")
-
-    # Extract individual product page URLs
-    product_pages =
-      document
-      |> Floki.find("a.product-tile  ")
-      |> Floki.attribute("href")
-
-    urls = product_pages ++ product_categories
-
-    # Convert URLs into Requests
-    requests =
-      urls
-      |> Enum.uniq()
-      |> Enum.map(&build_absolute_url/1)
-      |> Enum.map(&Crawly.Utils.request_from_url/1)
+      |> Floki.find(".page-header h1")
+      |> Floki.text()
 
     # Create item (for pages where items exists)
-    item = %{
-      title:
-        document
-        |> Floki.find(".page-title h1")
-        |> Floki.text(),
-      sku:
-        document
-        |> Floki.find(".product-header-heading span")
-        |> Floki.text(),
-      price:
-        document
-        |> Floki.find(".price-value [itemprop=priceCurrency]")
-        |> Floki.text()
-    }
+    items =
+      document
+      |> Floki.find(".product_pod")
+      |> Enum.map(fn x ->
+        %{
+          title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
+          price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
+          category: category
+        }
+      end)
 
-    %Crawly.ParsedItem{:items => [item], :requests => requests}
+    next_url =
+      document
+      |> Floki.find(".next a")
+      |> Floki.attribute("href")
+      |> Floki.text()
+
+    next_request =
+      case next_url do
+        "" ->
+          []
+
+        url ->
+          new_request =
+            build_absolute_url(response.request.url, url)
+            |> Crawly.Utils.request_from_url()
+
+          [new_request]
+      end
+
+    %Crawly.ParsedItem{:items => items, :requests => next_request}
   end
 
-  defp build_absolute_url(url), do: URI.merge(base_url(), url) |> to_string()
+  defp build_absolute_url(url) do
+    URI.merge(base_url(), url) |> to_string()
+  end
+
+  ## Build absolute url supplying a different url as base
+  defp build_absolute_url(base_url, url) do
+    URI.merge(base_url, url) |> to_string()
+  end
 end
 
 ```
@@ -333,30 +402,25 @@ config :crawly,
   ]
 ```
 The scraped data will now be stored in a CSV file under `/tmp` directory on your filesystem. The name of the file
-will be the same as our spider name - in our case `Homebase.jl`.
+will be the same as our spider name - in our case `BooksToScrape.jl`.
 
-If you restart iex and run this spider `Crawly.Engine.start_spider(Homebase)`, it will output messages like:
+If you restart iex and run this spider `Crawly.Engine.start_spider(BooksToScrape)`, it will output messages like:
 
 ```
-17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xxl_p275608, as it's already processed
-17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-l_p275605, as it's already processed
-17:23:42.435 [debug] Dropping request: https://www.homebase.co.uk/bon-safety-rain-de-pro-superlight-weight-rainsuit-xl_p275607, as it's already processed
+08:43:09.677 [debug] Dropping request: https://books.toscrape.com/catalogue/category/books/new-adult_20/index.html, as it's already processed
 ```
 
 That's because Crawly filters out requests which it has already visited during the current run.
 
 Go ahead and check the contents of your `/tmp/Homebase.jl` file. It should contain the scraped products like these:
 ```
-{"title":"26 Inch Tool Chest (4 Drawer)","sku":"SKU:  555262","price":"£175"}
-{"title":"26 Inch Tool Chest (10 Drawer)","sku":"SKU:  555260","price":"£280"}
-{"title":"Draper 26 Inch Tool Chest (8 Drawer)","sku":"SKU:  518329","price":"£435"}
-{"title":"Draper 26 Inch Tool Chest (6 Drawer)","sku":"SKU:  518327","price":"£405"}
-{"title":"Draper 26 Inch Tool Chest (4 Drawer)","sku":"SKU:  518328","price":"£350"}
-{"title":"Draper 26 Inch Tool Storage Chest (9 Drawer)","sku":"SKU:  518312","price":"£150"}
-{"title":"Draper 26 Inch Tool Chest (5 Drawer)","sku":"SKU:  518311","price":"£139"}
-{"title":"3 Tier Tool Trolley","sku":"SKU:  555311","price":"£90"}
-{"title":"Draper 26 Inch Intermediate Tool Chest (2 Drawer)","sku":"SKU:  518309","price":"£80"}
-{"title":"2 Tier Tool Trolley","sku":"SKU:  555310","price":"£70"}
+{"title":"Logan Kade (Fallen Crest High #5.5)","price":"£13.12","category":"Academic"}
+{"title":"Online Marketing for Busy Authors: A Step-By-Step Guide","price":"£46.35","category":"Self Help"}
+{"title":"How to Be Miserable: 40 Strategies You Already Use","price":"£46.03","category":"Self Help"}
+{"title":"Overload: How to Unplug, Unwind, and Unleash Yourself from the Pressure of Stress","price":"£52.15","category":"Self Help"}
+{"title":"You Are a Badass: How to Stop Doubting Your Greatness and Start Living an Awesome Life","price":"£12.08","category":"Self Help"}
+{"title":"How to Stop Worrying and Start Living","price":"£46.49","category":"Self Help"}
+{"title":"All the Light We Cannot See","price":"£29.87","category":"Historical"}
 ```
 
 ## Next steps
