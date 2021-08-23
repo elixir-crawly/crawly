@@ -132,7 +132,7 @@ Go ahead and modify your `init` to look this way.
       |> Floki.find("a")
       |> Floki.attribute("href")
       |> Enum.uniq()
-      |> Enum.map(&build_absolute_url/1)
+      |> Enum.map(&Crawly.Utils.build_absolute_url(&1, base_url()))
 
     [
       start_urls: product_categories_urls
@@ -140,15 +140,7 @@ Go ahead and modify your `init` to look this way.
   end
 ```
 
-We also need to add the `build_absolute_url/1` function which is used to build an absolute url from relative urls
-
-```elixir
-  defp build_absolute_url(url) do
-    URI.merge(base_url(), url) |> to_string()
-  end
-```
-
-In the init function, the spider first loads a page using `Crawly.fetch/1`, the uses Floki to get the urls for the book categories.
+In the init function, the spider first loads a page using `Crawly.fetch/1`, this uses Floki to get the urls for the book categories.
 Using the shell, you can try selecting elements using Floki with the response. That gives you a faster way to test out your selectors
 before hand. You can also use your browser developer tools to inspect the HTML and come up with a selector.
 
@@ -327,7 +319,7 @@ defmodule BooksToScrape do
       |> Floki.find("a")
       |> Floki.attribute("href")
       |> Enum.uniq()
-      |> Enum.map(&build_absolute_url/1)
+      |> Enum.map(&Crawly.Utils.build_absolute_url(&1, base_url()))
 
     [
       start_urls: product_categories_urls
@@ -369,7 +361,7 @@ defmodule BooksToScrape do
 
         url ->
           new_request =
-            build_absolute_url(response.request.url, url)
+            Crawly.Utils.build_absolute_url(url, response.request.url)
             |> Crawly.Utils.request_from_url()
 
           [new_request]
