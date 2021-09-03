@@ -227,24 +227,14 @@ in the title attribute and not in the text node of the `a` tag, hence our use of
 To handle pagination, we'll tell crawly to visit the next page by extracting the next pages' urls and building new requests from them.
 
 ```
-next_url =
-  document 
-  |> Floki.find(".next a") 
+next_requests =
+  document
+  |> Floki.find(".next a")
   |> Floki.attribute("href")
-  |> Floki.text()
-
-next_request =
-  case next_url do
-    "" ->
-      []
-
-    url ->
-      new_request =
-        Crawly.Utils.build_absolute_url(url, response.request.url)
-        |> Crawly.Utils.request_from_url()
-
-      [new_request]
-  end
+  |> Enum.map(fn url ->
+    Crawly.Utils.build_absolute_url(url, response.request.url)
+    |> Crawly.Utils.request_from_url()
+  end)
 ```
 
 Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist. We then create a request struct
@@ -288,24 +278,15 @@ defmodule BooksToScrape do
         }
       end)
 
-    next_url =
+    next_requests =
       document
       |> Floki.find(".next a")
       |> Floki.attribute("href")
-      |> Floki.text()
-
-    next_request =
-      case next_url do
-        "" ->
-          []
-        url ->
-          new_request =
-            Crawly.Utils.build_absolute_url(url, response.request.url)
-            |> Crawly.Utils.request_from_url()
-
-          [new_request]
-      end
-    %{items: items, requests: next_request}
+      |> Enum.map(fn url ->
+        Crawly.Utils.build_absolute_url(url, response.request.url)
+        |> Crawly.Utils.request_from_url()
+      end)
+    %{items: items, requests: next_requests}
   end
 end
 ```
