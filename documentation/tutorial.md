@@ -237,8 +237,8 @@ next_requests =
   end)
 ```
 
-Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist. We then create a request struct
-by piping the url we got from Floki to `Crawly.Utils.build_absolute_url/2` and `Crawly.Utils.request_from_url/1`.
+Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist, this would mean that we have gotten to the last page and will result in the spider stopping. 
+We then create a request struct by piping the url we got from Floki to `Crawly.Utils.build_absolute_url/2` and `Crawly.Utils.request_from_url/1`.
 
 ## Extracting data in our spider
 
