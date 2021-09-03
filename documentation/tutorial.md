@@ -76,13 +76,13 @@ defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://books.toscrape.com/catalogue/category/books/"
+  def base_url(), do: "https://books.toscrape.com/"
 
   @impl Crawly.Spider
   def init() do
     [
       start_urls: [
-
+        "https://books.toscrape.com/"
       ]
     ]
   end
@@ -112,35 +112,8 @@ some functions:
 As it is, the init function returns an empty array for `start_urls` which we will
 fix now. If you already know what urls, you want to start crawling, you can place them in
 the array, else you can pick the urls you want to start with from a particular page
-on your website of interest, in this case `https://books.toscrape.com`.
+on your website of interest.
 
-Go ahead and modify your `init` to look this way.
-
-```elixir
-  @impl Crawly.Spider
-  def init() do
-    # Get all the cateory URLs to use as our starting point
-    response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")
-
-    {:ok, document} = Floki.parse_document(response.body)
-
-    # Extract product category URLs
-    product_categories_urls =
-      document
-      |> Floki.find("div.side_categories")
-      |> Floki.find("ul.nav-list > li > ul > li")
-      |> Floki.find("a")
-      |> Floki.attribute("href")
-      |> Enum.uniq()
-      |> Enum.map(&Crawly.Utils.build_absolute_url(&1, base_url()))
-
-    [
-      start_urls: product_categories_urls
-    ]
-  end
-```
-
-In the init function, the spider first loads a page using `Crawly.fetch/1`, this uses Floki to get the urls for the book categories.
 Using the shell, you can try selecting elements using Floki with the response. That gives you a faster way to test out your selectors
 before hand. You can also use your browser developer tools to inspect the HTML and come up with a selector.
 
@@ -195,7 +168,7 @@ selectors in Crawly shell.
 1. Start the Elixir shell using `iex -S mix` command.
 2. Now you can fetch a given HTTP response using the following
    command:
-   `response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")`
+   `response = Crawly.fetch("https://books.toscrape.com/")`
 
 You will see something like:
 
@@ -219,18 +192,17 @@ You will see something like:
     method: :get,
     options: [],
     params: %{},
-    url: "https://books.toscrape.com/catalogue/category/books_1/index.html"
+    url: "https://books.toscrape.com/"
   },
-  request_url: "https://books.toscrape.com/catalogue/category/books_1/index.html",
+  request_url: "https://books.toscrape.com/",
   status_code: 200
 }
 ```
 
-Now let's navigate to one of the Book Category pages and extract
-data from it.
+Now let's start parsing the document and extract the books in it.
 
 ```
-response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books/travel_2/index.html")
+response = Crawly.fetch("https://books.toscrape.com/")
 
 ```
 
@@ -242,18 +214,17 @@ items =
   |> Floki.find(".product_pod")
   |> Enum.map(fn x ->
     %{
-      title: Floki.find(x, "h3 a") |> Floki.attribute("title"),
+      title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
       price: Floki.find(x, ".product_price .price_color") |> Floki.text()
     }
   end)
 ```
 
-Here we select all products using the class name, iterate through it and pick the title using `Floki.find(x, "h3 a") |> Floki.attribute("title")`
+Here we select all products using the class name, iterate through it and pick the title using `Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text()`
 and pick the price using `Floki.find(x, ".product_price .price_color") |> Floki.text()`. The full text of the book name is only contained
-in the title attribute and not in the text node of the tag, hence our use of the title attribute.
+in the title attribute and not in the text node of the `a` tag, hence our use of the title attribute.
 
-Also, the data is paginated and we are not only interested in the first page, we have to tell crawly to also visit the next page
-by creating a request struct with the url of the next page and other necessary data.
+To handle pagination, we'll tell crawly to visit the next page by extracting the next pages' urls and building new requests from them.
 
 ```
 next_url =
@@ -269,7 +240,7 @@ next_request =
 
     url ->
       new_request =
-        build_absolute_url(response.request.url, url)
+        Crawly.Utils.build_absolute_url(url, response.request.url)
         |> Crawly.Utils.request_from_url()
 
       [new_request]
@@ -277,19 +248,7 @@ next_request =
 ```
 
 Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist. We then create a request struct
-by piping the url we got from Floki to `build_absolute_url/2` and `Crawly.Utils.request_from_url`.
-
-Notice that we have not declared the function `build_absolute_url/2` yet, what we had earlier was `build_absolute_url/1`. This new function is necessary
-as we want to build this url, using the url of the current response being processed as base.
-
-We can now go ahead and add the `build_absolute_url/2` function to our code.
-
-```elixir
-## Build absolute url supplying a different url as base
-defp build_absolute_url(base_url, url) do
-  URI.merge(base_url, url) |> to_string()
-end
-```
+by piping the url we got from Floki to `Crawly.Utils.build_absolute_url/2` and `Crawly.Utils.request_from_url/1`.
 
 ## Extracting data in our spider
 
@@ -302,27 +261,14 @@ defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://books.toscrape.com/catalogue/category/books/"
+  def base_url(), do: "https://books.toscrape.com/"
 
   @impl Crawly.Spider
   def init() do
-    # Get all the cateory URLs to use as our starting point
-    response = Crawly.fetch("https://books.toscrape.com/catalogue/category/books_1/index.html")
-
-    {:ok, document} = Floki.parse_document(response.body)
-
-    # Extract product category URLs
-    product_categories_urls =
-      document
-      |> Floki.find("div.side_categories")
-      |> Floki.find("ul.nav-list > li > ul > li")
-      |> Floki.find("a")
-      |> Floki.attribute("href")
-      |> Enum.uniq()
-      |> Enum.map(&Crawly.Utils.build_absolute_url(&1, base_url()))
-
     [
-      start_urls: product_categories_urls
+      start_urls: [
+        "https://books.toscrape.com/"
+      ]
     ]
   end
 
@@ -330,11 +276,6 @@ defmodule BooksToScrape do
   def parse_item(response) do
     # Parse response body to document
     {:ok, document} = Floki.parse_document(response.body)
-
-    category =
-      document
-      |> Floki.find(".page-header h1")
-      |> Floki.text()
 
     # Create item (for pages where items exists)
     items =
@@ -344,7 +285,6 @@ defmodule BooksToScrape do
         %{
           title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
           price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
-          category: category
         }
       end)
 
@@ -358,7 +298,6 @@ defmodule BooksToScrape do
       case next_url do
         "" ->
           []
-
         url ->
           new_request =
             Crawly.Utils.build_absolute_url(url, response.request.url)
@@ -366,20 +305,9 @@ defmodule BooksToScrape do
 
           [new_request]
       end
-
-    %Crawly.ParsedItem{:items => items, :requests => next_request}
-  end
-
-  defp build_absolute_url(url) do
-    URI.merge(base_url(), url) |> to_string()
-  end
-
-  ## Build absolute url supplying a different url as base
-  defp build_absolute_url(base_url, url) do
-    URI.merge(base_url, url) |> to_string()
+    %{items: items, requests: next_request}
   end
 end
-
 ```
 
 You will also need to tell Crawly where to store the scraped data. Create `config/config.exs` file with the following
@@ -406,13 +334,10 @@ That's because Crawly filters out requests which it has already visited during t
 
 Go ahead and check the contents of your `/tmp/Homebase.jl` file. It should contain the scraped products like these:
 ```
-{"title":"Logan Kade (Fallen Crest High #5.5)","price":"£13.12","category":"Academic"}
-{"title":"Online Marketing for Busy Authors: A Step-By-Step Guide","price":"£46.35","category":"Self Help"}
-{"title":"How to Be Miserable: 40 Strategies You Already Use","price":"£46.03","category":"Self Help"}
-{"title":"Overload: How to Unplug, Unwind, and Unleash Yourself from the Pressure of Stress","price":"£52.15","category":"Self Help"}
-{"title":"You Are a Badass: How to Stop Doubting Your Greatness and Start Living an Awesome Life","price":"£12.08","category":"Self Help"}
-{"title":"How to Stop Worrying and Start Living","price":"£46.49","category":"Self Help"}
-{"title":"All the Light We Cannot See","price":"£29.87","category":"Historical"}
+{"title":"A Light in the Attic","price":"£51.77"}
+{"title":"Tipping the Velvet","price":"£53.74"}
+{"title":"Soumission","price":"£50.10"}
+{"title":"Sharp Objects","price":"£47.82"}
 ```
 
 ## Next steps
