@@ -224,7 +224,9 @@ Here we select all products using the class `.product_pod`, then we iterate over
 
 To handle pagination, we'll tell Crawly to visit the next page by extracting the next pages' urls and building new requests from them.
 
-```
+> Pagination url extraction can be within the same callback, as if there are no pagination HTML nodes found, next_requests would be an empty list.
+
+```elixir
 next_requests =
   document
   |> Floki.find(".next a")
