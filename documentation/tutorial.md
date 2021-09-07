@@ -109,13 +109,13 @@ some functions:
 3. parse_item(): function which will be called to handle response
    downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
 
-As it is, the init function returns an empty array for `start_urls` which we will
-fix now. If you already know what urls, you want to start crawling, you can place them in
-the array, else you can pick the urls you want to start with from a particular page
+As it is, the init function returns an empty list for `start_urls` which we will
+fix now. If you already know what urls you want to start crawling, you can place them in
+the list, else you can pick the urls you want to start with from a particular page
 on your website of interest.
 
-Using the shell, you can try selecting elements using Floki with the response. That gives you a faster way to test out your selectors
-before hand. You can also use your browser developer tools to inspect the HTML and come up with a selector.
+
+> Note: You can use the iex shell to test your selectors on the response HTML using Floki. Alternatively, use your browser's developer tools to test your selector.
 
 ## How to run our spider
 
@@ -172,7 +172,7 @@ selectors in Crawly shell.
 
 You will see something like:
 
-```
+```elixir
 %HTTPoison.Response{
   body: "[response body here]",
   headers: [
@@ -201,7 +201,7 @@ You will see something like:
 
 Now let's start parsing the document and extract the books in it.
 
-```
+```elixir
 response = Crawly.fetch("https://books.toscrape.com/")
 
 ```
@@ -220,11 +220,9 @@ items =
   end)
 ```
 
-Here we select all products using the class name, iterate through it and pick the title using `Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text()`
-and pick the price using `Floki.find(x, ".product_price .price_color") |> Floki.text()`. The full text of the book name is only contained
-in the title attribute and not in the text node of the `a` tag, hence our use of the title attribute.
+Here we select all products using the class `.product_pod`, then we iterate over each html fragment found and extract out relevant product information. In this case, we want to extract the title and price. `Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text()` for the title and for the price `Floki.find(x, ".product_price .price_color") |> Floki.text()`. The full text of the book name is only contained in the title attribute and not in the text node of the `a` tag, hence our use of the title attribute.
 
-To handle pagination, we'll tell crawly to visit the next page by extracting the next pages' urls and building new requests from them.
+To handle pagination, we'll tell Crawly to visit the next page by extracting the next pages' urls and building new requests from them.
 
 ```
 next_requests =
@@ -237,8 +235,8 @@ next_requests =
   end)
 ```
 
-Here we get the url for the next page using Floki, which could be an empty string if such doesn't exist, this would mean that we have gotten to the last page and will result in the spider stopping. 
-We then create a request struct by piping the url we got from Floki to `Crawly.Utils.build_absolute_url/2` and `Crawly.Utils.request_from_url/1`.
+Here we get the url for the next page using Floki, which could be an empty list if such doesn't exist, this would mean that we have gotten to the last page and will result in the spider stopping. 
+We then create a `Crawly.Request` struct by piping the url we got from Floki to `Crawly.Utils.build_absolute_url/2` and `Crawly.Utils.request_from_url/1`.
 
 ## Extracting data in our spider
 
