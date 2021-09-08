@@ -224,4 +224,24 @@ defmodule Crawly.Utils do
   def ensure_loaded?(module) do
     Code.ensure_loaded?(module)
   end
+
+  @doc """
+  Function to get setting module in proper data structure
+  """
+  @spec unwrap_module_and_options(term) ::
+          {atom, maybe_improper_list}
+  def unwrap_module_and_options(setting) do
+    case setting do
+      {module, args} when is_list(args) and is_atom(module) ->
+        {module, args}
+
+      module when is_atom(module) ->
+        {module, []}
+
+      x ->
+        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{
+                inspect(x)
+              }}`. Only the forms `{module, options}` and `module` are valid"
+    end
+  end
 end
