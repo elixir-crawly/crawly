@@ -67,7 +67,6 @@ defmodule Crawly.Mixfile do
       {:poison, "~> 3.1"},
       {:gollum, "~> 0.4.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
-      {:epipe, "~> 1.0"},
       {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},

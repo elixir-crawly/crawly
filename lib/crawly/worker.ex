@@ -43,27 +43,22 @@ defmodule Crawly.Worker do
           backoff * 2
 
         request ->
-          # Process the request using following group of functions
-          functions = [
-            {:get_response, &get_response/1},
-            {:parse_item, &parse_item/1},
-            {:process_parsed_item, &process_parsed_item/1}
-          ]
+          # Process the request
 
-          case :epipe.run(functions, {request, spider_name}) do
-            {:error, _step, reason, _step_state} ->
+          with {:ok, response} <- get_response({request, spider_name}),
+               {:ok, parsed_item} <- parse_item(response),
+               {:ok, :done} <- process_parsed_item(parsed_item) do
+            :ok
+          else
+            {:error, reason} ->
               Logger.debug(
                 "Crawly worker could not process the request to #{
                   inspect(request.url)
-                }
-                  reason: #{inspect(reason)}"
+                } reason: #{inspect(reason)}"
               )
-
-              @default_backoff
-
-            {:ok, _result} ->
-              @default_backoff
           end
+
+          @default_backoff
       end
 
     Crawly.Utils.send_after(self(), :work, new_backoff)
