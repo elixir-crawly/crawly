@@ -23,6 +23,19 @@ defmodule RequestStorageTest do
     {:ok, %{crawler: :test_spider}}
   end
 
+  test "Starting a worker twice doesn't break", context do
+    Crawly.RequestsStorage.start_worker(:test_spider, "crawl_id")
+
+    request = %Crawly.Request{
+      url: "http://example.com",
+      headers: [],
+      options: []
+    }
+
+    assert :ok = Crawly.RequestsStorage.store(context.crawler, request)
+    assert %Crawly.Request{} = Crawly.RequestsStorage.pop(context.crawler)
+  end
+
   test "Request storage can store requests", context do
     request = %Crawly.Request{
       url: "http://example.com",
