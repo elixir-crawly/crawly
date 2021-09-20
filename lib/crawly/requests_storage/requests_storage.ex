@@ -131,39 +131,36 @@ defmodule Crawly.RequestsStorage do
   end
 
   def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
-    {msg, new_state} =
-      case Map.get(state.workers, spider_name) do
-        nil ->
-          {:ok, pid} =
-            DynamicSupervisor.start_child(
-              Crawly.RequestsStorage.WorkersSup,
-              %{
-                id: :undefined,
-                restart: :temporary,
-                start:
-                  {Crawly.RequestsStorage.Worker, :start_link,
-                   [spider_name, crawl_id]}
-              }
-            )
+    case Map.get(state.workers, spider_name) do
+      nil ->
+        {:ok, pid} =
+          DynamicSupervisor.start_child(
+            Crawly.RequestsStorage.WorkersSup,
+            %{
+              id: :undefined,
+              restart: :temporary,
+              start:
+                {Crawly.RequestsStorage.Worker, :start_link,
+                 [spider_name, crawl_id]}
+            }
+          )
 
-          Process.monitor(pid)
+        Process.monitor(pid)
 
-          new_workers = Map.put(state.workers, spider_name, pid)
-          new_spider_pids = Map.put(state.pid_spiders, pid, spider_name)
+        new_workers = Map.put(state.workers, spider_name, pid)
+        new_spider_pids = Map.put(state.pid_spiders, pid, spider_name)
 
-          new_state = %{
-            state
-            | workers: new_workers,
-              pid_spiders: new_spider_pids
-          }
+        new_state = %{
+          state
+          | workers: new_workers,
+            pid_spiders: new_spider_pids
+        }
 
-          {{:ok, pid}, new_state}
+        {:reply, {:ok, pid}, new_state}
 
-        _ ->
-          {{:error, :already_started}, state}
-      end
-
-    {:reply, msg, new_state}
+      _ ->
+        {:reply, {:error, :already_started}, state}
+    end
   end
 
   # Clean up worker
