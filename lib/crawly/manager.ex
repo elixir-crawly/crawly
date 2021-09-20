@@ -77,47 +77,53 @@ defmodule Crawly.Manager do
     Process.link(data_storage_pid)
 
     # Start RequestsWorker for a given spider
-    {:ok, request_storage_pid} =
-      Crawly.RequestsStorage.start_worker(spider_name, crawl_id)
 
-    Process.link(request_storage_pid)
+    case Crawly.RequestsStorage.start_worker(spider_name, crawl_id) do
+      {:error, reason} ->
+        {:stop, reason}
 
-    # Start workers
-    num_workers =
-      Keyword.get(
-        options,
-        :concurrent_requests_per_domain,
-        Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
-      )
+      {:ok, request_storage_pid} ->
+        Process.link(request_storage_pid)
 
-    worker_pids =
-      Enum.map(1..num_workers, fn _x ->
-        DynamicSupervisor.start_child(
-          spider_name,
-          {Crawly.Worker, [spider_name: spider_name, crawl_id: crawl_id]}
+        # Start workers
+        num_workers =
+          Keyword.get(
+            options,
+            :concurrent_requests_per_domain,
+            Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
+          )
+
+        worker_pids =
+          Enum.map(1..num_workers, fn _x ->
+            DynamicSupervisor.start_child(
+              spider_name,
+              {Crawly.Worker, [spider_name: spider_name, crawl_id: crawl_id]}
+            )
+          end)
+
+        # Schedule basic service operations for given spider manager
+        timeout =
+          Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+
+        tref = Process.send_after(self(), :operations, timeout)
+
+        Logger.debug(
+          "Started #{Enum.count(worker_pids)} workers for #{
+            inspect(spider_name)
+          }"
         )
-      end)
 
-    # Schedule basic service operations for given spider manager
-    timeout =
-      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
-
-    tref = Process.send_after(self(), :operations, timeout)
-
-    Logger.debug(
-      "Started #{Enum.count(worker_pids)} workers for #{inspect(spider_name)}"
-    )
-
-    {:ok,
-     %{
-       name: spider_name,
-       crawl_id: crawl_id,
-       itemcount_limit: itemcount_limit,
-       closespider_timeout_limit: closespider_timeout_limit,
-       tref: tref,
-       prev_scraped_cnt: 0,
-       workers: worker_pids
-     }, {:continue, {:startup, options}}}
+        {:ok,
+         %{
+           name: spider_name,
+           crawl_id: crawl_id,
+           itemcount_limit: itemcount_limit,
+           closespider_timeout_limit: closespider_timeout_limit,
+           tref: tref,
+           prev_scraped_cnt: 0,
+           workers: worker_pids
+         }, {:continue, {:startup, options}}}
+    end
   end
 
   @impl true

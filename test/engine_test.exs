@@ -14,6 +14,11 @@ defmodule EngineTest do
     end)
   end
 
+  test "starting a running spider returns an error" do
+    Crawly.Engine.start_spider(TestSpider)
+    assert {:error, :spider_already_started} Crawly.Engine.start_spider(TestSpider) 
+  end
+
   test "list_known_spiders/0 lists all spiders and their current status in the engine" do
     Crawly.Engine.refresh_spider_list()
     spiders = Crawly.Engine.list_known_spiders()
