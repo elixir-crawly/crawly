@@ -160,7 +160,7 @@ defmodule Crawly.RequestsStorage do
           {{:ok, pid}, new_state}
 
         _ ->
-          {{:error, :already_started}, state.workers}
+          {{:error, :already_started}, state}
       end
 
     {:reply, msg, new_state}
