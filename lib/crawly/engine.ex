@@ -38,7 +38,7 @@ defmodule Crawly.Engine do
   ### Backward compatibility
   If the 2nd positional argument is a binary, it will be set as the `:crawl_id`. Deprecated, will be removed in the future.
   """
-  @type crawl_id_opt :: {:crawl_id, binary()}
+  @type crawl_id_opt :: {:crawl_id, binary()} | GenServer.option()
   @spec start_spider(Crawly.spider(), opts) :: result
         when opts: [crawl_id_opt],
              result:
