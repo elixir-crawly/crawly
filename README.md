@@ -2,7 +2,11 @@
 
 [![Crawly](https://circleci.com/gh/elixir-crawly/crawly.svg?style=svg)](https://app.circleci.com/pipelines/github/elixir-crawly)
 [![Coverage Status](https://coveralls.io/repos/github/elixir-crawly/crawly/badge.svg?branch=master)](https://coveralls.io/github/elixir-crawly/crawly?branch=master)
-[![Hex pm](http://img.shields.io/hexpm/v/crawly.svg?style=flat)](https://hex.pm/packages/crawly) [![hex.pm downloads](https://img.shields.io/hexpm/dt/crawly.svg?style=flat)](https://hex.pm/packages/crawly)
+[![Module Version](https://img.shields.io/hexpm/v/crawly.svg)](https://hex.pm/packages/crawly)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/crawly/)
+[![Total Download](https://img.shields.io/hexpm/dt/crawly.svg)](https://hex.pm/packages/crawly)
+[![License](https://img.shields.io/hexpm/l/crawly.svg)](https://github.com/elixir-crawly/crawly/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/elixir-crawly/crawly.svg)](https://github.com/elixir-crawly/crawly/commits/master)
 
 ## Overview
 
@@ -13,13 +17,14 @@ historical archival.
 
 ## Requirements
 
-1. Elixir "~> 1.10"
-2. Works on Linux, Windows, OS X and BSD
+1. Elixir `~> 1.10`
+2. Works on GNU/Linux, Windows, macOS X, and BSD.
 
 
 ## Quickstart
 
 1. Add Crawly as a dependencies:
+
    ```elixir
    # mix.exs
    defp deps do
@@ -32,48 +37,50 @@ historical archival.
 2. Fetch dependencies: `$ mix deps.get`
 3. Create a spider
 
-    ```elixir
-    # lib/crawly_example/books_to_scrape.ex
-    defmodule BooksToScrape do
-        use Crawly.Spider
+   ```elixir
+   # lib/crawly_example/books_to_scrape.ex
+   defmodule BooksToScrape do
+       use Crawly.Spider
 
-        @impl Crawly.Spider
-        def base_url(), do: "https://books.toscrape.com/"
+       @impl Crawly.Spider
+       def base_url(), do: "https://books.toscrape.com/"
 
-        @impl Crawly.Spider
-        def init(), do: [start_urls: ["https://books.toscrape.com/"]]
+       @impl Crawly.Spider
+       def init() do: [start_urls: ["https://books.toscrape.com/"]]
 
-        @impl Crawly.Spider
-        def parse_item(response) do
-            # Parse response body to document
-            {:ok, document} = Floki.parse_document(response.body)
+       @impl Crawly.Spider
+       def parse_item(response) do
+           # Parse response body to document
+           {:ok, document} = Floki.parse_document(response.body)
 
-            # Create item (for pages where items exists)
-            items =
-              document
-              |> Floki.find(".product_pod")
-              |> Enum.map(fn x ->
-                %{
-                title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
-                price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
-                }
-              end)
+           # Create item (for pages where items exists)
+           items =
+             document
+             |> Floki.find(".product_pod")
+             |> Enum.map(fn x ->
+               %{
+               title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
+               price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
+               }
+             end)
 
-            next_requests =
-              document
-              |> Floki.find(".next a")
-              |> Floki.attribute("href")
-              |> Enum.map(fn url ->
-                Crawly.Utils.build_absolute_url(url, response.request.url)
-                |> Crawly.Utils.request_from_url()
-              end)
-            %{items: items, requests: next_requests}
-        end
-    end
-    ```
+           next_requests =
+             document
+             |> Floki.find(".next a")
+             |> Floki.attribute("href")
+             |> Enum.map(fn url ->
+               Crawly.Utils.build_absolute_url(url, response.request.url)
+               |> Crawly.Utils.request_from_url()
+             end)
+           %{items: items, requests: next_requests}
+       end
+   end
+   ```
 
 4. Configure Crawly
-   - By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
+
+   By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
+
    ```elixir
    # in config.exs
    config :crawly,
@@ -91,12 +98,22 @@ historical archival.
        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
      ]
    ```
+
 5. Start the Crawl:
-   - `$ iex -S mix`
-   - `iex(1)> Crawly.Engine.start_spider(EslSpider)`
-6. Results can be seen with: `$ cat /tmp/EslSpider.jl`
+
+   ```bash
+   $ iex -S mix
+   iex(1)> Crawly.Engine.start_spider(EslSpider)
+   ```
+
+6. Results can be seen with:
+
+   ```
+   $ cat /tmp/EslSpider.jl
+   ```
 
 ## Need more help?
+
 I have decided to create a public telegram channel, so it's now possible to be connected, and it's possible to ask questions
 and get answers faster!
 
@@ -115,7 +132,7 @@ You can read more here:
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
 
-Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui) 
+Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui)
 or try it online [CrawlyUIDemo](http://crawlyui.com)
 
 See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#content)
@@ -154,7 +171,7 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 
 ## Contributors
 
-We would gladly accept your contributions! 
+We would gladly accept your contributions!
 
 ## Documentation
 Please find documentation on the [HexDocs](https://hexdocs.pm/crawly/)
@@ -162,3 +179,17 @@ Please find documentation on the [HexDocs](https://hexdocs.pm/crawly/)
 ## Production usages
 
 Using Crawly on production? Please let us know about your case!
+
+## Copyright and License
+
+Copyright (c) 2019 Oleg Tarasenko
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
