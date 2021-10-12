@@ -33,7 +33,7 @@ historical archival.
 3. Create a spider
 
     ```elixir
-    # lib/crawly_example/esl_spider.ex
+    # lib/crawly_example/books_to_scrape.ex
     defmodule BooksToScrape do
         use Crawly.Spider
 
@@ -43,9 +43,9 @@ historical archival.
         @impl Crawly.Spider
         def init() do
             [
-            start_urls: [
+              start_urls: [
                 "https://books.toscrape.com/"
-            ]
+              ]
             ]
         end
 
@@ -56,23 +56,23 @@ historical archival.
 
             # Create item (for pages where items exists)
             items =
-            document
-            |> Floki.find(".product_pod")
-            |> Enum.map(fn x ->
+              document
+              |> Floki.find(".product_pod")
+              |> Enum.map(fn x ->
                 %{
                 title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
                 price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
                 }
-            end)
+              end)
 
             next_requests =
-            document
-            |> Floki.find(".next a")
-            |> Floki.attribute("href")
-            |> Enum.map(fn url ->
+              document
+              |> Floki.find(".next a")
+              |> Floki.attribute("href")
+              |> Enum.map(fn url ->
                 Crawly.Utils.build_absolute_url(url, response.request.url)
                 |> Crawly.Utils.request_from_url()
-            end)
+              end)
             %{items: items, requests: next_requests}
         end
     end
