@@ -32,37 +32,45 @@ historical archival.
 2. Fetch dependencies: `$ mix deps.get`
 3. Create a spider
 
-   ```elixir
-   # lib/crawly_example/esl_spider.ex
-   defmodule EslSpider do
-     use Crawly.Spider
-     
-     alias Crawly.Utils
+    ```elixir
+    # lib/crawly_example/books_to_scrape.ex
+    defmodule BooksToScrape do
+        use Crawly.Spider
 
-     @impl Crawly.Spider
-     def base_url(), do: "https://www.erlang-solutions.com"
+        @impl Crawly.Spider
+        def base_url(), do: "https://books.toscrape.com/"
 
-     @impl Crawly.Spider
-     def init(), do: [start_urls: ["https://www.erlang-solutions.com/blog/"]]
+        @impl Crawly.Spider
+        def init() do: [start_urls: ["https://books.toscrape.com/"]]
 
-     @impl Crawly.Spider
-     def parse_item(response) do
-       {:ok, document} = Floki.parse_document(response.body)
-       hrefs = document |> Floki.find("a.btn-link") |> Floki.attribute("href")
+        @impl Crawly.Spider
+        def parse_item(response) do
+            # Parse response body to document
+            {:ok, document} = Floki.parse_document(response.body)
 
-       requests =
-         Utils.build_absolute_urls(hrefs, base_url())
-         |> Utils.requests_from_urls()
+            # Create item (for pages where items exists)
+            items =
+              document
+              |> Floki.find(".product_pod")
+              |> Enum.map(fn x ->
+                %{
+                title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
+                price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
+                }
+              end)
 
-       title = document |> Floki.find("h1.page-title-sm") |> Floki.text()
-
-       %{
-         :requests => requests,
-         :items => [%{title: title, url: response.request_url}]
-       }
-     end
-   end
-   ```
+            next_requests =
+              document
+              |> Floki.find(".next a")
+              |> Floki.attribute("href")
+              |> Enum.map(fn url ->
+                Crawly.Utils.build_absolute_url(url, response.request.url)
+                |> Crawly.Utils.request_from_url()
+              end)
+            %{items: items, requests: next_requests}
+        end
+    end
+    ```
 
 4. Configure Crawly
    - By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
