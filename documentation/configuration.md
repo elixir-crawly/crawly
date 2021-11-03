@@ -177,6 +177,6 @@ The full list of overridable settings:
 - concurrent_requests_per_domain,
 - fetcher,
 - retry,
-- pasers,
+- parsers,
 - middlewares (has known [bugs](https://github.com/oltarasenko/crawly/issues/138))
 - pipelines
