@@ -1,7 +1,7 @@
 # Crawly
 
 [![oltarasenko](https://circleci.com/gh/oltarasenko/crawly.svg?style=svg)](https://app.circleci.com/pipelines/github/oltarasenko/crawly)
-[![Coverage Status](https://coveralls.io/repos/github/oltarasenko/crawly/badge.svg?branch=coveralls)](https://coveralls.io/github/oltarasenko/crawly?branch=coveralls)
+[![Coverage Status](https://coveralls.io/repos/github/elixir-crawly/crawly/badge.svg?branch=master)](https://coveralls.io/github/elixir-crawly/crawly?branch=master)
 [![Hex pm](http://img.shields.io/hexpm/v/crawly.svg?style=flat)](https://hex.pm/packages/crawly) [![hex.pm downloads](https://img.shields.io/hexpm/dt/crawly.svg?style=flat)](https://hex.pm/packages/crawly)
 
 ## Overview
