@@ -6,9 +6,11 @@ defmodule Crawly.Pipelines.CSVEncoder do
   - `:fields`, required: The fields to extract out from the scraped item. Falls back to the global config `:item`.
 
   ### Example Usage
+  ```
     iex> item = %{my: "first", other: "second", ignore: "this_field"}
     iex> Crawly.Pipelines.CSVEncoder.run(item, %{}, fields: [:my, :other])
     {"first,second", %{}}
+  ```
   """
   @behaviour Crawly.Pipeline
   require Logger
