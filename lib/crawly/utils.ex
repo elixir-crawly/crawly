@@ -44,7 +44,7 @@ defmodule Crawly.Utils do
 
   In case of a pipeline crash, the pipeline will be skipped and the item will be passed on to descendant pipelines.
 
-  The state variable is used to persist the information accross multiple items.
+  The state variable is used to persist the information across multiple items.
 
   ### Usage in Tests
 

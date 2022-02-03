@@ -38,7 +38,7 @@ In order to make a working web crawler, all the behaviour callbacks need to be i
 to prepare first requests on `init()`. Which might be useful if, for example, you
 want to pass a session cookie to the starting request. Note: `start_requests` are
 processed before start_urls.
-\*\* This callback is going to be deprecated in favour of init/1. For now the backwords
+\*\* This callback is going to be deprecated in favour of init/1. For now the backwards
 compatibility is kept with a help of macro which always generates `init/1`.
 
 `init(options)` same as `init/0` but also takes options (which can be passed from the engine during

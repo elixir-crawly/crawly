@@ -1,6 +1,7 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/oltarasenko/crawly"
   @version "0.13.0"
 
   def project do
@@ -8,30 +9,15 @@ defmodule Crawly.Mixfile do
       app: :crawly,
       version: @version,
       name: "Crawly",
-      source_url: "https://github.com/oltarasenko/crawly",
       elixir: "~> 1.7",
-      description: description(),
       package: package(),
       test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
-      elixirc_options: [warnings_as_errors: true],
       deps: deps(),
-      aliases: aliases()
+      elixirc_options: [warnings_as_errors: true]
     ]
-  end
-
-  defp aliases do
-    [
-      generate_documentation: &generate_documentation/1
-    ]
-  end
-
-  defp generate_documentation(_) do
-    System.cmd("mix", ["docs"])
-    System.cmd("mkdir", ["-p", "./doc/documentation/assets"])
-    System.cmd("cp", ["-r", "documentation/assets", "doc/documentation"])
   end
 
   defp elixirc_paths(:test), do: ["lib", "test"]
@@ -44,17 +30,15 @@ defmodule Crawly.Mixfile do
     ]
   end
 
-  defp description() do
-    "High-level web crawling & scraping framework for Elixir."
-  end
-
   defp package() do
     [
-      # This option is only needed when you don't want to use the OTP application name
+      # This option is only needed when you don't want to use the OTP
+      # application name
       name: "crawly",
-      licenses: ["Apache 2.0"],
+      description: "High-level web crawling & scraping framework for Elixir.",
+      licenses: ["Apache-2.0"],
       links: %{
-        "GitHub" => "https://github.com/oltarasenko/crawly"
+        "GitHub" => @source_url
       }
     ]
   end
@@ -68,7 +52,7 @@ defmodule Crawly.Mixfile do
       {:gollum, "~> 0.4.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
       {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
@@ -78,10 +62,13 @@ defmodule Crawly.Mixfile do
 
   defp docs do
     [
-      source_ref: "v#{@version}",
+      assets: "documentation/assets",
       logo: "documentation/assets/logo.png",
       extra_section: "documentation",
+      extras: extras(),
       main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
       formatters: ["html"],
       groups_for_modules: [
         "Building Spiders": [
@@ -101,7 +88,6 @@ defmodule Crawly.Mixfile do
           Crawly.RequestsStorage.Worker
         ]
       ],
-      extras: extras(),
       nest_modules_by_prefix: [
         Crawly.Middlewares,
         Crawly.Pipelines
@@ -117,7 +103,8 @@ defmodule Crawly.Mixfile do
       "documentation/http_api.md",
       "documentation/ethical_aspects.md",
       "documentation/experimental_ui.md",
-      "readme.md": [title: "Introduction", file: "README.md"]
+      LICENSE: [title: "License"],
+      "README.md": [title: "Introduction", file: "readme"]
     ]
   end
 end
