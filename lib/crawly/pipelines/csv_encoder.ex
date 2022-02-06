@@ -10,7 +10,6 @@ defmodule Crawly.Pipelines.CSVEncoder do
     iex> item = %{my: "first", other: "second", ignore: "this_field"}
     iex> Crawly.Pipelines.CSVEncoder.run(item, %{}, fields: [:my, :other])
     {"first,second", %{}}
-
   """
   @behaviour Crawly.Pipeline
   require Logger
