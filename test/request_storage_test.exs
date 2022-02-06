@@ -54,14 +54,14 @@ defmodule RequestStorageTest do
 
   test "Error for unknown spiders (storages)" do
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.pop(:unkown)
+             Crawly.RequestsStorage.pop(:unknown)
 
     assert {:error, :storage_worker_not_running} ==
-             Crawly.RequestsStorage.stats(:unkown)
+             Crawly.RequestsStorage.stats(:unknown)
 
     assert {:error, :storage_worker_not_running} ==
              Crawly.RequestsStorage.store(
-               :unkown,
+               :unknown,
                Crawly.Utils.request_from_url("http://example.com")
              )
   end

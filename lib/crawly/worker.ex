@@ -1,7 +1,7 @@
 defmodule Crawly.Worker do
   @moduledoc """
   A worker process responsible for the actual work (fetching requests,
-  processing responces)
+  processing responses)
   """
   use GenServer
 

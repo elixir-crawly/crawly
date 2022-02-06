@@ -16,7 +16,7 @@ defmodule Crawly.Fetchers.Splash do
   is to run it locally with a help of docker:
   docker run -it -p 8050:8050 scrapinghub/splash
 
-  In this case you have to confugure the fetcher in the following way:
+  In this case you have to configure the fetcher in the following way:
   `fetcher: {Crawly.Fetchers.Splash, [base_url: "http://localhost:8050/render.html"]},`
   """
   @behaviour Crawly.Fetchers.Fetcher
