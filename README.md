@@ -36,6 +36,7 @@ historical archival.
    ```
 2. Fetch dependencies: `$ mix deps.get`
 3. Create a spider
+
    ```elixir
    # lib/crawly_example/books_to_scrape.ex
    defmodule BooksToScrape do
