@@ -50,7 +50,7 @@ defmodule DataStorageWorkerTest do
   end
 
   test "Stats for not running spiders" do
-    result = Crawly.DataStorage.stats(:unkown)
+    result = Crawly.DataStorage.stats(:unknown)
     assert result == {:error, :data_storage_worker_not_running}
   end
 end

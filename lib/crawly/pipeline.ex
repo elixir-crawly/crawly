@@ -4,7 +4,7 @@ defmodule Crawly.Pipeline do
 
   A pipeline is a module which takes a given item, and executes a run callback on a given item.
 
-  A state argument is used to share common information accros multiple items. May have preset keys that are set internally by Crawly. Custom pipeline modules may set information to be further used down the declared list of pipeline modules.
+  A state argument is used to share common information across multiple items. May have preset keys that are set internally by Crawly. Custom pipeline modules may set information to be further used down the declared list of pipeline modules.
 
   An `opts` argument is used to pass configuration to the pipeline through tuple-based declarations.
 
