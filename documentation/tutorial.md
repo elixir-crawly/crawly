@@ -63,7 +63,7 @@ Now run `mix deps.get`
 
 ## Our first spider
 
-Spiders are behaviours which you defined and that Crawly uses to
+Spiders are behaviours which you define and that Crawly uses to
 extract information from a given website. The spider must implement
 the spider behaviour (it's required to implement `parse_item/1`, `init/0`,
 `base_url/0` callbacks)
@@ -106,7 +106,7 @@ some functions:
    Crawler will begin to crawl from. Subsequent requests will be
    generated from these initial urls.
 
-3. parse_item(): function which will be called to handle response
+3. parse_item(): function which will be called to handle the response
    downloaded by Crawly. It must return the `Crawly.ParsedItem` structure.
 
 As it is, the init function returns an empty list for `start_urls` which we will
