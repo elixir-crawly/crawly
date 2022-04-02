@@ -5,13 +5,15 @@ defmodule Crawly.Middlewares.UniqueRequest do
   require Logger
 
   def run(request, state) do
-    unique_request_seen_requests =
-      Map.get(state, :unique_request_seen_requests, %{})
+    unique_request_seen_requests = Map.get(state, :unique_request_seen_requests, %{})
 
-    case Map.get(unique_request_seen_requests, request.url) do
+    url_without_fragment =
+      request.url |> URI.parse() |> Map.put(:fragment, nil) |> URI.to_string()
+
+    case Map.get(unique_request_seen_requests, url_without_fragment) do
       nil ->
         unique_request_seen_requests =
-          Map.put(unique_request_seen_requests, request.url, true)
+          Map.put(unique_request_seen_requests, url_without_fragment, true)
 
         new_state =
           Map.put(
@@ -24,7 +26,7 @@ defmodule Crawly.Middlewares.UniqueRequest do
 
       _ ->
         Logger.debug(
-          "Dropping request: #{request.url}, as it's already processed"
+          "Dropping request: #{request.url}, as it's already processed (#{url_without_fragment})"
         )
 
         {false, state}
