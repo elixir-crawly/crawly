@@ -1,7 +1,6 @@
 defmodule Crawly.Mixfile do
   use Mix.Project
 
-  @source_url "https://github.com/oltarasenko/crawly"
   @version "0.13.0"
 
   def project do
@@ -10,11 +9,8 @@ defmodule Crawly.Mixfile do
       version: @version,
       name: "Crawly",
       elixir: "~> 1.7",
-      package: package(),
-      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
-      docs: docs(),
       deps: deps(),
       elixirc_options: [warnings_as_errors: true]
     ]
@@ -30,20 +26,6 @@ defmodule Crawly.Mixfile do
     ]
   end
 
-  defp package() do
-    [
-      # This option is only needed when you don't want to use the OTP
-      # application name
-      name: "crawly",
-      description: "High-level web crawling & scraping framework for Elixir.",
-      licenses: ["Apache-2.0"],
-      links: %{
-        "GitHub" => @source_url
-      }
-    ]
-  end
-
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:httpoison, "~> 1.7"},
@@ -55,56 +37,7 @@ defmodule Crawly.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
-      {:excoveralls, "~> 0.10", only: :test},
       {:logger_file_backend, "~> 0.0.11", only: [:test, :dev]}
-    ]
-  end
-
-  defp docs do
-    [
-      assets: "documentation/assets",
-      logo: "documentation/assets/logo.png",
-      extra_section: "documentation",
-      extras: extras(),
-      main: "readme",
-      source_url: @source_url,
-      source_ref: "v#{@version}",
-      formatters: ["html"],
-      groups_for_modules: [
-        "Building Spiders": [
-          Crawly.Response,
-          Crawly.Request,
-          Crawly.Spider,
-          Crawly.ParsedItem
-        ],
-        "Middlewares and Pipelines": ~r"Crawly\.(Pipeline|Middlewares)(.*)",
-        "Under the Hood": [
-          Crawly.Engine,
-          Crawly.Manager,
-          Crawly.Worker,
-          Crawly.DataStorage,
-          Crawly.DataStorage.Worker,
-          Crawly.RequestsStorage,
-          Crawly.RequestsStorage.Worker
-        ]
-      ],
-      nest_modules_by_prefix: [
-        Crawly.Middlewares,
-        Crawly.Pipelines
-      ]
-    ]
-  end
-
-  defp extras do
-    [
-      "documentation/tutorial.md",
-      "documentation/basic_concepts.md",
-      "documentation/configuration.md",
-      "documentation/http_api.md",
-      "documentation/ethical_aspects.md",
-      "documentation/experimental_ui.md",
-      LICENSE: [title: "License"],
-      "README.md": [title: "Introduction", file: "readme"]
     ]
   end
 end
