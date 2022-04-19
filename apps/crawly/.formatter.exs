@@ -6,6 +6,5 @@
     "mix.exs",
     "{config,lib,priv,rel,test}/**/*.{ex,exs}"
   ],
-  line_length: 80,
-  subdirectories: ["apps/*"]
+  line_length: 80
 ]
