@@ -1,6 +1,46 @@
-# This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
+import Config
+
+# Configure Mix tasks and generators
+config :crawldis,
+  namespace: CrawldisPanel,
+  ecto_repos: [CrawldisPanel.Repo]
+
+# Configures the mailer
+#
+# By default it uses the "Local" adapter which stores the emails
+# locally. You can see the emails in your browser, at "/dev/mailbox".
+#
+# For production it's recommended to configure a different adapter
+# at the `config/runtime.exs`.
+config :crawldis, CrawldisPanel.Mailer, adapter: Swoosh.Adapters.Local
+
+# Swoosh API client is needed for adapters other than SMTP.
+config :swoosh, :api_client, false
+
+config :crawldis_web,
+  ecto_repos: [CrawldisWeb.Repo],
+  generators: [context_app: false]
+
+# Configures the endpoint
+config :crawldis_web, CrawldisWeb.Endpoint,
+  url: [host: "localhost"],
+  render_errors: [
+    view: CrawldisWeb.ErrorView,
+    accepts: ~w(html json),
+    layout: false
+  ],
+  pubsub_server: CrawldisWeb.PubSub,
+  live_view: [signing_salt: "m40y+XYz"]
+
+# Configure esbuild (the version is required)
+config :esbuild,
+  version: "0.14.29",
+  default: [
+    args:
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    cd: Path.expand("../apps/crawldis_web/assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

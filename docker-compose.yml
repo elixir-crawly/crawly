@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  req:
+    build:
+      dockerfile: ./dockerfile.dev
+      context: .
+    working_dir: /code/apps/crawldis_requestor
+    command: mix run --no-halt
+
+  pro:
+    build:
+      dockerfile: ./dockerfile.dev
+      context: .
+    working_dir: /code/apps/crawldis_processor
+    command: mix run --no-halt
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

@@ -52,9 +52,7 @@ defmodule Crawly.Worker do
           else
             {:error, reason} ->
               Logger.debug(
-                "Crawly worker could not process the request to #{
-                  inspect(request.url)
-                } reason: #{inspect(reason)}"
+                "Crawly worker could not process the request to #{inspect(request.url)} reason: #{inspect(reason)}"
               )
           end
 
@@ -125,9 +123,7 @@ defmodule Crawly.Worker do
     catch
       error, reason ->
         Logger.debug(
-          "Could not parse item, error: #{inspect(error)}, reason: #{
-            inspect(reason)
-          }"
+          "Could not parse item, error: #{inspect(error)}, reason: #{inspect(reason)}"
         )
 
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))
@@ -146,9 +142,7 @@ defmodule Crawly.Worker do
          }) do
       {false, _} ->
         Logger.debug(
-          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{
-            inspect(spider_name)
-          }"
+          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{inspect(spider_name)}"
         )
 
         throw(:dropped_parse_item)

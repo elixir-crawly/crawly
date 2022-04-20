@@ -1,8 +1,17 @@
 # Crawly
 
+## Development
+
+```bash
+make start
+make restart
+
+mix phx.server
+```
+
 ## Copyright and License
 
-Copyright (c) 2019 Oleg Tarasenko
+Copyright (c) 2019 Oleg Tarasenko, 2022 Lee Tze Yiing
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

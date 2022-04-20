@@ -1,0 +1,7 @@
+FROM elixir:1.13-slim
+WORKDIR /code
+COPY apps apps
+COPY config config
+COPY mix.exs mix.exs
+COPY mix.lock mix.lock
+RUN mix local.hex --force && mix deps.get -y
