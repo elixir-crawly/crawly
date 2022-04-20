@@ -4,7 +4,6 @@
 
 ```bash
 make start
-make restart
 
 mix phx.server
 ```
