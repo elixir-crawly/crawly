@@ -1,26 +1,11 @@
 import Config
 
-# Configure Mix tasks and generators
-config :crawldis,
-  namespace: CrawldisPanel,
-  ecto_repos: [CrawldisPanel.Repo]
-
-# Configures the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :crawldis, CrawldisPanel.Mailer, adapter: Swoosh.Adapters.Local
-
-# Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
-
 config :crawldis_web,
   ecto_repos: [CrawldisWeb.Repo],
   generators: [context_app: false]
 
+
+config :phoenix, :json_library, Jason
 # Configures the endpoint
 config :crawldis_web, CrawldisWeb.Endpoint,
   url: [host: "localhost"],

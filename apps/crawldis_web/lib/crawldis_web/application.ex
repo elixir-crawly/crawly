@@ -11,7 +11,9 @@ defmodule CrawldisWeb.Application do
       # Start the Telemetry supervisor
       CrawldisWeb.Telemetry,
       # Start the Endpoint (http/https)
-      CrawldisWeb.Endpoint
+      CrawldisWeb.Endpoint,
+      CrawldisWeb.Repo,
+      {Phoenix.PubSub, name: CrawldisWeb.PubSub}
       # Start a worker by calling: CrawldisWeb.Worker.start_link(arg)
       # {CrawldisWeb.Worker, arg}
     ]

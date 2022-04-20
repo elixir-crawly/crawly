@@ -38,6 +38,7 @@ defmodule CrawldisWeb.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.6.7"},
+      {:phoenix_pubsub, "~> 2.0"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -48,7 +49,9 @@ defmodule CrawldisWeb.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:ecto_sql, "~> 3.6"},
+      {:postgrex, ">= 0.0.0"},
     ]
   end
 
@@ -57,9 +60,10 @@ defmodule CrawldisWeb.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["esbuild default --minify", "phx.digest"],
+      setup: ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 end

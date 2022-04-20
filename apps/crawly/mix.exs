@@ -16,7 +16,8 @@ defmodule Crawly.Mixfile do
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
-      lockfile: "../../mix.lock"
+      lockfile: "../../mix.lock",
+      aliases: aliases()
     ]
   end
 
@@ -42,6 +43,11 @@ defmodule Crawly.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
       {:logger_file_backend, "~> 0.0.11", only: [:test, :dev]}
+    ]
+  end
+  defp aliases do
+    [
+      setup: "cmd echo pass"
     ]
   end
 end

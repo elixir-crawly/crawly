@@ -7,7 +7,8 @@ defmodule Crawldis.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixir: "~> 1.10"
+      elixir: "~> 1.10",
+      aliases: aliases()
     ]
   end
 
@@ -18,5 +19,11 @@ defmodule Crawldis.MixProject do
   # Run "mix help deps" for examples and options.
   defp deps do
     []
+  end
+
+  defp aliases do
+    [
+      setup: ["cmd mix setup"],
+    ]
   end
 end

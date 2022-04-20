@@ -3,9 +3,12 @@ use Mix.Config
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
+# Configure your database
+#
+# The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :crawldis, CrawldisPanel.Repo,
+config :crawldis_web, CrawldisWeb.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
@@ -17,8 +20,7 @@ config :crawldis, CrawldisPanel.Repo,
 # you can enable the server option below.
 config :crawldis_web, CrawldisWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base:
-    "xLXG96aORZPhYVkjM5+t9L3ztjZJx5FnqKxXhfYNp8r7JTPImwUw7DBOqsTV7W+B",
+  secret_key_base: "xLXG96aORZPhYVkjM5+t9L3ztjZJx5FnqKxXhfYNp8r7JTPImwUw7DBOqsTV7W+B",
   server: false
 
 config :crawly,
