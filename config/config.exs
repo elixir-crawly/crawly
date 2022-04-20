@@ -4,9 +4,6 @@ config :crawldis_web,
   ecto_repos: [CrawldisWeb.Repo],
   generators: [context_app: false]
 
-
-config :phoenix, :json_library, Jason
-# Configures the endpoint
 config :crawldis_web, CrawldisWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [
@@ -26,6 +23,9 @@ config :esbuild,
     cd: Path.expand("../apps/crawldis_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
+
+config :phoenix, :json_library, Jason
+
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
