@@ -17,7 +17,7 @@ defmodule CrawldisProcessor do
     {:noreply, state}
   end
   defp ping do
-    Logger.info("Connected to #{inspect(Node.list())}")
-    Process.send_after(self(), :ping, 2000)
+    # Logger.info("Connected to #{inspect(Node.list())}")
+    Process.send_after(self(), :ping, 5000)
   end
 end

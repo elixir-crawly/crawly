@@ -8,19 +8,10 @@ defmodule CrawldisRequestor.Application do
   @impl true
   def start(_type, _args) do
 
-    # topologies = [
-    #   default: [
-    #     strategy: Cluster.Strategy.Gossip
-    #   ]
-    # ]
     children = [
-      # Starts a worker by calling: CrawldisRequestor.Worker.start_link(arg)
-      # {CrawldisRequestor.Worker, arg}
       CrawldisRequestor,
-      # CrawldisCommon.ClusterSup
-      # {Cluster.Supervisor, [topologies, [name: CrawldisCommon.LibClusterSup]]},
-      CrawldisCommon.ClusterSup
-
+      CrawldisCommon.ClusterSup,
+      {Task, fn-> test_request() end},
     ]
 
 
@@ -28,5 +19,10 @@ defmodule CrawldisRequestor.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: CrawldisRequestor.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp test_request() do
+    :timer.sleep(2000)
+    CrawldisRequestor.crawl("https://www.tzeyiing.com")
   end
 end
