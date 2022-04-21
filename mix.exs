@@ -23,7 +23,7 @@ defmodule Crawldis.MixProject do
 
   defp aliases do
     [
-      setup: ["cmd mix setup"],
+      setup: ["cmd mix setup"]
     ]
   end
 end

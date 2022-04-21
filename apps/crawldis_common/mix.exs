@@ -12,7 +12,7 @@ defmodule CrawldisCommon.MixProject do
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
-      lockfile: "../../mix.lock",
+      lockfile: "../../mix.lock"
     ]
   end
 
@@ -26,10 +26,10 @@ defmodule CrawldisCommon.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:libcluster, "~> 3.3"}
     ]
   end
+
   defp aliases do
     [
       setup: "cmd echo pass"

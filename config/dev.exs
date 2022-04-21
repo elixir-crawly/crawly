@@ -23,10 +23,12 @@ config :crawldis_web, CrawldisWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "pblAJs6z36T0frrSNd9Js4TVA+5djBautc1/oiiVKyZ94BY6ITzE4knEgM9J9rWD",
+  secret_key_base:
+    "pblAJs6z36T0frrSNd9Js4TVA+5djBautc1/oiiVKyZ94BY6ITzE4knEgM9J9rWD",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild:
+      {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
 
 # ## SSL Support

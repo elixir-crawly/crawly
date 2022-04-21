@@ -5,7 +5,9 @@ services:
       dockerfile: ./dockerfile.dev
       context: .
     working_dir: /code/apps/crawldis_requestor
-    command: mix run --no-halt
+    command: elixir --sname requestor --cookie $${ERLANG_COOKIE} -S mix run --no-halt
+    environment:
+      ERLANG_COOKIE: "its_a_secret"
 
   pro:
     build:
@@ -13,15 +15,18 @@ services:
       context: .
     working_dir: /code/apps/crawldis_processor
     command: mix run --no-halt
-  db:
-    image: postgres:14
-    restart: always
+    command: elixir --sname processor --cookie $${ERLANG_COOKIE} -S mix run --no-halt
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      ERLANG_COOKIE: "its_a_secret"
+  # db:
+  #   image: postgres:14
+  #   restart: always
+  #   environment:
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_USER: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
 volumes:
   pgdata:

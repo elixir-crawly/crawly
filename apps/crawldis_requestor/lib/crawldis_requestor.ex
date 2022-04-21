@@ -8,6 +8,17 @@ defmodule CrawldisRequestor do
   @impl true
   def init(_) do
     Logger.info("Requestor started")
+    ping()
     {:ok,[]}
+  end
+
+  @impl true
+  def handle_info(:ping, state) do
+    ping()
+    {:noreply, state}
+  end
+  defp ping do
+    Logger.info("Connected to #{inspect(Node.list())}")
+    Process.send_after(self(), :ping, 2000)
   end
 end

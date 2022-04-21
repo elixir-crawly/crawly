@@ -7,11 +7,22 @@ defmodule CrawldisRequestor.Application do
 
   @impl true
   def start(_type, _args) do
+
+    # topologies = [
+    #   default: [
+    #     strategy: Cluster.Strategy.Gossip
+    #   ]
+    # ]
     children = [
       # Starts a worker by calling: CrawldisRequestor.Worker.start_link(arg)
       # {CrawldisRequestor.Worker, arg}
-      CrawldisRequestor
+      CrawldisRequestor,
+      # CrawldisCommon.ClusterSup
+      # {Cluster.Supervisor, [topologies, [name: CrawldisCommon.LibClusterSup]]},
+      CrawldisCommon.ClusterSup
+
     ]
+
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

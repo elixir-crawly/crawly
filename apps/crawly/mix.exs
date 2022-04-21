@@ -45,6 +45,7 @@ defmodule Crawly.Mixfile do
       {:logger_file_backend, "~> 0.0.11", only: [:test, :dev]}
     ]
   end
+
   defp aliases do
     [
       setup: "cmd echo pass"
