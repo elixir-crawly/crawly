@@ -3,8 +3,13 @@
 ## Development
 
 ```bash
+# start containers
 make start
 
+# get an iex shell
+make iex.{req|pro}
+
+# web
 mix phx.server
 ```
 

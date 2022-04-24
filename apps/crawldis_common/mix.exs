@@ -26,7 +26,10 @@ defmodule CrawldisCommon.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:libcluster, "~> 3.3"}
+      {:libcluster, "~> 3.3"},
+      {:delta_crdt, "~> 0.6.3"},
+      {:crawly, in_umbrella: true},
+      {:exsync, "~> 0.2", only: :dev}
     ]
   end
 

@@ -10,8 +10,8 @@ defmodule CrawldisRequestor.Application do
 
     children = [
       CrawldisRequestor,
+      CrawldisCommon.RequestQueue,
       CrawldisCommon.ClusterSup,
-      {Task, fn-> test_request() end},
     ]
 
 
@@ -19,10 +19,5 @@ defmodule CrawldisRequestor.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: CrawldisRequestor.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  defp test_request() do
-    :timer.sleep(2000)
-    CrawldisRequestor.crawl("https://www.tzeyiing.com")
   end
 end

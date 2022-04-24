@@ -52,6 +52,10 @@ config :phoenix, :json_library, Jason
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+config :logger, :console,
+ format: "[$level] $message $metadata\n",
+ metadata: [:data]
+
 
 config :crawly,
   fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},

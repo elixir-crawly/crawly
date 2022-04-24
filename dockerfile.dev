@@ -1,7 +1,10 @@
 FROM elixir:1.13-slim
+RUN apt-get update && apt-get upgrade -y inotify-tools
 WORKDIR /code
 COPY apps apps
 COPY config config
 COPY mix.exs mix.exs
 COPY mix.lock mix.lock
-RUN mix local.hex --force && mix deps.get -y
+COPY _build _build
+COPY deps deps
+RUN  mix local.hex --force && mix local.rebar --force  && mix deps.get -y
