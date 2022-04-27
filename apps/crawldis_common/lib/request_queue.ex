@@ -28,15 +28,34 @@ defmodule CrawldisCommon.RequestQueue do
     GenServer.cast(__MODULE__, {:add, request})
   end
 
-  def pop() do
-    GenServer.call(__MODULE__, :pop)
+  def claim_and_pop() do
+    GenServer.call(__MODULE__, :claim_and_pop)
   end
 
 
   @impl true
-  def handle_call(:pop, _src, state) do
-    # todo
-    {:reply, :ok, state}
+  def handle_call(:claim_and_pop, _src, state) do
+    queue = DeltaCrdt.to_map(state.crdt_pid)
+    pop_res= Enum.find(queue, fn
+      {_k, {:claimed, _req, %{claimed_datetime: dt}}}->  DateTime.diff(DateTime.utc_now(), dt) > 1
+      _-> false
+    end)
+    popped_req = if pop_res do
+      {popped_key , {_status, req, _meta}}  = pop_res
+      DeltaCrdt.delete(state.crdt_pid, popped_key)
+      req
+    end
+    claim_res = Enum.find(queue,fn
+      {_k, {:unclaimed, _req, _}}->  true
+      _-> false
+    end)
+    if claim_res do
+      {to_claim_key , {_, claimed_req, meta}} = claim_res
+      new_meta = Map.put(meta, :claimed_datetime, DateTime.utc_now())
+      DeltaCrdt.put(state.crdt_pid, to_claim_key, {:claimed, claimed_req, new_meta })
+    end
+
+    {:reply, {:ok, popped_req}, state}
   end
 
   @impl true
