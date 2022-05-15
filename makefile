@@ -1,6 +1,9 @@
 
 id = $(shell echo $RANDOM | md5sum | head -c 6; echo;)
 
+db:
+	docker-compose up -d  --quiet-pull   --remove-orphans db
+	docker-compose logs -f --tail=100 db
 start:
 	docker-compose build --no-rm  --parallel    -q
 	docker-compose up -d  --quiet-pull   --remove-orphans
