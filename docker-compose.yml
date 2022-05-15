@@ -19,15 +19,15 @@ services:
     command: elixir --sname processor --cookie ${ERLANG_COOKIE} -S mix run --no-halt
     volumes:
       - ./apps:/code/apps
-  # db:
-  #   image: postgres:14
-  #   restart: always
-  #   environment:
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_USER: postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 volumes:
   pgdata:
