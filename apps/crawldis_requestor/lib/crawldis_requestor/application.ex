@@ -7,13 +7,11 @@ defmodule CrawldisRequestor.Application do
 
   @impl true
   def start(_type, _args) do
-
     children = [
       CrawldisRequestor,
       CrawldisCommon.RequestQueue,
-      CrawldisCommon.ClusterSup,
+      CrawldisCommon.ClusterSup
     ]
-
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

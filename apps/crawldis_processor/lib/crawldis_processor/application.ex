@@ -7,7 +7,6 @@ defmodule CrawldisProcessor.Application do
 
   @impl true
   def start(_type, _args) do
-
     # topologies = [
     #   default: [
     #     strategy: Cluster.Strategy.Gossip
@@ -19,7 +18,6 @@ defmodule CrawldisProcessor.Application do
       CrawldisProcessor,
       # {Cluster.Supervisor, [topologies, [name: CrawldisCommon.LibClusterSup]]},
       CrawldisCommon.ClusterSup
-
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

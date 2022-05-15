@@ -5,7 +5,7 @@ defmodule CrawldisCommon.ClusterSup do
   use Supervisor
 
   def start_link(init_arg) do
-    Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
+    Supervisor.start_link(__MODULE__, init_arg, [])
   end
 
   @impl true
@@ -15,12 +15,11 @@ defmodule CrawldisCommon.ClusterSup do
         strategy: Cluster.Strategy.Gossip
       ]
     ]
+
     children = [
-      {Cluster.Supervisor, [topologies, [name: CrawldisCommon.LibClusterSup]]},
+      {Cluster.Supervisor, [topologies, []]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
-
-
 end

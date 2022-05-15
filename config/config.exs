@@ -53,9 +53,8 @@ config :phoenix, :json_library, Jason
 #
 #     import_config "#{Mix.env}.exs"
 config :logger, :console,
- format: "[$level] $message $metadata\n",
- metadata: [:data]
-
+  format: "[$level] $message $metadata\n",
+  metadata: [:data]
 
 config :crawly,
   fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},

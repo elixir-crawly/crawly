@@ -37,7 +37,8 @@ defmodule CrawldisWeb.Telemetry do
       ),
       summary("crawldis_web.repo.query.decode_time",
         unit: {:native, :millisecond},
-        description: "The time spent decoding the data received from the database"
+        description:
+          "The time spent decoding the data received from the database"
       ),
       summary("crawldis_web.repo.query.query_time",
         unit: {:native, :millisecond},
