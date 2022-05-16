@@ -87,8 +87,13 @@ defmodule CrawldisCommon.RequestQueue.Worker do
         DeltaCrdt.delete(state.crdt_pid, key)
         req
       end
+    response = cond do
+      queue == %{} -> {:error, :queue_empty}
+      pop_res == nil-> {:error, :no_claimed}
+      true -> {:ok, popped_req}
+    end
 
-    {:reply, {:ok, popped_req}, state}
+    {:reply, response, state}
   end
 
   @impl true
@@ -118,6 +123,7 @@ defmodule CrawldisCommon.RequestQueue.Worker do
   def handle_cast({:add_request, request}, %{crdt_pid: pid} = state) do
     url = Map.get(request, :url)
     DeltaCrdt.put(pid, url, %Meta{request: request})
+    Logger.debug("Adding request to queue: #{inspect(request)}")
     {:noreply, state}
   end
 

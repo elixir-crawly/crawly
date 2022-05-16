@@ -52,7 +52,7 @@ defmodule CrawldisCommon.RequestQueue do
     GenServer.call(Worker, :clear_requests)
   end
 
-  @spec pop_claimed_request() :: {:ok, Crawly.Request.t()}
+  @spec pop_claimed_request() :: {:ok, Crawly.Request.t()} | {:error, :queue_empty | :no_claimed}
   def pop_claimed_request() do
     GenServer.call(Worker, :pop_claimed_request)
   end

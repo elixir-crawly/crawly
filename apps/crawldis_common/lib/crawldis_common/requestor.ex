@@ -1,5 +1,6 @@
 defmodule CrawldisCommon.Requestor do
   defstruct id: nil
+  alias CrawldisCommon.Requestor
   @behaviour CrawldisCommon.Worker
 
   use Supervisor, restart: :transient
@@ -13,6 +14,7 @@ defmodule CrawldisCommon.Requestor do
   def init(_init_arg) do
     children = [
       # add in request queue
+      Requestor.Worker
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
