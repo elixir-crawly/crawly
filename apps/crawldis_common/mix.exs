@@ -19,7 +19,8 @@ defmodule CrawldisCommon.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {CrawldisCommon.Application, []}
     ]
   end
 
@@ -27,9 +28,11 @@ defmodule CrawldisCommon.MixProject do
   defp deps do
     [
       {:libcluster, "~> 3.3"},
+      {:horde, "~> 0.8"},
       {:delta_crdt, "~> 0.6.3"},
       {:crawly, in_umbrella: true},
-      {:exsync, "~> 0.2", only: :dev}
+      {:exsync, "~> 0.2", only: :dev},
+      { :uuid, "~> 1.1" }
     ]
   end
 
