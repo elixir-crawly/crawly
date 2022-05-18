@@ -12,7 +12,10 @@ defmodule Crawly.Request do
             prev_response: nil,
             options: [],
             middlewares: [],
-            retries: 0
+            retries: 0,
+            fetcher: nil,
+            extractors: [],
+            response: nil
 
   @type header() :: {key(), value()}
   @type url() :: binary()
@@ -22,13 +25,17 @@ defmodule Crawly.Request do
 
   @type option :: {atom(), binary()}
 
+  @type module_opts :: {module(), [any()]} | module()
   @type t :: %__MODULE__{
           url: url(),
           headers: [header()],
           prev_response: %{},
           options: [option()],
           middlewares: [atom()],
-          retries: non_neg_integer()
+          retries: non_neg_integer(),
+          fetcher: module_opts(),
+          extractors: [module_opts()],
+          response: Crawly.Response.t(),
         }
 
   ### ===========================================================================
