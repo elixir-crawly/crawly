@@ -27,4 +27,24 @@ defmodule CrawldisCommon.Requestor do
 
   @impl CrawldisCommon.Worker
   def stop(id), do: Supervisor.stop(via(id))
+
+
+
+  @spec new_request(map()) :: %Crawly.Request{}
+  def new_request(attrs \\ %{}) do
+    %Crawly.Request{
+      fetcher: Crawly.Fetchers.HTTPoisonFetcher
+    }
+    |> Map.merge(attrs)
+  end
+
+  @doc """
+  Derive a new request from a prior request, used to shallow clone a request and then overwrite certain attributes
+  """
+  @spec derive_request(%Crawly.Request{}, map()) :: %Crawly.Request{}
+  def derive_request(request, attrs \\ %{}) do
+    request
+    |> Map.take([:headers, :extractors, :fetcher])
+    |> Map.merge(attrs)
+  end
 end
