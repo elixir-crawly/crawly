@@ -7,7 +7,9 @@ defmodule Crawly.Request do
   ### ===========================================================================
   ### Type definitions
   ### ===========================================================================
-  defstruct url: nil,
+  defstruct id: nil,
+            crawl_job_id: nil,
+            url: nil,
             headers: [],
             prev_response: nil,
             options: [],
@@ -17,25 +19,22 @@ defmodule Crawly.Request do
             extractors: [],
             response: nil
 
-  @type header() :: {key(), value()}
-  @type url() :: binary()
-
-  @typep key :: binary()
-  @typep value :: binary()
-
-  @type option :: {atom(), binary()}
+  @type header() :: {String.t(), String.t()}
+  @type option :: {atom(), String.t()}
 
   @type module_opts :: {module(), [any()]} | module()
   @type t :: %__MODULE__{
-          url: url(),
+          id: String.t(),
+          crawl_job_id: String.t() | nil,
+          url: String.t(),
           headers: [header()],
-          prev_response: %{},
+          prev_response: nil,
           options: [option()],
           middlewares: [atom()],
           retries: non_neg_integer(),
           fetcher: module_opts(),
           extractors: [module_opts()],
-          response: Crawly.Response.t(),
+          response: Crawly.Response.t() | nil,
         }
 
   ### ===========================================================================

@@ -2,19 +2,6 @@ defmodule CrawldisCommon.RequestQueue.Worker do
   alias CrawldisCommon.RequestQueue
   require Logger
   use GenServer
-  @type item_status :: :unclaimed | :claimed
-
-  @type t :: %RequestQueue{
-          crdt_pid: pid()
-        }
-  defmodule Meta do
-    defstruct claimed_datetime: nil,
-              request: nil,
-              status: :unclaimed
-  end
-
-  @type queue_item :: %Meta{}
-  defstruct crdt_pid: nil
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -36,6 +23,19 @@ defmodule CrawldisCommon.RequestQueue.Worker do
   @impl true
   def handle_call(:clear_requests, _source, state) do
     keys = get_queue(state) |> Map.keys()
+    DeltaCrdt.drop(state.crdt_pid, keys)
+    {:reply, :ok, state}
+  end
+
+  @impl true
+  def handle_call({:clear_requests, :crawl_job_id, id}, src, state) when is_binary(id) do
+    handle_call({:clear_requests, :crawl_job_id, [id]}, src,state)
+  end
+
+  @impl true
+  def handle_call({:clear_requests, :crawl_job_id, ids}, _source, state) when is_list(ids) do
+    queue =  get_queue(state)
+    keys = for {id, meta} <- queue, meta.request.crawl_job_id in ids, do: id
     DeltaCrdt.drop(state.crdt_pid, keys)
     {:reply, :ok, state}
   end
@@ -121,8 +121,7 @@ defmodule CrawldisCommon.RequestQueue.Worker do
 
   @impl true
   def handle_cast({:add_request, request}, %{crdt_pid: pid} = state) do
-    url = Map.get(request, :url)
-    DeltaCrdt.put(pid, url, %Meta{request: request})
+    DeltaCrdt.put(pid, request.id, %RequestQueue.Meta{request: request})
     Logger.debug("Adding request to queue: #{inspect(request)}")
     {:noreply, state}
   end

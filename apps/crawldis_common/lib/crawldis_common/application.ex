@@ -14,7 +14,8 @@ defmodule CrawldisCommon.Application do
     # ]
     children = [
       CrawldisCommon.Cluster,
-      CrawldisCommon.RequestQueue
+      CrawldisCommon.RequestQueue,
+      CrawldisCommon.Jobber
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

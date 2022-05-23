@@ -3,7 +3,7 @@ defmodule CrawldisCommon.RequestQueueTest do
   alias CrawldisCommon.RequestQueue
   doctest RequestQueue
 
-  @request %Crawly.Request{url: "http://www.some url.com"}
+  @request %Crawly.Request{crawl_job_id: "123", url: "http://www.some url.com"}
   setup_all do
     RequestQueue.clear_requests()
   end
@@ -36,6 +36,11 @@ defmodule CrawldisCommon.RequestQueueTest do
       assert :ok = RequestQueue.clear_requests()
       assert RequestQueue.count_requests() == 0
       assert RequestQueue.list_requests() |> length == 0
+    end
+
+    test "clear request by crawl id" do
+      assert :ok =  RequestQueue.clear_requests_by_crawl_job_id(@request.crawl_job_id)
+      assert RequestQueue.count_requests() == 0
     end
   end
 
