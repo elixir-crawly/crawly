@@ -26,8 +26,6 @@ defmodule CrawldisCommon.Requestor.Worker do
             # send requests to request queue
             Logger.debug("Sending #{length(new_requests)} to request queue")
             for new_request <- new_requests do
-              IO.inspect("new request")
-              IO.inspect(new_request)
               RequestQueue.add_request(new_request)
             end
         else

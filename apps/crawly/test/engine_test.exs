@@ -21,7 +21,6 @@ defmodule EngineTest do
 
     assert status =
              Enum.find(spiders, fn s -> s.name == TestSpider end)
-             |> IO.inspect(label: __ENV__.line)
 
     assert status.status == :stopped
 
@@ -46,7 +45,6 @@ defmodule EngineTest do
 
     spider_info =
       Crawly.Engine.get_spider_info(TestSpider)
-      |> IO.inspect(label: __ENV__.line)
 
     assert :stopped == spider_info.status
 
