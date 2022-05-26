@@ -8,7 +8,7 @@ defmodule CrawldisCommon.Syncer do
   """
   require Logger
   use GenServer
-  alias CrawldisCommon.Syncer
+
   @type t :: %__MODULE__{
     get_pid: fun(),
     name: module()
@@ -20,7 +20,7 @@ defmodule CrawldisCommon.Syncer do
   end
 
   @impl true
-  def init([get_pid, name] = args) do
+  def init([get_pid, name]) do
     Logger.debug("Syncer initializing")
     if is_nil get_pid do
       raise "Syncer must be initialized with a get_pid function"

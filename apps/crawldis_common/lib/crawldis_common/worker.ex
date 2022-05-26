@@ -7,5 +7,5 @@ defmodule CrawldisCommon.Worker do
   @doc """
   Stops the worker
   """
-  @callback stop() :: :ok
+  @callback stop(String.t()) :: :ok
 end

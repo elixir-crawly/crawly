@@ -5,7 +5,6 @@ defmodule CrawldisCommon.Requestor do
 
   use Supervisor, restart: :transient
 
-  @impl true
   def start_link(id) do
     Supervisor.start_link(__MODULE__, [], name: via(id))
   end

@@ -8,7 +8,7 @@ defmodule CrawldisCommon.Jobber do
   alias CrawldisCommon.{Syncer, Jobber}
   use Supervisor
 
-  def start_link(id) do
+  def start_link(_) do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 

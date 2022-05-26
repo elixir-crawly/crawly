@@ -1,6 +1,6 @@
 defmodule CrawldisCommon.Jobber.Worker do
   alias CrawldisCommon.{Jobber, RequestQueue}
-  alias CrawldisCommon.Jobber.{Worker, CrawlJob}
+  alias CrawldisCommon.Jobber.{CrawlJob}
   require Logger
   use GenServer
 
