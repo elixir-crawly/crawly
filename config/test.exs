@@ -8,6 +8,10 @@ use Mix.Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
+
+config :logger, :console,
+  level: :warning
+
 config :crawldis_web, CrawldisWeb.Repo,
   username: "postgres",
   password: "postgres",
