@@ -1,6 +1,6 @@
-defmodule CrawldisCommon.ClusterTest do
+defmodule Crawldis.ClusterTest do
   use ExUnit.Case, async: false
-  alias CrawldisCommon.Cluster
+  alias Crawldis.Cluster
 
   setup do
     Cluster.list_requestors()

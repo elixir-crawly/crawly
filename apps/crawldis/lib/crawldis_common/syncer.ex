@@ -1,4 +1,4 @@
-defmodule CrawldisCommon.Syncer do
+defmodule Crawldis.Syncer do
   @moduledoc """
   Syncs a crdt across nodes (not across processes).
 

@@ -1,7 +1,7 @@
-defmodule CrawldisCommon.JobberTest do
+defmodule Crawldis.JobberTest do
   use ExUnit.Case
-  alias CrawldisCommon.{Jobber, RequestQueue}
-  alias CrawldisCommon.Jobber.CrawlJob
+  alias Crawldis.{Jobber, RequestQueue}
+  alias Crawldis.Jobber.CrawlJob
 
   @job %{start_urls: ["http://www.some url.com"]}
   setup do

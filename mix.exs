@@ -1,4 +1,4 @@
-defmodule Crawldis.MixProject do
+defmodule CrawldisUmbrella.MixProject do
   use Mix.Project
 
   def project do

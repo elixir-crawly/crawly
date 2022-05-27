@@ -1,4 +1,4 @@
 defmodule CrawldisCommonTest do
   use ExUnit.Case
-  doctest CrawldisCommon
+  doctest Crawldis
 end

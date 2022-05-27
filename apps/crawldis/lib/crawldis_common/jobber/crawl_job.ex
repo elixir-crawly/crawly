@@ -1,4 +1,4 @@
-defmodule CrawldisCommon.Jobber.CrawlJob do
+defmodule Crawldis.Jobber.CrawlJob do
   @moduledoc """
   A crawl job, with all configuration required for requestors/processors.
   """

@@ -1,6 +1,6 @@
-defmodule CrawldisCommon.Jobber.Worker do
-  alias CrawldisCommon.{Jobber, RequestQueue}
-  alias CrawldisCommon.Jobber.{CrawlJob}
+defmodule Crawldis.Jobber.Worker do
+  alias Crawldis.{Jobber, RequestQueue}
+  alias Crawldis.Jobber.{CrawlJob}
   require Logger
   use GenServer
 
@@ -59,7 +59,7 @@ defmodule CrawldisCommon.Jobber.Worker do
     Logger.debug("Adding job: #{inspect(job)}")
     # add requests
     for url <-job.start_urls  do
-      request = CrawldisCommon.Utils.new_request(job, url)
+      request = Crawldis.Utils.new_request(job, url)
       RequestQueue.add_request(request)
     end
     {:reply, {:ok, job}, state}

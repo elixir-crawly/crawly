@@ -1,11 +1,11 @@
-defmodule CrawldisCommon.Jobber do
+defmodule Crawldis.Jobber do
   @moduledoc """
   Crawl job node-level manager for a cluster. Syncs state across nodes.any()
 
   The sole purpose of the Jobber is to cache job information and metadata, as well as to connect to the control plane.
 
   """
-  alias CrawldisCommon.{Syncer, Jobber}
+  alias Crawldis.{Syncer, Jobber}
   use Supervisor
 
   def start_link(_) do

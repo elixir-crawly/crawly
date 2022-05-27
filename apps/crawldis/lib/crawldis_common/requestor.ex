@@ -1,7 +1,7 @@
-defmodule CrawldisCommon.Requestor do
+defmodule Crawldis.Requestor do
   defstruct id: nil
-  alias CrawldisCommon.Requestor
-  @behaviour CrawldisCommon.Worker
+  alias Crawldis.Requestor
+  @behaviour Crawldis.Worker
 
   use Supervisor, restart: :transient
 
@@ -19,12 +19,12 @@ defmodule CrawldisCommon.Requestor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  @impl CrawldisCommon.Worker
+  @impl Crawldis.Worker
   def via(id) do
-    {:via, Horde.Registry, {CrawldisCommon.Cluster.RequestorRegistry, id}}
+    {:via, Horde.Registry, {Crawldis.Cluster.RequestorRegistry, id}}
   end
 
-  @impl CrawldisCommon.Worker
+  @impl Crawldis.Worker
   def stop(id), do: Supervisor.stop(via(id))
 
 end

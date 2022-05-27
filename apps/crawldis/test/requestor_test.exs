@@ -1,7 +1,7 @@
-defmodule CrawldisCommon.RequestorTest do
+defmodule Crawldis.RequestorTest do
   use ExUnit.Case
-  alias CrawldisCommon.RequestorTest.TestExtractor
-  alias CrawldisCommon.{RequestQueue, Requestor}
+  alias Crawldis.RequestorTest.TestExtractor
+  alias Crawldis.{RequestQueue, Requestor}
   doctest RequestQueue
 
   @id "123"

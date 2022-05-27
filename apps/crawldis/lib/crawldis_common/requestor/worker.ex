@@ -1,6 +1,6 @@
-defmodule CrawldisCommon.Requestor.Worker do
+defmodule Crawldis.Requestor.Worker do
   use GenServer
-  alias CrawldisCommon.RequestQueue
+  alias Crawldis.RequestQueue
   require Logger
 
   def start_link(_) do

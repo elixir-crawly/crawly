@@ -1,6 +1,6 @@
-defmodule CrawldisCommon.RequestQueue do
-  alias CrawldisCommon.RequestQueue
-  alias CrawldisCommon.RequestQueue.{Worker, Syncer}
+defmodule Crawldis.RequestQueue do
+  alias Crawldis.RequestQueue
+  alias Crawldis.RequestQueue.{Worker, Syncer}
   require Logger
   use Supervisor
 

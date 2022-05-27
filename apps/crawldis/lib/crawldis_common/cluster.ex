@@ -1,4 +1,4 @@
-defmodule CrawldisCommon.Cluster do
+defmodule Crawldis.Cluster do
   @moduledoc """
   Common Cluster supervisor for connecting nodes using gossip strategy
   """
@@ -36,7 +36,7 @@ defmodule CrawldisCommon.Cluster do
   def list_requestors do
     for child <-
           Horde.DynamicSupervisor.which_children(__MODULE__.DynamicSupervisor),
-        {_, pid, _, [CrawldisCommon.Requestor]} = child,
+        {_, pid, _, [Crawldis.Requestor]} = child,
         keys = Horde.Registry.keys(__MODULE__.RequestorRegistry, pid),
         key <- List.flatten(keys) do
       key
@@ -48,7 +48,7 @@ defmodule CrawldisCommon.Cluster do
 
     Horde.DynamicSupervisor.start_child(__MODULE__.DynamicSupervisor, %{
       id: id,
-      start: {CrawldisCommon.Requestor, :start_link, [id]},
+      start: {Crawldis.Requestor, :start_link, [id]},
       restart: :transient
     })
 
@@ -56,5 +56,5 @@ defmodule CrawldisCommon.Cluster do
   end
 
   def stop_requestor(id) when is_binary(id),
-    do: CrawldisCommon.Requestor.stop(id)
+    do: Crawldis.Requestor.stop(id)
 end

@@ -1,6 +1,6 @@
-defmodule CrawldisCommon.RequestQueueTest do
+defmodule Crawldis.RequestQueueTest do
   use ExUnit.Case
-  alias CrawldisCommon.RequestQueue
+  alias Crawldis.RequestQueue
   doctest RequestQueue
 
   @request %Crawly.Request{crawl_job_id: "123", url: "http://www.some url.com"}

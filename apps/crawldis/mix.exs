@@ -1,9 +1,9 @@
-defmodule CrawldisCommon.MixProject do
+defmodule Crawldis.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :crawldis_common,
+      app: :crawldis,
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
@@ -20,7 +20,7 @@ defmodule CrawldisCommon.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {CrawldisCommon.Application, []}
+      mod: {Crawldis.Application, []}
     ]
   end
 

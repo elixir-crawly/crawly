@@ -1,4 +1,4 @@
-defmodule CrawldisCommon.Application do
+defmodule Crawldis.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -13,9 +13,9 @@ defmodule CrawldisCommon.Application do
     #   ]
     # ]
     children = [
-      CrawldisCommon.Cluster,
-      CrawldisCommon.RequestQueue,
-      CrawldisCommon.Jobber
+      Crawldis.Cluster,
+      Crawldis.RequestQueue,
+      Crawldis.Jobber
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -1,5 +1,5 @@
-defmodule CrawldisCommon.RequestQueue.Worker do
-  alias CrawldisCommon.RequestQueue
+defmodule Crawldis.RequestQueue.Worker do
+  alias Crawldis.RequestQueue
   require Logger
   use GenServer
 
