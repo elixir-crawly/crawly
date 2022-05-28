@@ -1,7 +1,7 @@
 import Config
 
-config :crawldis_web,
-  ecto_repos: [CrawldisWeb.Repo],
+config :crawldis_panel,
+  ecto_repos: [CrawldisPanel.Repo],
   generators: [context_app: false]
 
 config :crawldis_web, CrawldisWeb.Endpoint,

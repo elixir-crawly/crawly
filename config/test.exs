@@ -12,7 +12,7 @@ use Mix.Config
 config :logger, :console,
   level: :warning
 
-config :crawldis_web, CrawldisWeb.Repo,
+config :crawldis_panel, CrawldisPanel.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",

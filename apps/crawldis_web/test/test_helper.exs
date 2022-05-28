@@ -1,2 +1,2 @@
 ExUnit.start()
-Ecto.Adapters.SQL.Sandbox.mode(CrawldisWeb.Repo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(CrawldisPanel.Repo, :manual)

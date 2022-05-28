@@ -18,7 +18,6 @@ defmodule CrawldisWeb.DataCase do
 
   using do
     quote do
-      alias CrawldisWeb.Repo
 
       import Ecto
       import Ecto.Changeset
@@ -37,7 +36,7 @@ defmodule CrawldisWeb.DataCase do
   """
   def setup_sandbox(tags) do
     pid =
-      Ecto.Adapters.SQL.Sandbox.start_owner!(CrawldisWeb.Repo,
+      Ecto.Adapters.SQL.Sandbox.start_owner!(CrawldisPanel.Repo,
         shared: not tags[:async]
       )
 
