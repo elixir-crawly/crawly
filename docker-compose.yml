@@ -1,24 +1,5 @@
 version: "3.9"
 services:
-  req:
-    build:
-      dockerfile: ./dockerfile.dev
-      context: .
-    working_dir: /code/apps/crawldis_requestor
-    command: elixir --sname requestor --cookie ${ERLANG_COOKIE} -S mix run --no-halt
-    volumes:
-      - ./apps:/code/apps
-      - ./makefile:/code/makefile
-
-  pro:
-    build:
-      dockerfile: ./dockerfile.dev
-      context: .
-    working_dir: /code/apps/crawldis_processor
-    # command: mix run --no-halt
-    command: elixir --sname processor --cookie ${ERLANG_COOKIE} -S mix run --no-halt
-    volumes:
-      - ./apps:/code/apps
   db:
     image: postgres:14
     restart: always
