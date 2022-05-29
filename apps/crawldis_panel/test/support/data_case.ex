@@ -1,4 +1,4 @@
-defmodule CrawldisWeb.DataCase do
+defmodule CrawldisPanel.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -22,12 +22,12 @@ defmodule CrawldisWeb.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import CrawldisWeb.DataCase
+      import CrawldisPanel.DataCase
     end
   end
 
   setup tags do
-    CrawldisWeb.DataCase.setup_sandbox(tags)
+    CrawldisPanel.DataCase.setup_sandbox(tags)
     :ok
   end
 

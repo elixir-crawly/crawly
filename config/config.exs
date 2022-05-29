@@ -1,8 +1,20 @@
 import Config
 
+config :crawldis_panel, ExOauth2Provider,
+  repo: CrawldisPanel.Repo,
+  otp_app: :crawldis_panel,
+  resource_owner: CrawldisPanel.Accounts.User,
+  # default_scopes: ~w(public),
+  # optional_scopes: ~w(read write),
+  # revoke_refresh_token_on_use: true,
+  access_token_expires_in: nil
+
 config :crawldis_panel,
   ecto_repos: [CrawldisPanel.Repo],
   generators: [context_app: false]
+
+
+config :crawldis_web, :generators, context_app: :crawldis_panel
 
 config :crawldis_web, CrawldisWeb.Endpoint,
   url: [host: "localhost"],
@@ -25,7 +37,6 @@ config :esbuild,
   ]
 
 config :phoenix, :json_library, Jason
-
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,
