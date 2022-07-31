@@ -34,7 +34,6 @@ defmodule CrawldisPanel.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 3.5.4"},
       {:ecto_sql, "~> 3.5.4"},
       {:postgrex, ">= 0.0.0"},
       {:ex_oauth2_provider, "~> 0.5.6"}

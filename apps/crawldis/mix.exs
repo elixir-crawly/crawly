@@ -32,7 +32,9 @@ defmodule Crawldis.MixProject do
       {:delta_crdt, "~> 0.6.3"},
       {:crawly, in_umbrella: true},
       {:exsync, "~> 0.2", only: :dev},
-      { :uuid, "~> 1.1" }
+      { :uuid, "~> 1.1" },
+      {:phoenix_client, "~> 0.3"},
+      {:typed_struct, "~> 0.1.4"}
     ]
   end
 

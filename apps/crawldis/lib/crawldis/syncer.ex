@@ -8,25 +8,27 @@ defmodule Crawldis.Syncer do
   """
   require Logger
   use GenServer
-
-  @type t :: %__MODULE__{
-    get_pid: fun(),
-    name: module()
-  }
-  defstruct get_pid: nil, name: nil
+  use TypedStruct
+  typedstruct enforce: true do
+  end
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, [opts[:get_pid], opts[:name]], [name: opts[:name]])
+    opts = Enum.into(opts, %{
+      name: nil,
+      node: Node.self(),
+      get_pid: fn ->
+        raise "get_pid for retrieving the crdt pid for Syncer is not set!"
+      end
+    })
+    name = get_global_name(node, opts.name)
+    GenServer.start_link(__MODULE__, opts, [name: name])
   end
 
   @impl true
-  def init([get_pid, name]) do
+  def init(opts) do
     Logger.debug("Syncer initializing")
-    if is_nil get_pid do
-      raise "Syncer must be initialized with a get_pid function"
-    end
     :net_kernel.monitor_nodes(true, node_type: :visible)
-    state = %__MODULE__{get_pid: get_pid, name: name}
+    state = opts
     set_neighbours(state)
     {:ok, state}
   end
@@ -48,12 +50,15 @@ defmodule Crawldis.Syncer do
 
   def handle_info(_, state), do: {:noreply, state}
 
-  defp set_neighbours(%__MODULE__{}= state) do
-    {results, _failed_nodes} =
-      :rpc.multicall(nodes(), GenServer, :call, [state.name, :pid])
+  defp set_neighbours(%{name: name}= state) do
+    pids = for node <- nodes(), pid  = :global.whereis_name({node, name}), is_pid(pid) do
+      pid
+    end
 
-    DeltaCrdt.set_neighbours(state.get_pid.(), results)
+    DeltaCrdt.set_neighbours(state.get_pid.(), pids)
   end
 
   defp nodes(), do: Node.list([:visible])
+
+  defp get_global_name(node, name), do: {:global, {node, name}}
 end

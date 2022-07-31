@@ -17,7 +17,7 @@ config :crawldis_panel,
 config :crawldis_web, :generators, context_app: :crawldis_panel
 
 config :crawldis_web, CrawldisWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "localhost", port: 4000],
   render_errors: [
     view: CrawldisWeb.ErrorView,
     accepts: ~w(html json),
@@ -104,3 +104,4 @@ config :crawly,
   ]
 
 import_config "#{Mix.env()}.exs"
+import_config "local.secret.exs"

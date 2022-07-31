@@ -4,18 +4,28 @@ defmodule CrawldisWeb.Application do
   @moduledoc false
 
   use Application
-
   @impl true
   def start(_type, _args) do
-    children = [
-      # Start the Telemetry supervisor
-      CrawldisWeb.Telemetry,
-      # Start the Endpoint (http/https)
-      CrawldisWeb.Endpoint,
-      {Phoenix.PubSub, name: CrawldisWeb.PubSub}
-      # Start a worker by calling: CrawldisWeb.Worker.start_link(arg)
-      # {CrawldisWeb.Worker, arg}
-    ]
+    IO.puts("starting crawldisweb")
+    env = Application.get_env(:crawldis_panel, :env)
+
+    children =
+      case env do
+        :test ->
+          [
+            CrawldisWeb.Endpoint,
+            {Phoenix.PubSub, name: CrawldisWeb.PubSub},
+            CrawldisWeb.Presence
+          ]
+
+        _ ->
+          [
+            CrawldisWeb.Endpoint,
+            {Phoenix.PubSub, name: CrawldisWeb.PubSub},
+            CrawldisWeb.Presence,
+            CrawldisWeb.Startup
+          ]
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

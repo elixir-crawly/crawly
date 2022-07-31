@@ -7,6 +7,7 @@ defmodule Crawldis.Jobber.CrawlJob do
     id: String.t(),
     start_urls: [url()]
   }
+  @derive Jason.Encoder
   defstruct id: nil,
           start_urls: []
 end

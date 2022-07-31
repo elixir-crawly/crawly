@@ -1,5 +1,8 @@
 import Config
 
+config :crawldis_panel, :env, config_env()
+config :crawldis, :env, config_env()
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

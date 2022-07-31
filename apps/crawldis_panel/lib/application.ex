@@ -12,7 +12,7 @@ defmodule CrawldisPanel.Application do
       # CrawldisWeb.Telemetry,
       # Start the Endpoint (http/https)
       # CrawldisWeb.Endpoint,
-      CrawldisPanel.Repo,
+      CrawldisPanel.Repo
       # {Phoenix.PubSub, name: CrawldisWeb.PubSub}
       # Start a worker by calling: CrawldisWeb.Worker.start_link(arg)
       # {CrawldisWeb.Worker, arg}
@@ -23,5 +23,4 @@ defmodule CrawldisPanel.Application do
     opts = [strategy: :one_for_one, name: CrawldisPanel.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
 end

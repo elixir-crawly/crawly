@@ -3,7 +3,7 @@ defmodule CrawldisPanel.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
-    field :name, :string
+    field(:name, :string)
 
     timestamps()
   end

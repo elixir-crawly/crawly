@@ -34,7 +34,7 @@ defmodule Crawly.Request do
           retries: non_neg_integer(),
           fetcher: module_opts(),
           extractors: [module_opts()],
-          response: Crawly.Response.t() | nil,
+          response: Crawly.Response.t() | nil
         }
 
   ### ===========================================================================

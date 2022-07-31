@@ -45,12 +45,12 @@ defmodule CrawldisWeb.MixProject do
       {:phoenix_live_view, "~> 0.17.5"},
       {:floki, ">= 0.30.0", only: :test},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
-      {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:crawldis_panel, in_umbrella: true}
+      {:crawldis_panel, in_umbrella: true},
+      {:mimic, "~> 1.7", only: :test},
+      {:crawldis, in_umbrella: true, only: :test},
     ]
   end
 

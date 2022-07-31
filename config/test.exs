@@ -1,5 +1,4 @@
-use Mix.Config
-
+import Config
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -26,7 +25,7 @@ config :crawldis_web, CrawldisWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base:
     "xLXG96aORZPhYVkjM5+t9L3ztjZJx5FnqKxXhfYNp8r7JTPImwUw7DBOqsTV7W+B",
-  server: false
+  server: true
 
 config :crawly,
   manager_operations_timeout: 500,

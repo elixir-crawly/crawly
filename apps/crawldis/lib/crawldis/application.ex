@@ -7,6 +7,7 @@ defmodule Crawldis.Application do
 
   @impl true
   def start(_type, _args) do
+    IO.puts "starting crawldis"
     # topologies = [
     #   default: [
     #     strategy: Cluster.Strategy.Gossip
@@ -15,12 +16,13 @@ defmodule Crawldis.Application do
     children = [
       Crawldis.Cluster,
       Crawldis.RequestQueue,
-      Crawldis.Jobber
+      Crawldis.Jobber,
+      Crawldis.Connector
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: CrawldisProcessor.Supervisor]
+    opts = [strategy: :one_for_one, name: Crawldis.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

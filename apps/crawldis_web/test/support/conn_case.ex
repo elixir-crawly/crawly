@@ -23,6 +23,12 @@ defmodule CrawldisWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import CrawldisWeb.ConnCase
+      import Phoenix.LiveViewTest
+      use Mimic
+
+      alias CrawldisPanel.{
+        AccountsFixtures
+      }
 
       alias CrawldisWeb.Router.Helpers, as: Routes
 
@@ -32,7 +38,7 @@ defmodule CrawldisWeb.ConnCase do
   end
 
   setup tags do
-    CrawldisWeb.DataCase.setup_sandbox(tags)
+    CrawldisPanel.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

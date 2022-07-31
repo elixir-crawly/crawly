@@ -22,4 +22,21 @@ defmodule Crawldis.Utils do
     |> Map.take([:headers, :extractors, :fetcher])
     |> Map.merge(attrs)
   end
+
+  @doc "Returns the panel configuration"
+  @type panel_config :: %{api_key: String.t, endpoint: String.t}
+  @spec get_panel_config! :: panel_config()
+  def get_panel_config! do
+    config = Application.get_env(:crawldis, :panel)
+    if is_nil config do
+      raise "Panel config not set"
+    end
+    config |> Enum.into(%{})
+  end
+
+  @doc "String representation of node name"
+  @spec self :: String.t
+  def self do
+    Node.self() |> Atom.to_string()
+  end
 end
