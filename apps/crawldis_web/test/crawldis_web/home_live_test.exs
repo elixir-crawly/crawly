@@ -43,6 +43,7 @@ defmodule CrawldisWeb.HomeLiveTest do
 
     assert view |> element("#crawl-jobs button", "Stop") |> render_click() =~
              "Crawl job stopped"
+
     :timer.sleep(400)
     refute has_element?(view, "button", "Stop")
   end
