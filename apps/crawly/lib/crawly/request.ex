@@ -16,7 +16,7 @@ defmodule Crawly.Request do
             middlewares: [],
             retries: 0,
             fetcher: nil,
-            extractors: [],
+            parsers: [],
             response: nil
 
   @type header() :: {String.t(), String.t()}
@@ -33,7 +33,7 @@ defmodule Crawly.Request do
           middlewares: [atom()],
           retries: non_neg_integer(),
           fetcher: module_opts(),
-          extractors: [module_opts()],
+          parsers: [module_opts()],
           response: Crawly.Response.t() | nil
         }
 

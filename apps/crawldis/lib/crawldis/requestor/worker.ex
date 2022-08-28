@@ -57,7 +57,7 @@ defmodule Crawldis.Requestor.Worker do
   end
 
   defp do_parsing(request_with_response) do
-    case Crawly.Utils.pipe(request_with_response.extractors, %Crawly.ParsedItem{}, %{passthrough: false}) do
+    case Crawly.Utils.pipe(request_with_response.parsers, %Crawly.ParsedItem{}, %{}) do
       {false, _} ->
         {:drop, request_with_response}
       {parsed, _new_state} ->

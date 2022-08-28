@@ -19,7 +19,7 @@ defmodule Crawldis.Utils do
   @spec derive_request(%Crawly.Request{}, map()) :: %Crawly.Request{}
   def derive_request(request, attrs \\ %{}) do
     request
-    |> Map.take([:headers, :extractors, :fetcher])
+    |> Map.take([:headers, :parsers, :fetcher])
     |> Map.merge(attrs)
   end
 

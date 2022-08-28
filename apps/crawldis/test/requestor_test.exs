@@ -1,6 +1,6 @@
 defmodule Crawldis.RequestorTest do
   use ExUnit.Case
-  alias Crawldis.RequestorTest.TestExtractor
+  alias Crawldis.RequestorTest.TestParser
   alias Crawldis.{RequestQueue, Requestor}
   doctest RequestQueue
 
@@ -8,7 +8,7 @@ defmodule Crawldis.RequestorTest do
   @request %Crawly.Request{
     url: "https://www.exmaple.com",
     fetcher: Crawly.Fetchers.HTTPoisonFetcher,
-    extractors: [TestExtractor]
+    parsers: [TestParser]
   }
   setup_all do
     :meck.expect(HTTPoison, :get, fn _, _ , _->
@@ -36,7 +36,7 @@ defmodule Crawldis.RequestorTest do
     assert list |> Enum.any?(&(&1.request.url =~ "example2.com"))
     # TODO: sends new items to processors
   end
-  defmodule TestExtractor do
+  defmodule TestParser do
     @behaviour Crawly.Pipeline
 
     @request %Crawly.Request{
@@ -49,6 +49,4 @@ defmodule Crawldis.RequestorTest do
       {item, state}
     end
   end
-
-
 end
