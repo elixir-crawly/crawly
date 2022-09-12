@@ -107,7 +107,7 @@ defmodule Crawly.Pipelines.WriteToFile do
              item: any()
   defp write(io, item) do
     try do
-      IO.write(io, item)
+      IO.write(io, inspect(item))
       IO.write(io, "\n")
     catch
       error, reason ->
