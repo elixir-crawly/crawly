@@ -97,7 +97,6 @@ defmodule Crawly.Mixfile do
 
   defp extras do
     [
-      "documentation/tutorial.md",
       "documentation/basic_concepts.md",
       "documentation/configuration.md",
       "documentation/http_api.md",

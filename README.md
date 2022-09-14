@@ -22,7 +22,7 @@ historical archival.
 
 
 ## Quickstart
-
+0. Create a new project: `mix new quickstart --sup`
 1. Add Crawly as a dependencies:
 
    ```elixir
@@ -30,7 +30,7 @@ historical archival.
    defp deps do
        [
          {:crawly, "~> 0.13.0"},
-         {:floki, "~> 0.26.0"}
+         {:floki, "~> 0.33.0"}
        ]
    end
    ```
@@ -38,43 +38,48 @@ historical archival.
 3. Create a spider
 
    ```elixir
-   # lib/crawly_example/books_to_scrape.ex
-   defmodule BooksToScrape do
-       use Crawly.Spider
+    # lib/crawly_example/books_to_scrape.ex
+    defmodule BooksToScrape do
+      use Crawly.Spider
 
-       @impl Crawly.Spider
-       def base_url(), do: "https://books.toscrape.com/"
+      @impl Crawly.Spider
+      def base_url(), do: "https://books.toscrape.com/"
 
-       @impl Crawly.Spider
-       def init() do: [start_urls: ["https://books.toscrape.com/"]]
+      @impl Crawly.Spider
+      def init() do
+        [start_urls: ["https://books.toscrape.com/"]]
+      end
 
-       @impl Crawly.Spider
-       def parse_item(response) do
-           # Parse response body to document
-           {:ok, document} = Floki.parse_document(response.body)
+      @impl Crawly.Spider
+      def parse_item(response) do
+        # Parse response body to document
+        {:ok, document} = Floki.parse_document(response.body)
 
-           # Create item (for pages where items exists)
-           items =
-             document
-             |> Floki.find(".product_pod")
-             |> Enum.map(fn x ->
-               %{
-               title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
-               price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
-               }
-             end)
+        # Create item (for pages where items exists)
+        items =
+          document
+          |> Floki.find(".product_pod")
+          |> Enum.map(fn x ->
+            %{
+              title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
+              price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
+              url: response.request_url
+            }
+          end)
 
-           next_requests =
-             document
-             |> Floki.find(".next a")
-             |> Floki.attribute("href")
-             |> Enum.map(fn url ->
-               Crawly.Utils.build_absolute_url(url, response.request.url)
-               |> Crawly.Utils.request_from_url()
-             end)
-           %{items: items, requests: next_requests}
-       end
-   end
+        next_requests =
+          document
+          |> Floki.find(".next a")
+          |> Floki.attribute("href")
+          |> Enum.map(fn url ->
+            Crawly.Utils.build_absolute_url(url, response.request.url)
+            |> Crawly.Utils.request_from_url()
+          end)
+
+        %{items: items, requests: next_requests}
+      end
+    end
+
    ```
 
 4. Configure Crawly
@@ -82,42 +87,45 @@ historical archival.
    By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
 
    ```elixir
-   # in config.exs
-   config :crawly,
-     closespider_timeout: 10,
-     concurrent_requests_per_domain: 8,
-     middlewares: [
-       Crawly.Middlewares.DomainFilter,
-       Crawly.Middlewares.UniqueRequest,
-       {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
-     ],
-     pipelines: [
-       {Crawly.Pipelines.Validate, fields: [:url, :title]},
-       {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
-       Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
-     ]
+   # in config/config.exs
+  
+  import Config
+
+  # in config.exs
+  config :crawly,
+    closespider_timeout: 10,
+    concurrent_requests_per_domain: 8,
+    closespider_itemcount: 100,
+
+    middlewares: [
+      Crawly.Middlewares.DomainFilter,
+      Crawly.Middlewares.UniqueRequest,
+      {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
+    ],
+    pipelines: [
+      {Crawly.Pipelines.Validate, fields: [:url, :title, :price]},
+      {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+      Crawly.Pipelines.JSONEncoder,
+      {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
+    ]
+
    ```
 
 5. Start the Crawl:
 
    ```bash
-   $ iex -S mix
-   iex(1)> Crawly.Engine.start_spider(EslSpider)
+     iex -S mix run -e "Crawly.Engine.start_spider(BooksToScrape)"
    ```
 
 6. Results can be seen with:
 
    ```
-   $ cat /tmp/EslSpider.jl
+   $ cat /tmp/BooksToScrape_<timestamp>.jl
    ```
 
 ## Need more help?
 
-I have decided to create a public telegram channel, so it's now possible to be connected, and it's possible to ask questions
-and get answers faster!
-
-Please join me on: https://t.me/crawlyelixir
+Please use discussions for all conversations related to the project
 
 ## Browser rendering
 
@@ -141,16 +149,10 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 
 - [API Reference](https://hexdocs.pm/crawly/api-reference.html#content)
 - [Quickstart](https://hexdocs.pm/crawly/readme.html#quickstart)
-- [Tutorial](https://hexdocs.pm/crawly/tutorial.html)
 
 ## Roadmap
 
-1. [x] Pluggable HTTP client
-2. [x] Retries support
-3. [x] Cookies support
-4. [x] XPath support - can be actually done with meeseeks
-5. [ ] Project generators (spiders)
-6. [ ] UI for jobs management
+To be discussed
 
 ## Articles
 

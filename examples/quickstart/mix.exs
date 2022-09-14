@@ -23,7 +23,7 @@ defmodule Quickstart.MixProject do
   defp deps do
     [
       {:crawly, path: "../.."},
-      {:floki, "~> 0.26.0"}
+      {:floki, "~> 0.33.0"}
     ]
   end
 end
