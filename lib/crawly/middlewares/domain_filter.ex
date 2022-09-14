@@ -4,7 +4,7 @@ defmodule Crawly.Middlewares.DomainFilter do
 
   The domain that is used to compare against the request url is obtained from the spider's `c:Crawly.Spider.base_url` callback.
 
-  Does not accept any options. Tuple-based configuration optionswill be ignored.
+  Does not accept any options. Tuple-based configuration options will be ignored.
 
   ### Example Declaration
   ```
