@@ -85,29 +85,28 @@ historical archival.
 4. Configure Crawly
 
    By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
+   (in file: `config/config.exs`)
 
    ```elixir
-   # in config/config.exs
-  
-  import Config
 
-  # in config.exs
-  config :crawly,
-    closespider_timeout: 10,
-    concurrent_requests_per_domain: 8,
-    closespider_itemcount: 100,
+    import Config
 
-    middlewares: [
-      Crawly.Middlewares.DomainFilter,
-      Crawly.Middlewares.UniqueRequest,
-      {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
-    ],
-    pipelines: [
-      {Crawly.Pipelines.Validate, fields: [:url, :title, :price]},
-      {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
-      Crawly.Pipelines.JSONEncoder,
-      {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
-    ]
+    config :crawly,
+      closespider_timeout: 10,
+      concurrent_requests_per_domain: 8,
+      closespider_itemcount: 100,
+
+      middlewares: [
+        Crawly.Middlewares.DomainFilter,
+        Crawly.Middlewares.UniqueRequest,
+        {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
+      ],
+      pipelines: [
+        {Crawly.Pipelines.Validate, fields: [:url, :title, :price]},
+        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+        Crawly.Pipelines.JSONEncoder,
+        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
+      ]
 
    ```
 
@@ -195,3 +194,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+## How to release:
+
+1. Update version in mix.exs
+2. Update version in quickstart (README.md, this file)
+3. Commit and create a new tag: `git commit && git tag 0.xx.0 && git push origin master --follow-tags`
+4. Build docs: `mix docs`
+5. Publish hex release: `mix hex.publish` 
