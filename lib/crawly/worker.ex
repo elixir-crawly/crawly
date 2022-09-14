@@ -71,7 +71,7 @@ defmodule Crawly.Worker do
         when request: Crawly.Request.t(),
              spider_name: atom(),
              response: HTTPoison.Response.t(),
-             result: {:ok, {response, spider_name}} | {:error, term()}
+             result: {:ok, {response, spider_name, request}} | {:error, term()}
   def get_response({request, spider_name}) do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
     # if not set, log warning for explicit config preferred,
@@ -102,26 +102,26 @@ defmodule Crawly.Worker do
             {:error, :retry}
 
           false ->
-            {:ok, {response, spider_name}}
+            {:ok, {response, spider_name, request}}
         end
     end
   end
 
   @doc false
-  @spec parse_item({response, spider_name}) :: result
+  @spec parse_item({response, spider_name, request}) :: result
         when response: HTTPoison.Response.t(),
              spider_name: atom(),
-             response: HTTPoison.Response.t(),
+             request: Crawly.Request.t(),
              parsed_item: Crawly.ParsedItem.t(),
              next: {parsed_item, response, spider_name},
              result: {:ok, next} | {:error, term()}
-  def parse_item({response, spider_name}) do
+    def parse_item({response, spider_name, request}) do
     try do
       # get parsers
       parsers = Crawly.Utils.get_settings(:parsers, spider_name, nil)
-      parsed_item = do_parse(parsers, spider_name, response)
+      parsed_item = do_parse(parsers, spider_name, response, request)
 
-      {:ok, {parsed_item, response, spider_name}}
+      {:ok, {parsed_item, response, spider_name, request}}
     catch
       error, reason ->
         Logger.debug(
@@ -136,13 +136,22 @@ defmodule Crawly.Worker do
     end
   end
 
-  defp do_parse(nil, spider_name, response),
-    do: spider_name.parse_item(response)
+  defp do_parse(nil, spider_name, response, request) do
+    IO.puts "Eval"
+    IO.inspect spider_name
+    IO.inspect :erlang.function_exported(spider_name, :parse_item, 2)
+    if :erlang.function_exported(spider_name, :parse_item, 2) do
+      spider_name.parse_item(response, request)
+    else
+      spider_name.parse_item(response) # This is for backward compatibility
+    end
+  end
 
-  defp do_parse(parsers, spider_name, response) when is_list(parsers) do
+  defp do_parse(parsers, spider_name, response, request) when is_list(parsers) do
     case Crawly.Utils.pipe(parsers, %{}, %{
            spider_name: spider_name,
-           response: response
+           response: response,
+           request: request
          }) do
       {false, _} ->
         Logger.debug(
@@ -158,20 +167,21 @@ defmodule Crawly.Worker do
     end
   end
 
-  @spec process_parsed_item({parsed_item, response, spider_name}) :: result
+  @spec process_parsed_item({parsed_item, response, spider_name, request}) :: result
         when spider_name: atom(),
+             request: Crawly.Request.t(),
              response: HTTPoison.Response.t(),
              parsed_item: Crawly.ParsedItem.t(),
              result: {:ok, :done}
-  defp process_parsed_item({parsed_item, response, spider_name}) do
+  defp process_parsed_item({parsed_item, response, spider_name, _request}) do
     requests = Map.get(parsed_item, :requests, [])
     items = Map.get(parsed_item, :items, [])
     # Process all requests one by one
     Enum.each(
       requests,
-      fn request ->
-        request = Map.put(request, :prev_response, response)
-        Crawly.RequestsStorage.store(spider_name, request)
+      fn req ->
+        req = Map.put(req, :prev_response, response)
+        Crawly.RequestsStorage.store(spider_name, req)
       end
     )
 

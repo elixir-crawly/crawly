@@ -70,7 +70,7 @@ defmodule Crawly do
       )
 
     {%{} = request, _} = Crawly.Utils.pipe(request0.middlewares, request0, %{})
-    {:ok, {response, _}} = Crawly.Worker.get_response({request, opts[:with]})
+    {:ok, {response, _, _}} = Crawly.Worker.get_response({request, opts[:with]})
 
     case opts[:with] do
       nil ->
@@ -79,8 +79,8 @@ defmodule Crawly do
 
       _ ->
         # spider provided, send response through  parse_item callback, pipe through the pipelines
-        with {:ok, {parsed_result, _, _}} <-
-               Crawly.Worker.parse_item({response, opts[:with]}),
+        with {:ok, {parsed_result, _, _, _}} <-
+               Crawly.Worker.parse_item({response, opts[:with], request}),
              pipelines <-
                Crawly.Utils.get_settings(
                  :pipelines,

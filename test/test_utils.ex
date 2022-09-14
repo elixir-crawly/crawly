@@ -32,7 +32,7 @@ defmodule TestSpider do
     ]
   end
 
-  def parse_item(_response) do
+  def parse_item(_response, _request) do
     path = Enum.random(1..100)
 
     %Crawly.ParsedItem{
@@ -67,7 +67,7 @@ defmodule UtilsTestSpider do
   end
 
   @impl Crawly.Spider
-  def parse_item(_response) do
+  def parse_item(_response, _request) do
     {[], []}
   end
 end
@@ -93,7 +93,7 @@ defmodule PipelineTestSpider do
   end
 
   @impl Crawly.Spider
-  def parse_item(_response) do
+  def parse_item(_response, _request) do
     {[], []}
   end
 end

@@ -12,7 +12,8 @@ defmodule Crawly.Request do
             prev_response: nil,
             options: [],
             middlewares: [],
-            retries: 0
+            retries: 0,
+            custom_data: %{}
 
   @type header() :: {key(), value()}
   @type url() :: binary()
@@ -28,7 +29,8 @@ defmodule Crawly.Request do
           prev_response: %{},
           options: [option()],
           middlewares: [atom()],
-          retries: non_neg_integer()
+          retries: non_neg_integer(),
+          custom_data: %{}
         }
 
   ### ===========================================================================
