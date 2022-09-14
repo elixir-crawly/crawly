@@ -79,3 +79,9 @@ defmodule Crawly.Request do
     }
   end
 end
+
+defimpl String.Chars, for: Crawly.Request do
+  def to_string(s) do
+    inspect(s)
+  end
+end
