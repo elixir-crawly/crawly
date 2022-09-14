@@ -17,7 +17,7 @@ historical archival.
 
 ## Requirements
 
-1. Elixir `~> 1.10`
+1. Elixir `~> 1.14`
 2. Works on GNU/Linux, Windows, macOS X, and BSD.
 
 
