@@ -25,6 +25,9 @@ defmodule Crawly.Middlewares.RequestOptions do
   @behaviour Crawly.Pipeline
 
   def run(request, state, options \\ []) do
-    {%Crawly.Request{request | options: Keyword.merge(options, request.options)}, state}
+    {%Crawly.Request{
+       request
+       | options: Keyword.merge(options, request.options)
+     }, state}
   end
 end
