@@ -112,9 +112,7 @@ defmodule Crawly.Pipelines.WriteToFile do
     catch
       error, reason ->
         Logger.error(
-          "Could not write item: #{inspect(item)} to io: #{inspect(io)}\n#{
-            Exception.format(error, reason, __STACKTRACE__)
-          }"
+          "Could not write item: #{inspect(item)} to io: #{inspect(io)}\n#{Exception.format(error, reason, __STACKTRACE__)}"
         )
     end
   end
