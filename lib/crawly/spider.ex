@@ -25,8 +25,12 @@ defmodule Crawly.Spider do
 
   @callback base_url() :: binary()
 
-  @callback parse_item(response :: HTTPoison.Response.t()) :: Crawly.ParsedItem.t()
-  @callback parse_item(response :: HTTPoison.Response.t(), request :: Crawly.Request.t()) :: Crawly.ParsedItem.t()
+  @callback parse_item(response :: HTTPoison.Response.t()) ::
+              Crawly.ParsedItem.t()
+  @callback parse_item(
+              response :: HTTPoison.Response.t(),
+              request :: Crawly.Request.t()
+            ) :: Crawly.ParsedItem.t()
 
   @callback override_settings() :: Crawly.Settings.t()
   defmacro __using__(_opts) do

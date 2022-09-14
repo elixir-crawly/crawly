@@ -52,9 +52,7 @@ defmodule Crawly.Worker do
           else
             {:error, reason} ->
               Logger.debug(
-                "Crawly worker could not process the request to #{
-                  inspect(request.url)
-                } reason: #{inspect(reason)}"
+                "Crawly worker could not process the request to #{inspect(request.url)} reason: #{inspect(reason)}"
               )
           end
 
@@ -115,7 +113,7 @@ defmodule Crawly.Worker do
              parsed_item: Crawly.ParsedItem.t(),
              next: {parsed_item, response, spider_name},
              result: {:ok, next} | {:error, term()}
-    def parse_item({response, spider_name, request}) do
+  def parse_item({response, spider_name, request}) do
     try do
       # get parsers
       parsers = Crawly.Utils.get_settings(:parsers, spider_name, nil)
@@ -125,9 +123,7 @@ defmodule Crawly.Worker do
     catch
       error, reason ->
         Logger.debug(
-          "Could not parse item, error: #{inspect(error)}, reason: #{
-            inspect(reason)
-          }"
+          "Could not parse item, error: #{inspect(error)}, reason: #{inspect(reason)}"
         )
 
         Logger.debug(Exception.format(:error, error, __STACKTRACE__))
@@ -140,11 +136,13 @@ defmodule Crawly.Worker do
     if :erlang.function_exported(spider_name, :parse_item, 2) do
       spider_name.parse_item(response, request)
     else
-      spider_name.parse_item(response) # This is for backward compatibility
+      # This is for backward compatibility
+      spider_name.parse_item(response)
     end
   end
 
-  defp do_parse(parsers, spider_name, response, request) when is_list(parsers) do
+  defp do_parse(parsers, spider_name, response, request)
+       when is_list(parsers) do
     case Crawly.Utils.pipe(parsers, %{}, %{
            spider_name: spider_name,
            response: response,
@@ -152,9 +150,7 @@ defmodule Crawly.Worker do
          }) do
       {false, _} ->
         Logger.debug(
-          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{
-            inspect(spider_name)
-          }"
+          "Dropped parse item from parser pipeline, url: #{response.request_url}, spider_name: #{inspect(spider_name)}"
         )
 
         throw(:dropped_parse_item)
@@ -164,7 +160,8 @@ defmodule Crawly.Worker do
     end
   end
 
-  @spec process_parsed_item({parsed_item, response, spider_name, request}) :: result
+  @spec process_parsed_item({parsed_item, response, spider_name, request}) ::
+          result
         when spider_name: atom(),
              request: Crawly.Request.t(),
              response: HTTPoison.Response.t(),
