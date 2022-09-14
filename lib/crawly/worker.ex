@@ -137,9 +137,6 @@ defmodule Crawly.Worker do
   end
 
   defp do_parse(nil, spider_name, response, request) do
-    IO.puts "Eval"
-    IO.inspect spider_name
-    IO.inspect :erlang.function_exported(spider_name, :parse_item, 2)
     if :erlang.function_exported(spider_name, :parse_item, 2) do
       spider_name.parse_item(response, request)
     else
