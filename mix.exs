@@ -9,7 +9,7 @@ defmodule Crawly.Mixfile do
       app: :crawly,
       version: @version,
       name: "Crawly",
-      elixir: "~> 1.7",
+      elixir: "~> 1.14",
       package: package(),
       test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
@@ -55,7 +55,7 @@ defmodule Crawly.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
-      {:excoveralls, "~> 0.10", only: :test},
+      {:excoveralls, "~> 0.14.6", only: :test},
       {:logger_file_backend, "~> 0.0.11", only: [:test, :dev]}
     ]
   end
