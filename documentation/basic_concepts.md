@@ -120,7 +120,7 @@ Built-in middlewares:
 
 1. `Crawly.Middlewares.DomainFilter` - this middleware will disable scheduling for all requests leading outside of the crawled site.
 2. `Crawly.Middlewares.RobotsTxt` - this middleware ensures that Crawly respects the robots.txt defined by the target website.
-3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
+3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly will not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
 5. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
 6. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.
@@ -182,7 +182,7 @@ end
 
 ### Best Practices
 
-The use of global configs is discouraged, hence one pass options through a tuple-based pipeline declaration where possible.
+The use of global configs is discouraged, hence one should pass options through a tuple-based pipeline declaration where possible.
 
 When storing information in the `state` map, ensure that the state is namespaced with the pipeline name, so as to avoid key clashing. For example, to store state from `MyEctoPipeline`, store the state on the key `:my_ecto_pipeline_my_state`.
 
@@ -215,7 +215,7 @@ end
 
 ### Custom Item Pipelines
 
-Item pipelines receives the parsed item (from the Spider) and performs post-processing on the item.
+Item pipelines receive the parsed item (from the Spider) and performs post-processing on the item.
 
 #### Storing Parsed Items
 
@@ -322,9 +322,9 @@ end
 
 ## Browser rendering
 
-Browser rendering is one of the most complex problems of the scraping. The Internet
+Browser rendering is one of the most complex problems of scraping. The Internet
 moves towards more dynamic content, where not only parts of the pages are loaded
-asynchronously, but entire applications might be rendered by the JavaScript and
+asynchronously, but entire applications might be rendered by JavaScript and
 AJAX.
 
 In most of the cases it's still possible to extract the data from dynamically

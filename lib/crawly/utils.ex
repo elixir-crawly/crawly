@@ -98,15 +98,11 @@ defmodule Crawly.Utils do
                 "#{inspect(module)}.run(#{inspect(item)}, #{inspect(state)})"
 
               _ ->
-                "#{inspect(module)}.run(#{inspect(item)}, #{inspect(state)}, #{
-                  inspect(args)
-                })"
+                "#{inspect(module)}.run(#{inspect(item)}, #{inspect(state)}, #{inspect(args)})"
             end
 
           Logger.error(
-            "Pipeline crash by call: #{call}\n#{
-              Exception.format(error, reason, __STACKTRACE__)
-            }"
+            "Pipeline crash by call: #{call}\n#{Exception.format(error, reason, __STACKTRACE__)}"
           )
 
           {item, state}
@@ -239,9 +235,7 @@ defmodule Crawly.Utils do
         {module, []}
 
       x ->
-        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{
-                inspect(x)
-              }}`. Only the forms `{module, options}` and `module` are valid"
+        raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{inspect(x)}}`. Only the forms `{module, options}` and `module` are valid"
     end
   end
 end
