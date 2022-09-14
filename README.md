@@ -138,11 +138,7 @@ You can read more here:
 ## Experimental UI
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
-
 Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui)
-or try it online [CrawlyUIDemo](http://crawlyui.com)
-
-See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#content)
 
 ## Documentation
 
