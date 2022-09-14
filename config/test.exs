@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :crawly,
   manager_operations_timeout: 500,

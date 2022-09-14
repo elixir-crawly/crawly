@@ -17,20 +17,20 @@ historical archival.
 
 ## Requirements
 
-1. Elixir `~> 1.10`
+1. Elixir `~> 1.14`
 2. Works on GNU/Linux, Windows, macOS X, and BSD.
 
 
 ## Quickstart
-
+0. Create a new project: `mix new quickstart --sup`
 1. Add Crawly as a dependencies:
 
    ```elixir
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.13.0"},
-         {:floki, "~> 0.26.0"}
+         {:crawly, "~> 0.14.0"},
+         {:floki, "~> 0.33.0"}
        ]
    end
    ```
@@ -38,86 +38,93 @@ historical archival.
 3. Create a spider
 
    ```elixir
-   # lib/crawly_example/books_to_scrape.ex
-   defmodule BooksToScrape do
-       use Crawly.Spider
+    # lib/crawly_example/books_to_scrape.ex
+    defmodule BooksToScrape do
+      use Crawly.Spider
 
-       @impl Crawly.Spider
-       def base_url(), do: "https://books.toscrape.com/"
+      @impl Crawly.Spider
+      def base_url(), do: "https://books.toscrape.com/"
 
-       @impl Crawly.Spider
-       def init() do: [start_urls: ["https://books.toscrape.com/"]]
+      @impl Crawly.Spider
+      def init() do
+        [start_urls: ["https://books.toscrape.com/"]]
+      end
 
-       @impl Crawly.Spider
-       def parse_item(response) do
-           # Parse response body to document
-           {:ok, document} = Floki.parse_document(response.body)
+      @impl Crawly.Spider
+      def parse_item(response) do
+        # Parse response body to document
+        {:ok, document} = Floki.parse_document(response.body)
 
-           # Create item (for pages where items exists)
-           items =
-             document
-             |> Floki.find(".product_pod")
-             |> Enum.map(fn x ->
-               %{
-               title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
-               price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
-               }
-             end)
+        # Create item (for pages where items exists)
+        items =
+          document
+          |> Floki.find(".product_pod")
+          |> Enum.map(fn x ->
+            %{
+              title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
+              price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
+              url: response.request_url
+            }
+          end)
 
-           next_requests =
-             document
-             |> Floki.find(".next a")
-             |> Floki.attribute("href")
-             |> Enum.map(fn url ->
-               Crawly.Utils.build_absolute_url(url, response.request.url)
-               |> Crawly.Utils.request_from_url()
-             end)
-           %{items: items, requests: next_requests}
-       end
-   end
+        next_requests =
+          document
+          |> Floki.find(".next a")
+          |> Floki.attribute("href")
+          |> Enum.map(fn url ->
+            Crawly.Utils.build_absolute_url(url, response.request.url)
+            |> Crawly.Utils.request_from_url()
+          end)
+
+        %{items: items, requests: next_requests}
+      end
+    end
+
    ```
 
 4. Configure Crawly
 
    By default, Crawly does not require any configuration. But obviously you will need a configuration for fine tuning the crawls:
+   (in file: `config/config.exs`)
 
    ```elixir
-   # in config.exs
-   config :crawly,
-     closespider_timeout: 10,
-     concurrent_requests_per_domain: 8,
-     middlewares: [
-       Crawly.Middlewares.DomainFilter,
-       Crawly.Middlewares.UniqueRequest,
-       {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
-     ],
-     pipelines: [
-       {Crawly.Pipelines.Validate, fields: [:url, :title]},
-       {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
-       Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
-     ]
+
+    import Config
+
+    config :crawly,
+      closespider_timeout: 10,
+      concurrent_requests_per_domain: 8,
+      closespider_itemcount: 100,
+
+      middlewares: [
+        Crawly.Middlewares.DomainFilter,
+        Crawly.Middlewares.UniqueRequest,
+        {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
+      ],
+      pipelines: [
+        {Crawly.Pipelines.Validate, fields: [:url, :title, :price]},
+        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+        Crawly.Pipelines.JSONEncoder,
+        {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"}
+      ]
+
    ```
 
 5. Start the Crawl:
 
    ```bash
-   $ iex -S mix
-   iex(1)> Crawly.Engine.start_spider(EslSpider)
+     iex -S mix run -e "Crawly.Engine.start_spider(BooksToScrape)"
    ```
 
 6. Results can be seen with:
 
    ```
-   $ cat /tmp/EslSpider.jl
+   $ cat /tmp/BooksToScrape_<timestamp>.jl
    ```
 
 ## Need more help?
 
-I have decided to create a public telegram channel, so it's now possible to be connected, and it's possible to ask questions
-and get answers faster!
-
-Please join me on: https://t.me/crawlyelixir
+Please use discussions for all conversations related to the project
 
 ## Browser rendering
 
@@ -141,16 +148,10 @@ See more at [Experimental UI](https://hexdocs.pm/crawly/experimental_ui.html#con
 
 - [API Reference](https://hexdocs.pm/crawly/api-reference.html#content)
 - [Quickstart](https://hexdocs.pm/crawly/readme.html#quickstart)
-- [Tutorial](https://hexdocs.pm/crawly/tutorial.html)
 
 ## Roadmap
 
-1. [x] Pluggable HTTP client
-2. [x] Retries support
-3. [x] Cookies support
-4. [x] XPath support - can be actually done with meeseeks
-5. [ ] Project generators (spiders)
-6. [ ] UI for jobs management
+To be discussed
 
 ## Articles
 
@@ -193,3 +194,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+## How to release:
+
+1. Update version in mix.exs
+2. Update version in quickstart (README.md, this file)
+3. Commit and create a new tag: `git commit && git tag 0.xx.0 && git push origin master --follow-tags`
+4. Build docs: `mix docs`
+5. Publish hex release: `mix hex.publish` 
