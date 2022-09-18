@@ -38,7 +38,7 @@ defmodule Crawly.Worker do
     # Get a request from requests storage.
     new_backoff =
       case Crawly.RequestsStorage.pop(spider_name) do
-        nil ->
+        n when n in [nil, :ok] ->
           # Slow down a bit when there are no new URLs
           backoff * 2
 
