@@ -11,7 +11,7 @@ defmodule Crawly.API.Router do
   get "/spiders" do
     msg =
       case Crawly.Engine.running_spiders() do
-        %{} ->
+        spiders when map_size(spiders) == 0 ->
           "No spiders are currently running"
 
         spiders ->
@@ -41,7 +41,7 @@ defmodule Crawly.API.Router do
 
     msg =
       case result do
-        {:error, :not_found} -> "Not found"
+        {:error, :spider_not_found} -> "Not found"
         {:error, :spider_not_running} -> "Spider is not running"
         :ok -> "Stopped!"
       end
@@ -63,7 +63,7 @@ defmodule Crawly.API.Router do
   end
 
   get "/spiders/:spider_name/scraped-items" do
-    spider_name = String.to_atom("Elixir.#{spider_name}")
+    spider_name = String.to_existing_atom("Elixir.#{spider_name}")
     result = Crawly.DataStorage.stats(spider_name)
 
     msg =
@@ -76,6 +76,6 @@ defmodule Crawly.API.Router do
   end
 
   match _ do
-    send_resp(conn, 404, "Oops!")
+    send_resp(conn, 404, "Oops! Page not found!")
   end
 end
