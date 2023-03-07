@@ -79,8 +79,14 @@ historical archival.
         %{items: items, requests: next_requests}
       end
     end
-
    ```
+
+    **New in 0.15.0 (not released yet):**
+
+    > It's possible to use the command to speed up the spider creation,
+    so you will have a generated file with all needed callbacks:
+    `mix crawly.gen.spider --filepath ./lib/crawly_example/books_to_scrape.ex --spidername BooksToScrape`
+
 
 4. Configure Crawly
 
@@ -109,6 +115,11 @@ historical archival.
       ]
 
    ```
+
+    **New in 0.15.0 (not released yet):**
+
+    > You can generate  example config with the help of the following command:
+   `mix crawly.gen.config`
 
 5. Start the Crawl:
 
@@ -198,4 +209,4 @@ limitations under the License.
 2. Update version in quickstart (README.md, this file)
 3. Commit and create a new tag: `git commit && git tag 0.xx.0 && git push origin master --follow-tags`
 4. Build docs: `mix docs`
-5. Publish hex release: `mix hex.publish` 
+5. Publish hex release: `mix hex.publish`
