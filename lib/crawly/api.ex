@@ -8,6 +8,53 @@ defmodule Crawly.API.Router do
   plug(:match)
   plug(:dispatch)
 
+  # Simple UI for crawly management
+  get "/" do
+    running_spiders = Crawly.Engine.running_spiders()
+
+    spiders_list =
+      Enum.map(
+        Crawly.list_spiders(),
+        fn spider ->
+          state =
+            case Map.get(running_spiders, spider) do
+              {_pid, _job_id} -> :running
+              nil -> :idle
+            end
+
+          spider_name =
+            spider
+            |> Atom.to_string()
+            |> String.replace_leading("Elixir.", "")
+
+          {scraped, scheduled} =
+            case state == :running do
+              false ->
+                {" - ", " -  "}
+
+              true ->
+                {:stored_items, num} = Crawly.DataStorage.stats(spider)
+
+                {:stored_requests, scheduled} =
+                  Crawly.RequestsStorage.stats(spider)
+
+                {num, scheduled}
+            end
+
+          %{
+            name: spider_name,
+            scheduled: scheduled,
+            scraped: scraped,
+            state: state
+          }
+        end
+      )
+
+    filename = Path.join(:code.priv_dir(:crawly), "index.html.eex")
+    response = EEx.eval_file(filename, data: spiders_list)
+    send_resp(conn, 200, response)
+  end
+
   get "/spiders" do
     msg =
       case Crawly.Engine.running_spiders() do

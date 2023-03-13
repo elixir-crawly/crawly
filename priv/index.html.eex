@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <script type="text/javascript">
+      function get(name, link) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            // Typical action to be performed when the document is ready:
+            var msg = "<div class='card'>Status for <b>" + name + ": </b>" + xhttp.responseText + "</div>";
+            document.getElementById("status").innerHTML = msg;
+          }
+        };
+      xhttp.open("GET", link, true);
+      xhttp.send();
+
+      }
+
+      function schedule(name) {
+        get(name, "/spiders/" + name + "/schedule")
+      }
+
+      function stop(name) {
+        get(name, "/spiders/" + name + "/stop")
+      }
+    </script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+
+      body {
+        font-family: Arial;
+        padding: 10px;
+        background: #f1f1f1;
+      }
+
+      /* Header/Blog Title */
+      .header {
+        padding: 30px;
+        text-align: center;
+        background: white;
+      }
+
+      .header h1 {
+        font-size: 50px;
+      }
+
+      /* Create two unequal columns that floats next to each other */
+      /* Left column */
+      .leftcolumn {
+        float: left;
+        width: 100%;
+      }
+
+      /* Add a card effect for articles */
+      .card {
+        background-color: white;
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      /* Clear floats after the columns */
+      .row:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+
+
+      /* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
+      @media screen and (max-width: 800px) {
+        .leftcolumn, .rightcolumn {
+          width: 100%;
+          padding: 0;
+        }
+      }
+
+      /* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
+      @media screen and (max-width: 400px) {
+        .topnav a {
+          float: none;
+          width: 100%;
+        }
+      }
+    </style>
+
+  </head>
+  <body>
+    <div class="header">
+      <h1>Crawly Management Tool</h1>
+    </div>
+    <div class="row">
+      <div id="status"></div>
+      <div class="leftcolumn">
+        <div class="card">
+          <h2>Spiders</h2>
+          <table>
+            <tr>
+              <th>Spider name</td>
+              <th>State</td>
+              <th>Items scraped</td>
+              <th>Scheduled Requests</td>
+              <th>Command</td>
+            </tr>
+            <%= for spider <- data do %>
+              <tr>
+                <td><%= spider.name %></td>
+                <td><%= spider.state %></td>
+                <td> <%= spider.scraped %> </td>
+                <td> <%= spider.scheduled %></td>
+                <%= if spider.state == :idle do %>
+                  <td> <input type = "button" onclick = "schedule('<%= spider.name %>')" value = "Schedule"> </td>
+                <% else %>
+                  <td> <input type = "button" onclick = "stop('<%= spider.name %>')" value = "Stop"> </td>
+                <% end %>
+
+              </tr>
+            <% end %>
+          </table>
+        </div>
+      </div>
+      <div class="rightcolumn">
+      </div>
+    </div>
+  </body>
+</html>
