@@ -72,6 +72,12 @@ defmodule Crawly.RequestsStorage do
     GenServer.call(__MODULE__, {:stats, spider_name})
   end
 
+  @spec requests(atom()) ::
+          {:requests, [Crawly.Request.t()]} | {:error, :spider_not_running}
+  def requests(spider_name) do
+    GenServer.call(__MODULE__, {:requests, spider_name})
+  end
+
   @doc """
   Starts a worker for a given spider
   """
@@ -125,6 +131,19 @@ defmodule Crawly.RequestsStorage do
 
         pid ->
           Crawly.RequestsStorage.Worker.stats(pid)
+      end
+
+    {:reply, msg, state}
+  end
+
+  def handle_call({:requests, spider_name}, _from, state) do
+    msg =
+      case Map.get(state.workers, spider_name) do
+        nil ->
+          {:error, :storage_worker_not_running}
+
+        pid ->
+          Crawly.RequestsStorage.Worker.requests(pid)
       end
 
     {:reply, msg, state}

@@ -50,8 +50,7 @@ defmodule Crawly.API.Router do
         end
       )
 
-    filename = Path.join(:code.priv_dir(:crawly), "index.html.eex")
-    response = EEx.eval_file(filename, data: spiders_list)
+    response = render_template("list.html.eex", data: spiders_list)
     send_resp(conn, 200, response)
   end
 
@@ -66,6 +65,29 @@ defmodule Crawly.API.Router do
       end
 
     send_resp(conn, 200, msg)
+  end
+
+  get "/spiders/:spider_name/requests" do
+    spider_name = String.to_atom("Elixir.#{spider_name}")
+
+    result =
+      case Crawly.RequestsStorage.requests(spider_name) do
+        {:requests, result} ->
+          Enum.map(result, fn req ->
+            %{url: req.url, headers: inspect(req.headers)}
+          end)
+
+        {:error, _} ->
+          []
+      end
+
+    response =
+      render_template("requests_list.html.eex",
+        requests: result,
+        spider_name: spider_name
+      )
+
+    send_resp(conn, 200, response)
   end
 
   get "/spiders/:spider_name/schedule" do
@@ -124,5 +146,14 @@ defmodule Crawly.API.Router do
 
   match _ do
     send_resp(conn, 404, "Oops! Page not found!")
+  end
+
+  defp render_template(template_name, assigns) do
+    base_dir = :code.priv_dir(:crawly)
+    template = Path.join(base_dir, template_name)
+    rendered_template = EEx.eval_file(template, assigns)
+
+    base_template = Path.join(base_dir, "index.html.eex")
+    EEx.eval_file(base_template, rendered_template: rendered_template)
   end
 end

@@ -1,0 +1,25 @@
+    <div class="row">
+      <div id="status"></div>
+      <div class="leftcolumn">
+        <div class="card">
+          <h3>
+            List of scheduled requests for: <%= spider_name %>
+            <a href="/">Back</a>
+          </h3>
+          <table>
+            <tr>
+              <th>url</th>
+              <th>headers</th>
+            </tr>
+            <%= for req <- requests do %>
+            <tr>
+              <td><%= req.url %></td>
+              <td><%= req.headers %></td>
+            </tr>
+            <% end %>
+
+          </table>
+      </div>
+      <div class="rightcolumn">
+      </div>
+    </div>

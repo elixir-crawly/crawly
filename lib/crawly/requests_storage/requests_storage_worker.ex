@@ -43,6 +43,12 @@ defmodule Crawly.RequestsStorage.Worker do
     do_call(pid, :stats)
   end
 
+  @doc """
+  Returns all scheduled requests (used for some sort of preview)
+  """
+  @spec requests(pid()) :: {:requests, [Crawly.Request.t()]}
+  def requests(pid), do: do_call(pid, :requests)
+
   def start_link(spider_name, crawl_id) do
     GenServer.start_link(__MODULE__, [spider_name, crawl_id])
   end
@@ -79,6 +85,10 @@ defmodule Crawly.RequestsStorage.Worker do
 
   def handle_call(:stats, _from, state) do
     {:reply, {:stored_requests, state.count}, state}
+  end
+
+  def handle_call(:requests, _from, state) do
+    {:reply, {:requests, state.requests}, state}
   end
 
   defp do_call(pid, command) do
