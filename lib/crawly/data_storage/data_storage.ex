@@ -42,6 +42,12 @@ defmodule Crawly.DataStorage do
     GenServer.call(__MODULE__, {:stats, spider})
   end
 
+  @spec inspect(atom(), term()) ::
+          {:error, :data_storage_worker_not_running} | term()
+  def inspect(spider, field) do
+    GenServer.call(__MODULE__, {:inspect, spider, field})
+  end
+
   def start_link([]) do
     Logger.debug("Starting data storage")
 
@@ -99,6 +105,19 @@ defmodule Crawly.DataStorage do
 
         pid ->
           Crawly.DataStorage.Worker.stats(pid)
+      end
+
+    {:reply, msg, state}
+  end
+
+  def handle_call({:inspect, spider_name, field}, _from, state) do
+    msg =
+      case Map.get(state.workers, spider_name) do
+        nil ->
+          {:error, :data_storage_worker_not_running}
+
+        pid ->
+          Crawly.DataStorage.Worker.inspect(pid, field)
       end
 
     {:reply, msg, state}

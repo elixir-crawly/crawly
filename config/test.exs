@@ -26,6 +26,7 @@ config :crawly,
   pipelines: [
     {Crawly.Pipelines.Validate, fields: [:title, :url, :time, :author]},
     {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+    Crawly.Pipelines.Experimental.Preview,
     Crawly.Pipelines.JSONEncoder
   ],
   retry: [

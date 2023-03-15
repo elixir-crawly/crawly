@@ -90,6 +90,50 @@ defmodule Crawly.API.Router do
     send_resp(conn, 200, response)
   end
 
+  get "/spiders/:spider_name/items" do
+    pipelines = Application.get_env(:crawly, :pipelines)
+
+    preview_enabled? =
+      Enum.any?(
+        pipelines,
+        fn
+          Crawly.Pipelines.Experimental.Preview -> true
+          {Crawly.Pipelines.Experimental.Preview, _} -> true
+          _ -> false
+        end
+      )
+
+    spider_name = String.to_atom("Elixir.#{spider_name}")
+
+    # According to the preview item pipeline we store items under the field below
+    # use inspect function to get items here
+    items_preview_field = :"Elixir.Crawly.Pipelines.Experimental.Preview"
+
+    result =
+      case Crawly.DataStorage.inspect(spider_name, items_preview_field) do
+        {:inspect, nil} ->
+          []
+
+        {:inspect, result} ->
+          result
+
+        {:error, _} ->
+          []
+
+        nil ->
+          []
+      end
+
+    response =
+      render_template("items_list.html.eex",
+        items: result,
+        preview_enabled?: preview_enabled?,
+        spider_name: spider_name
+      )
+
+    send_resp(conn, 200, response)
+  end
+
   get "/spiders/:spider_name/schedule" do
     spider_name = String.to_atom("Elixir.#{spider_name}")
     result = Crawly.Engine.start_spider(spider_name)

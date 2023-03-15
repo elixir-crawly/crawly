@@ -15,7 +15,7 @@
               <tr>
                 <td><%= spider.name %></td>
                 <td><%= spider.state %></td>
-                <td> <%= spider.scraped %> </td>
+                <td><a href="/spiders/<%= spider.name %>/items" ><%= spider.scraped %></a> </td>
                 <td><a href="/spiders/<%= spider.name %>/requests" ><%= spider.scheduled %></td>
                 <%= if spider.state == :idle do %>
                   <td> <input type = "button" onclick = "schedule('<%= spider.name %>')" value = "Schedule"> </td>
