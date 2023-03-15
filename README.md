@@ -146,6 +146,19 @@ of asynchronous elements (for example parts loaded by AJAX).
 You can read more here:
 - [Browser Rendering](https://hexdocs.pm/crawly/basic_concepts.html#browser-rendering)
 
+## Simple management UI (New in 0.15.0)
+Crawly provides a simple management UI by default on the `localhost:4001`
+
+It allows to:
+ - Start spiders
+ - Stop spiders
+ - Preview scheduled requests
+ - Preview items extracted so far (it's required to add the
+    `Crawly.Pipelines.Experimental.Preview` item pipe to have items preview)
+
+![Crawly Management UI](docs/crawly_ui.gif)
+
+
 ## Experimental UI
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
