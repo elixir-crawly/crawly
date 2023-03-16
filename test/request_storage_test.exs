@@ -109,4 +109,26 @@ defmodule RequestStorageTest do
     {:stored_requests, num} = Crawly.RequestsStorage.stats(context.crawler)
     assert 0 == num
   end
+
+  test "Can get requests list from the requests storage", context do
+    request = %Crawly.Request{
+      url: "http://example.com",
+      headers: [],
+      options: []
+    }
+
+    :ok = Crawly.RequestsStorage.store(context.crawler, request)
+
+    {:requests, [stored_request]} =
+      Crawly.RequestsStorage.requests(context.crawler)
+
+    assert request == stored_request
+  end
+
+  test "Getting requests list from the requests storage if nothing is there",
+       context do
+    {:requests, req_lists} = Crawly.RequestsStorage.requests(context.crawler)
+
+    assert req_lists == []
+  end
 end

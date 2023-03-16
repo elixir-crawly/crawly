@@ -1,0 +1,38 @@
+    <div class="row">
+      <div id="status">
+        <div>
+          <%= if not preview_enabled? do %>
+            Items previewer requires the Crawly.Pipelines.Experimental.Preview
+            item pipeline in your config
+          <% end %>
+        </div>
+
+      </div>
+      <div class="leftcolumn">
+        <div class="card">
+          <h3>
+            Extracted items: <%= spider_name %>
+            <a href="/">Back</a>
+          </h3>
+          <table>
+            <tr>
+              <th>item</th>
+            </tr>
+
+            <%= for item <- items do %>
+            <tr>
+              <td>
+                <ul>
+                  <%= for {key, value} <- item do %>
+                  <li><%= key %>: <%= value %></li>
+                  <% end %>
+                </ul>
+              </td>
+
+            </tr>
+            <% end %>
+          </table>
+      </div>
+      <div class="rightcolumn">
+      </div>
+    </div>

@@ -31,6 +31,14 @@ defmodule Crawly.DataStorage.Worker do
     GenServer.cast(pid, {:store, item})
   end
 
+  @doc """
+  Inspect the inner state of the given data worker
+  """
+  @spec inspect(pid, atom()) :: term()
+  def inspect(pid, field) do
+    GenServer.call(pid, {:inspect, field})
+  end
+
   def init(spider_name: spider_name, crawl_id: crawl_id) do
     Logger.metadata(spider_name: spider_name, crawl_id: crawl_id)
     {:ok, %Worker{spider_name: spider_name, crawl_id: crawl_id}}
@@ -50,6 +58,11 @@ defmodule Crawly.DataStorage.Worker do
       end
 
     {:noreply, state}
+  end
+
+  def handle_call({:inspect, field}, _from, state) do
+    msg = {:inspect, Map.get(state, field, nil)}
+    {:reply, msg, state}
   end
 
   def handle_call(:stats, _from, state) do

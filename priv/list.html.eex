@@ -1,0 +1,33 @@
+    <div class="row">
+      <div id="status"></div>
+      <div class="leftcolumn">
+        <div class="card">
+          <h2>Spiders</h2>
+          <table>
+            <tr>
+              <th>Spider name</td>
+              <th>State</td>
+              <th>Items scraped</td>
+              <th>Scheduled Requests</td>
+              <th>Command</td>
+            </tr>
+            <%= for spider <- data do %>
+              <tr>
+                <td><%= spider.name %></td>
+                <td><%= spider.state %></td>
+                <td><a href="/spiders/<%= spider.name %>/items" ><%= spider.scraped %></a> </td>
+                <td><a href="/spiders/<%= spider.name %>/requests" ><%= spider.scheduled %></td>
+                <%= if spider.state == :idle do %>
+                  <td> <input type = "button" onclick = "schedule('<%= spider.name %>')" value = "Schedule"> </td>
+                <% else %>
+                  <td> <input type = "button" onclick = "stop('<%= spider.name %>')" value = "Stop"> </td>
+                <% end %>
+
+              </tr>
+            <% end %>
+          </table>
+        </div>
+      </div>
+      <div class="rightcolumn">
+      </div>
+    </div>

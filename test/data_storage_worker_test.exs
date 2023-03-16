@@ -53,4 +53,9 @@ defmodule DataStorageWorkerTest do
     result = Crawly.DataStorage.stats(:unknown)
     assert result == {:error, :data_storage_worker_not_running}
   end
+
+  test "Can inspect data storage worker state", context do
+    result = Crawly.DataStorage.inspect(context.crawler, :crawl_id)
+    assert {:inspect, "123"} == result
+  end
 end
