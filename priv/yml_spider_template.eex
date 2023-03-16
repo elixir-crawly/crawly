@@ -1,0 +1,35 @@
+defmodule <%= Map.get(spider, "name") %> do
+  use Crawly.Spider
+
+  @impl Crawly.Spider
+  def base_url() do
+    "<%= Map.get(spider, "base_url") %>"
+  end
+
+  @impl Crawly.Spider
+  def init() do
+    [start_urls:
+      [
+        <%= for url <- Map.get(spider, "start_urls") do %>
+        "<%= url %>",
+        <% end %>
+      ]
+    ]
+  end
+
+  @impl Crawly.Spider
+  def parse_item(response) do
+    {:ok, document} = Floki.parse_document(response.body)
+    extracted_items = Enum.map(extract_items(document), fn(item) -> Map.put(item, "url", response.request_url) end)
+    next_requests = extract_requests(document)
+    %Crawly.ParsedItem{items: extracted_items, requests: next_requests}
+  end
+
+  def extract_requests(document) do
+    Crawly.Utils.extract_requests(document, ~s(<%= Poison.encode!( get_in( spider, ["links_to_follow"]) )%>), base_url() )
+  end
+
+  def extract_items(document) do
+    Crawly.Utils.extract_items(document, ~s(<%= Poison.encode!( get_in( spider, ["fields"]) )%>))
+  end
+end

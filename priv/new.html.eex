@@ -1,0 +1,24 @@
+    <div class="row">
+      <div id="status">
+        <%= Map.get(data, "errors") %>
+      </div>
+      <div class="leftcolumn">
+        <div class="card">
+
+          <h4>Define your spider here:</h4>
+          <form method="POST">
+            <input type="hidden" name="spider_name" value='<%= Map.get(data, "spider_name") %>' />
+            <textarea name="spider" rows="20" cols="150"><%= Map.get(data, "spider") %></textarea>
+            <br />
+            <input type="submit" />
+          </form>
+
+          <%= if Map.get(data, "spider_name") != "" do %>
+          <h4>Delete this spider</h4>
+          <input type="button" value="Delete" onclick='delete_req("/spider/<%= Map.get(data, ~s(spider_name)) %>")'>
+          <% end %>
+        </div>
+      </div>
+      <div class="rightcolumn">
+      </div>
+    </div>

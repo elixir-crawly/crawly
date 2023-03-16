@@ -58,4 +58,4 @@ RUN mkdir /app/spiders
 
 EXPOSE 4001
 
-ENTRYPOINT [ "/app/bin/crawly", "start_iex" ]
+ENTRYPOINT [ "/app/bin/crawly", "start" ]

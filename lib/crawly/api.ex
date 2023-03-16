@@ -3,8 +3,48 @@ defmodule Crawly.API.Router do
   Crawly HTTP API. Allows to schedule/stop/get_stats
   of all running spiders.
   """
+
+  require Logger
+
   use Plug.Router
 
+  @spider_validation_schema %{
+    "type" => "object",
+    "additionalProperties" => false,
+    "required" => ["name", "links_to_follow", "fields", "start_urls"],
+    "properties" => %{
+      "name" => %{"type" => "string"},
+      "base_url" => %{"type" => "string", "format" => "uri"},
+      "start_urls" => %{
+        "type" => "array",
+        "items" => %{"type" => "string", "format" => "uri"}
+      },
+      "links_to_follow" => %{
+        "type" => "array",
+        "items" => %{
+          "type" => "object",
+          "additionalProperties" => false,
+          "properties" => %{
+            "selector" => %{"type" => "string"},
+            "attribute" => %{"type" => "string"}
+          }
+        }
+      },
+      "fields" => %{
+        "type" => "array",
+        "items" => %{
+          "type" => "object",
+          "additionalProperties" => false,
+          "properties" => %{
+            "name" => %{"type" => "string"},
+            "selector" => %{"type" => "string"}
+          }
+        }
+      }
+    }
+  }
+
+  plug(Plug.Parsers, parsers: [:urlencoded, :multipart])
   plug(:match)
   plug(:dispatch)
 
@@ -41,17 +81,106 @@ defmodule Crawly.API.Router do
                 {num, scheduled}
             end
 
+          editable? =
+            case Crawly.SpidersStorage.get(spider_name) do
+              {:error, :not_found} -> false
+              {:ok, _value} -> true
+              _ -> false
+            end
+
           %{
             name: spider_name,
             scheduled: scheduled,
             scraped: scraped,
-            state: state
+            state: state,
+            editable?: editable?
           }
         end
       )
 
     response = render_template("list.html.eex", data: spiders_list)
     send_resp(conn, 200, response)
+  end
+
+  get "/new" do
+    spider_name = Map.get(conn.query_params, "spider_name", "")
+
+    spider_data =
+      case spider_name do
+        "" ->
+          {:ok, ""}
+
+        name ->
+          Crawly.SpidersStorage.get(name)
+      end
+
+    case spider_data do
+      {:error, :not_found} ->
+        send_resp(conn, 404, "Page not found")
+
+      {:ok, value} ->
+        response =
+          render_template("new.html.eex",
+            data: %{
+              "errors" => "",
+              "spider" => value,
+              "spider_name" => spider_name
+            }
+          )
+
+        send_resp(conn, 200, response)
+    end
+  end
+
+  post "/new" do
+    name_from_query_params = Map.get(conn.query_params, "spider_name", "")
+    spider_yml = Map.get(conn.body_params, "spider")
+
+    # Validate incoming data with json schema
+    validation_result =
+      case validate_new_spider_request(spider_yml) do
+        {:error, errors} ->
+          {:error, "#{inspect(errors)}"}
+
+        %{"name" => spider_name} = yml ->
+          # Check if spider already registered, but allow editing spiders
+          case {is_spider_registered(spider_name),
+                spider_name == name_from_query_params} do
+            {true, false} ->
+              {:error,
+               "Spider with this name already exists. Try editing it instead of overriding"}
+
+            _ ->
+              {:ok, yml}
+          end
+      end
+
+    case validation_result do
+      {:ok, %{"name" => spider_name} = _parsed_yml} ->
+        :ok = Crawly.SpidersStorage.put(spider_name, spider_yml)
+
+        # Now we can finally load the spider
+        Crawly.Utils.load_yml_spider(spider_yml)
+
+        # Now we can redirect to the homepage
+        conn
+        |> put_resp_header("location", "/")
+        |> send_resp(conn.status || 302, "Redirect")
+
+      {:error, errors} ->
+        # Show errors and spider
+        data = %{"errors" => errors, "spider" => spider_yml}
+        response = render_template("new.html.eex", data: data)
+        send_resp(conn, 400, response)
+    end
+  end
+
+  delete "/spider/:spider_name" do
+    Crawly.SpidersStorage.delete(spider_name)
+
+    conn
+    |> put_resp_header("location", "/")
+    |> send_resp(conn.status || 302, "Redirect")
   end
 
   get "/spiders" do
@@ -192,7 +321,7 @@ defmodule Crawly.API.Router do
     loaded_spiders =
       case Crawly.load_spiders() do
         {:ok, spiders} -> spiders
-        {:error, _} -> []
+        {:error, :no_spiders_dir} -> []
       end
 
     send_resp(
@@ -204,6 +333,21 @@ defmodule Crawly.API.Router do
 
   match _ do
     send_resp(conn, 404, "Oops! Page not found!")
+  end
+
+  defp validate_new_spider_request(maybe_yml) do
+    with {:ok, yml} <- YamlElixir.read_from_string(maybe_yml),
+         :ok <- ExJsonSchema.Validator.validate(@spider_validation_schema, yml) do
+      yml
+    else
+      {:error, _err} = err -> err
+    end
+  end
+
+  defp is_spider_registered(name) do
+    module_name_str = "Elixir." <> name
+    module_name = String.to_atom(module_name_str)
+    Enum.member?(Crawly.Utils.list_spiders(), module_name)
   end
 
   defp render_template(template_name, assigns) do

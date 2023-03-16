@@ -2,6 +2,9 @@ defmodule Crawly.Utils do
   @moduledoc ~S"""
   Utility functions for Crawly
   """
+
+  @spider_storage_key :crawly_spiders
+
   require Logger
 
   @doc """
@@ -153,9 +156,7 @@ defmodule Crawly.Utils do
   """
   @spec list_spiders() :: [module()]
   def list_spiders() do
-    modules =
-      get_modules_from_applications() ++
-        :persistent_term.get(:crawly_spiders, [])
+    modules = get_modules_from_applications() ++ registered_spiders()
 
     Enum.reduce(
       modules,
@@ -206,9 +207,6 @@ defmodule Crawly.Utils do
       dir ->
         {:ok, files} = File.ls(dir)
 
-        # Remove all previous spiders data from the persistent_term storage
-        :persistent_term.put(:crawly_spiders, [])
-
         Enum.each(
           files,
           fn file ->
@@ -216,13 +214,126 @@ defmodule Crawly.Utils do
             [{module, _binary}] = Code.compile_file(path)
 
             # Use persistent term to store information about loaded spiders
-            spiders = :persistent_term.get(:crawly_spiders, [])
-            :persistent_term.put(:crawly_spiders, [module | spiders])
+            register_spider(module)
           end
         )
-    end
 
-    {:ok, :persistent_term.get(:crawly_spiders, [])}
+        {:ok, registered_spiders()}
+    end
+  end
+
+  def load_yml_spiders() do
+    Enum.each(
+      Crawly.SpidersStorage.list(),
+      fn spider ->
+        {:ok, spider_yml} = Crawly.SpidersStorage.get(spider)
+        Crawly.Utils.load_yml_spider(spider_yml)
+      end
+    )
+  end
+
+  @doc """
+  Register a given spider (so it's visible in the spiders list)
+  """
+  @spec register_spider(module()) :: :ok
+  def register_spider(name) do
+    known_spiders = :persistent_term.get(@spider_storage_key, [])
+    :persistent_term.put(@spider_storage_key, Enum.uniq([name | known_spiders]))
+  end
+
+  @doc """
+  Return a list of registered spiders
+  """
+  @spec registered_spiders() :: [module()]
+  def registered_spiders(), do: :persistent_term.get(@spider_storage_key, [])
+
+  @doc """
+  Remove all previousely registered dynamic spiders
+  """
+  @spec clear_registered_spiders() :: :ok
+  def clear_registered_spiders() do
+    :persistent_term.put(@spider_storage_key, [])
+  end
+
+  @doc """
+  A helper function that is used by YML spiders
+
+  Extract requests from a given document using a given set of selectors
+  builds absolute_urls.
+
+  Selectors are aprovided as a JSON encoded list of maps, that contain
+  selector and attribute keys. E.g.
+  selectors = [%{"selector" => "a", "attribute" => "href"}]
+
+  Base URL is required to build absolute url from extracted links
+  """
+  @spec extract_requests(document, selectors, base_url) :: requests
+        when document: [Floki.html_node()],
+             selectors: binary(),
+             base_url: binary(),
+             requests: [Crawly.Request.t()]
+  def extract_requests(document, selectors, base_url) do
+    selectors = Poison.decode!(selectors)
+
+    Enum.reduce(
+      selectors,
+      [],
+      fn %{"selector" => selector, "attribute" => attr}, acc ->
+        links = document |> Floki.find(selector) |> Floki.attribute(attr)
+        urls = Crawly.Utils.build_absolute_urls(links, base_url)
+        requests = Crawly.Utils.requests_from_urls(urls)
+        requests ++ acc
+      end
+    )
+  end
+
+  @doc """
+  A helper function that is used by YML spiders
+
+  Extract items (actually one item) from a given document using a
+  given set of selectors.
+
+  Selectors are aprovided as a JSON encoded list of maps, that contain
+  name and selector binary keys. For example:
+
+  field_selectors = [%{"selector" => "h1", "name" => "title"}]
+  """
+  @spec extract_items(document, field_selectors) :: items
+        when document: [Floki.html_node()],
+             field_selectors: binary(),
+             items: [map()]
+  def extract_items(document, field_selectors) do
+    fields = Poison.decode!(field_selectors)
+
+    item =
+      Enum.reduce(
+        fields,
+        %{},
+        fn %{"name" => name, "selector" => selector}, acc ->
+          field_value = document |> Floki.find(selector) |> Floki.text()
+          Map.put(acc, name, field_value)
+        end
+      )
+
+    [item]
+  end
+
+  @spec load_yml_spider(binary()) :: {term(), Code.binding()}
+  def load_yml_spider(yml_binary) do
+    {:ok, yml_map} = YamlElixir.read_from_string(yml_binary)
+
+    path =
+      Path.join(
+        :code.priv_dir(:crawly),
+        "./yml_spider_template.eex"
+      )
+
+    template = EEx.eval_file(path, spider: yml_map)
+
+    name = String.to_atom("Elixir." <> Map.get(yml_map, "name"))
+    register_spider(name)
+
+    Code.eval_string(template)
   end
 
   ##############################################################################
