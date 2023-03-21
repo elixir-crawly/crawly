@@ -188,6 +188,20 @@ defmodule Crawly.API.Router do
     send_resp(conn, 200, msg)
   end
 
+  get "/load-spiders" do
+    loaded_spiders =
+      case Crawly.load_spiders() do
+        {:ok, spiders} -> spiders
+        {:error, _} -> []
+      end
+
+    send_resp(
+      conn,
+      200,
+      "Loaded following spiders from $SPIDERS_DIR: #{inspect(loaded_spiders)}"
+    )
+  end
+
   match _ do
     send_resp(conn, 404, "Oops! Page not found!")
   end

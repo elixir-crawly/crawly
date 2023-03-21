@@ -3,6 +3,8 @@ defmodule Crawly do
   Crawly is a fast high-level web crawling & scraping framework for Elixir.
   """
 
+  require Logger
+
   @doc """
   Fetches a given url. This function is mainly used for the spiders development
   when you need to get individual pages and parse them.
@@ -128,4 +130,12 @@ defmodule Crawly do
   """
   @spec list_spiders() :: [module()]
   def list_spiders(), do: Crawly.Utils.list_spiders()
+
+  @doc """
+  Loads spiders from a given directory. Store thm in persistant term under :spiders
+  """
+  @spec load_spiders() :: {:ok, [module()]} | {:error, :no_spiders_dir}
+  def load_spiders() do
+    Crawly.Utils.load_spiders()
+  end
 end

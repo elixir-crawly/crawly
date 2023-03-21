@@ -133,6 +133,54 @@ historical archival.
    $ cat /tmp/BooksToScrape_<timestamp>.jl
    ```
 
+## Running Crawly as a standalone application
+
+It's possible to run Crawly as a standalone application for the cases when you just need the data and don't want to install Elixir and all other dependencies.
+
+Follow these steps in order to bootstrap it with the help of Docker:
+
+ 1. Make a project folder on your filesystem: `mkdir standalone_quickstart`
+ 2. Create a spider inside the folder created on the step 1. Ideally in a subfolder called spiders. For the example purposes we will re-use the: https://github.com/elixir-crawly/crawly/blob/8926f41df3ddb1a84099543293ec3345b01e2ba5/examples/quickstart/lib/quickstart/books_spider.ex
+
+ 3. Create a configuration file (erlang configuration file format), for example:
+    ``` erlang
+      [{crawly, [
+          {closespider_itemcount, 500},
+          {closespider_timeout, 20},
+          {concurrent_requests_per_domain, 2},
+
+          {middlewares, [
+                  'Elixir.Crawly.Middlewares.DomainFilter',
+                  'Elixir.Crawly.Middlewares.UniqueRequest',
+                  'Elixir.Crawly.Middlewares.RobotsTxt',
+                  {'Elixir.Crawly.Middlewares.UserAgent', [
+                      {user_agents, [
+                          <<"Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0">>,
+                          <<"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36">>
+                          ]
+                      }]
+                  }
+              ]
+          },
+
+          {pipelines, [
+                  {'Elixir.Crawly.Pipelines.Validate', [{fields, [title, price, title, url]}]},
+                  {'Elixir.Crawly.Pipelines.DuplicatesFilter', [{item_id, title}]},
+                  'Elixir.Crawly.Pipelines.Experimental.Preview',
+                  {'Elixir.Crawly.Pipelines.JSONEncoder'}
+              ]
+          }]
+      }].
+    ```
+
+    ** TODO - it would be nice to switch it to human readable format, e.g. YML
+
+  4. Now it's time to the Docker container:
+    ``` bash
+        docker run -e "SPIDERS_DIR=/app/spiders" -it -p 4001:4001 -v $(pwd)/spiders:/app/spiders -v $(pwd)/crawly.config:/app/config/crawly.config crawly:latest
+    ```
+  5. Now you can open the management interface and manage your spiders from there: localhost:4001. [Management Interface](#management-ui)
+
 ## Need more help?
 
 Please use discussions for all conversations related to the project
@@ -146,7 +194,7 @@ of asynchronous elements (for example parts loaded by AJAX).
 You can read more here:
 - [Browser Rendering](https://hexdocs.pm/crawly/basic_concepts.html#browser-rendering)
 
-## Simple management UI (New in 0.15.0)
+## Simple management UI (New in 0.15.0) {#management-ui}
 Crawly provides a simple management UI by default on the `localhost:4001`
 
 It allows to:

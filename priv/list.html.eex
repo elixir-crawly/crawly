@@ -3,6 +3,7 @@
       <div class="leftcolumn">
         <div class="card">
           <h2>Spiders</h2>
+
           <table>
             <tr>
               <th>Spider name</td>
@@ -26,6 +27,8 @@
               </tr>
             <% end %>
           </table>
+          <br />
+          <input type = "button" onclick = "get('Reload', '/load-spiders')" value = "Reload spiders">
         </div>
       </div>
       <div class="rightcolumn">

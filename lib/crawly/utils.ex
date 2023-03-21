@@ -148,11 +148,17 @@ defmodule Crawly.Utils do
 
   @doc """
   Returns a list of known modules which implements Crawly.Spider behaviour
+
+  Also search for module names under the :spiders key in persistent_term
   """
   @spec list_spiders() :: [module()]
-  def list_spiders do
+  def list_spiders() do
+    modules =
+      get_modules_from_applications() ++
+        :persistent_term.get(:crawly_spiders, [])
+
     Enum.reduce(
-      get_modules_from_applications(),
+      modules,
       [],
       fn mod, acc ->
         try do
@@ -178,6 +184,45 @@ defmodule Crawly.Utils do
         end
       end
     )
+  end
+
+  @doc """
+  Loads spiders from a given directory. Store thm in persistant term under :spiders
+
+  This allows to readup spiders stored in specific directory which is not a part
+  of Crawly application
+  """
+  @spec load_spiders() :: {:ok, [module()]} | {:error, :no_spiders_dir}
+  def load_spiders() do
+    case System.get_env("SPIDERS_DIR", nil) do
+      nil ->
+        Logger.error("""
+          SPIDERS_DIR environment variable needs to be set in order to load
+          spiders dynamically
+        """)
+
+        {:error, :no_spiders_dir}
+
+      dir ->
+        {:ok, files} = File.ls(dir)
+
+        # Remove all previous spiders data from the persistent_term storage
+        :persistent_term.put(:crawly_spiders, [])
+
+        Enum.each(
+          files,
+          fn file ->
+            path = Path.join(dir, file)
+            [{module, _binary}] = Code.compile_file(path)
+
+            # Use persistent term to store information about loaded spiders
+            spiders = :persistent_term.get(:crawly_spiders, [])
+            :persistent_term.put(:crawly_spiders, [module | spiders])
+          end
+        )
+    end
+
+    {:ok, :persistent_term.get(:crawly_spiders, [])}
   end
 
   ##############################################################################
