@@ -1,8 +1,12 @@
 defmodule UtilsTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   setup do
-    on_exit(fn -> :meck.unload() end)
+    on_exit(fn ->
+      System.delete_env("SPIDERS_DIR")
+      :persistent_term.put(:crawly_spiders, [])
+      :meck.unload()
+    end)
 
     :ok
   end
@@ -93,6 +97,18 @@ defmodule UtilsTest do
              Crawly.Utils.list_spiders(),
              fn x -> x == UtilsTestSpider end
            )
+  end
+
+  test "load spiders returns result if SPIDERS_DIR is not set" do
+    assert {:ok, []} == Crawly.Utils.load_spiders()
+  end
+
+  test "Can load modules set in SPIDERS_DIR" do
+    System.put_env("SPIDERS_DIR", "./examples/quickstart/lib/quickstart")
+    {:ok, loaded_modules} = Crawly.Utils.load_spiders()
+
+    assert Enum.sort([Quickstart.Application, BooksToScrape]) ==
+             Enum.sort(loaded_modules)
   end
 
   test "Invalid module options format" do

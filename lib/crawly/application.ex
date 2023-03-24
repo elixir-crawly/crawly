@@ -6,6 +6,9 @@ defmodule Crawly.Application do
   use Application
 
   def start(_type, _args) do
+    # Try to load spiders from the SPIDERS_DIR (for crawly standalone setup)
+    Crawly.load_spiders()
+
     import Supervisor.Spec, warn: false
     # List all child processes to be supervised
 
