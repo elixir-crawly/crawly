@@ -290,6 +290,21 @@ defmodule UtilsTest do
            ] == Map.get(parsed_item, :items)
   end
 
+  test "returns log path with expected format" do
+    path = Crawly.Utils.spider_log_path(:spider, "123")
+    assert path == Path.join(["/tmp/spider_logs", "spider", "123"]) <> ".log"
+  end
+
+  test "returns correct log path with atom spider name" do
+    path = Crawly.Utils.spider_log_path(:spider, "123")
+    assert path == Path.join(["/tmp/spider_logs", "spider", "123"]) <> ".log"
+  end
+
+  test "returns correct log path with Elixir. prefix in spider name" do
+    path = Crawly.Utils.spider_log_path(Elixir.Spider, "123")
+    assert path == Path.join(["/tmp/spider_logs", "Spider", "123"]) <> ".log"
+  end
+
   defp expected_request(url) do
     %Crawly.Request{
       url: url,

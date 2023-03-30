@@ -56,10 +56,10 @@ defmodule Crawly.API.Router do
       Enum.map(
         Crawly.list_spiders(),
         fn spider ->
-          state =
+          {crawl_id, state} =
             case Map.get(running_spiders, spider) do
-              {_pid, _job_id} -> :running
-              nil -> :idle
+              {_pid, crawl_id} -> {crawl_id, :running}
+              nil -> {nil, :idle}
             end
 
           spider_name =
@@ -90,6 +90,7 @@ defmodule Crawly.API.Router do
 
           %{
             name: spider_name,
+            crawl_id: crawl_id,
             scheduled: scheduled,
             scraped: scraped,
             state: state,
@@ -196,6 +197,45 @@ defmodule Crawly.API.Router do
     send_resp(conn, 200, msg)
   end
 
+  get "/spiders/:spider_name/logs/:crawl_id" do
+    spider_name = String.to_existing_atom(spider_name)
+    log_file_path = Crawly.Utils.spider_log_path(spider_name, crawl_id)
+
+    case File.exists?(log_file_path) do
+      true -> Plug.Conn.send_file(conn, 200, log_file_path)
+      false -> send_resp(conn, 404, "Oops! Page not found!")
+    end
+  end
+
+  get "/spiders/:spider_name/items/:crawl_id" do
+    folder =
+      Application.get_env(:crawly, :pipelines, [])
+      |> Keyword.get(Crawly.Pipelines.WriteToFile, [])
+      |> Keyword.get(:folder, "")
+
+    file_paths =
+      case File.ls(folder) do
+        {:ok, list} ->
+          Enum.filter(list, fn path -> String.contains?(path, crawl_id) end)
+
+        {:error, _} ->
+          []
+      end
+
+    case file_paths do
+      [] ->
+        send_resp(conn, 404, "Oops! Page not found!")
+
+      [file_path] ->
+        full_path = Path.join([folder, file_path])
+        Plug.Conn.send_file(conn, 200, full_path)
+
+      other ->
+        Logger.error("Could not get correct items file: #{inspect(other)}")
+        send_resp(conn, 500, "Unexpected error")
+    end
+  end
+
   get "/spiders/:spider_name/requests" do
     spider_name = String.to_atom("Elixir.#{spider_name}")
 
@@ -213,50 +253,6 @@ defmodule Crawly.API.Router do
     response =
       render_template("requests_list.html.eex",
         requests: result,
-        spider_name: spider_name
-      )
-
-    send_resp(conn, 200, response)
-  end
-
-  get "/spiders/:spider_name/items" do
-    pipelines = Application.get_env(:crawly, :pipelines)
-
-    preview_enabled? =
-      Enum.any?(
-        pipelines,
-        fn
-          Crawly.Pipelines.Experimental.Preview -> true
-          {Crawly.Pipelines.Experimental.Preview, _} -> true
-          _ -> false
-        end
-      )
-
-    spider_name = String.to_atom("Elixir.#{spider_name}")
-
-    # According to the preview item pipeline we store items under the field below
-    # use inspect function to get items here
-    items_preview_field = :"Elixir.Crawly.Pipelines.Experimental.Preview"
-
-    result =
-      case Crawly.DataStorage.inspect(spider_name, items_preview_field) do
-        {:inspect, nil} ->
-          []
-
-        {:inspect, result} ->
-          result
-
-        {:error, _} ->
-          []
-
-        nil ->
-          []
-      end
-
-    response =
-      render_template("items_list.html.eex",
-        items: result,
-        preview_enabled?: preview_enabled?,
         spider_name: spider_name
       )
 

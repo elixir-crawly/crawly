@@ -69,12 +69,14 @@ defmodule Crawly.Pipelines.WriteToFile do
 
     :ok = maybe_create_folder(folder)
 
+    # Use crawl_id in filename from now on to identify crawls
+    crawl_id = Map.get(state, :crawl_id, "no_crawl_id")
     extension = Map.get(opts, :extension, "jl")
 
     filename =
       case Map.get(opts, :include_timestamp, false) do
         false ->
-          "#{inspect(state.spider_name)}.#{extension}"
+          "#{inspect(state.spider_name)}_#{crawl_id}.#{extension}"
 
         true ->
           ts_string =
@@ -82,7 +84,7 @@ defmodule Crawly.Pipelines.WriteToFile do
             |> NaiveDateTime.to_string()
             |> String.replace(~r/( |-|:|\.)/, "_")
 
-          "#{inspect(state.spider_name)}_#{ts_string}.#{extension}"
+          "#{inspect(state.spider_name)}_#{ts_string}_#{crawl_id}.#{extension}"
       end
 
     fd = open_fd(folder, filename)

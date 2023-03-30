@@ -190,6 +190,6 @@ defmodule Pipelines.WriteToFileTest do
 
     # run the pipeline
     _result = Crawly.Utils.pipe(pipelines, item, state)
-    assert_receive "/tmp/MySpider.csv"
+    assert_receive "/tmp/MySpider_no_crawl_id.csv"
   end
 end
