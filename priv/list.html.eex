@@ -2,7 +2,8 @@
       <div id="status"></div>
       <div class="leftcolumn">
         <div class="card">
-          <h2>Spiders</h2>
+          <h2>Spiders <p floa></p></h2>
+
 
           <table>
             <tr>
@@ -11,6 +12,7 @@
               <th>Items scraped</td>
               <th>Scheduled Requests</td>
               <th>Command</td>
+              <th>Modify</td>
             </tr>
             <%= for spider <- data do %>
               <tr>
@@ -23,12 +25,20 @@
                 <% else %>
                   <td> <input type = "button" onclick = "stop('<%= spider.name %>')" value = "Stop"> </td>
                 <% end %>
-
+                <%= if spider.editable? == :true do %>
+                <td>
+                  <a href="/new?spider_name=<%= spider.name %>">Edit</a>
+                </td>
+                <% else %>
+                <td> not editable </td>
+                <% end %>
               </tr>
             <% end %>
           </table>
           <br />
+
           <input type = "button" onclick = "get('Reload', '/load-spiders')" value = "Reload spiders">
+          <input type = "button" value="Create new spider" onclick="window.location.href = '/new';"/>
         </div>
       </div>
       <div class="rightcolumn">

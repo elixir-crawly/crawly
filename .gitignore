@@ -12,3 +12,4 @@ erl_crash.dump
 .idea/
 crawly.iml
 .write_to_filetests
+dets_spiders_storage

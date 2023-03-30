@@ -9,6 +9,12 @@ defmodule Crawly.Application do
     # Try to load spiders from the SPIDERS_DIR (for crawly standalone setup)
     Crawly.load_spiders()
 
+    # Open dets storage to store spiders data
+    Crawly.SpidersStorage.init()
+
+    # Load spiders stored in the SpidersStorage
+    Crawly.Utils.load_yml_spiders()
+
     import Supervisor.Spec, warn: false
     # List all child processes to be supervised
 

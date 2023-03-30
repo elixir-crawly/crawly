@@ -2,6 +2,19 @@
 <html>
   <head>
     <script type="text/javascript">
+
+      function delete_req(link) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            window.location.href = "/"
+          }
+        };
+      xhttp.open("DELETE", link, true);
+      xhttp.send();
+      }
+
+
       function get(name, link) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -13,7 +26,6 @@
         };
       xhttp.open("GET", link, true);
       xhttp.send();
-
       }
 
       function schedule(name) {
@@ -105,7 +117,7 @@
   </head>
   <body>
     <div class="header">
-      <h1>Crawly Management Tool</h1>
+      <h1><a href="/">Crawly Management Tool</a></h1>
     </div>
     <%= rendered_template %>
   </body>
