@@ -105,8 +105,7 @@ defmodule Crawly.API.Router do
       |> Enum.map(fn crawl_id ->
         {:ok, crawl_info} =
           Crawly.SimpleStorage.get(Crawly.Models.Job, crawl_id)
-
-        crawl_info
+          crawl_info
       end)
       |> Enum.sort(fn a, b ->
         case DateTime.compare(a.start, b.start) do
