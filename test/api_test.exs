@@ -15,8 +15,8 @@ defmodule APITest do
       |> Crawly.API.Router.call(@opts)
     end)
 
-    Crawly.SpidersStorage.delete("TestSpiderYML")
-    Crawly.SpidersStorage.delete("TestSpiderYMLForEdit")
+    Crawly.SimpleStorage.delete(:spiders, "TestSpiderYML")
+    Crawly.SimpleStorage.delete(:spiders, "TestSpiderYMLForEdit")
   end
 
   test "returns welcome" do

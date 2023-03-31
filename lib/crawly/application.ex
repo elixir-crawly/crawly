@@ -9,10 +9,10 @@ defmodule Crawly.Application do
     # Try to load spiders from the SPIDERS_DIR (for crawly standalone setup)
     Crawly.load_spiders()
 
-    # Open dets storage to store spiders data
-    Crawly.SpidersStorage.init()
+    # Start simple storage of crawly
+    Crawly.SimpleStorage.init()
 
-    # Load spiders stored in the SpidersStorage
+    # Load spiders stored in the SimpleStorage
     Crawly.Utils.load_yml_spiders()
 
     import Supervisor.Spec, warn: false

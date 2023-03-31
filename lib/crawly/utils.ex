@@ -224,9 +224,9 @@ defmodule Crawly.Utils do
 
   def load_yml_spiders() do
     Enum.each(
-      Crawly.SpidersStorage.list(),
+      Crawly.SimpleStorage.list(:spiders),
       fn spider ->
-        {:ok, spider_yml} = Crawly.SpidersStorage.get(spider)
+        {:ok, spider_yml} = Crawly.SimpleStorage.get(:spiders, spider)
         Crawly.Utils.load_yml_spider(spider_yml)
       end
     )
