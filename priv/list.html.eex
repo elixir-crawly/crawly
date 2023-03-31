@@ -13,7 +13,7 @@
               <th>Command</td>
               <th>Modify</td>
             </tr>
-            <%= for spider <- data do %>
+            <%= for spider <- spiders_list do %>
               <tr>
                 <td><%= spider.name %></td>
                 <td><%= spider.state %> </td>
@@ -52,6 +52,38 @@
           <input type = "button" value="Create new spider" onclick="window.location.href = '/new';"/>
         </div>
       </div>
+
+      <hr />
+      <h2> Jobs log </h2>
+      <table>
+        <tr>
+          <th>Spider name</th>
+          <th>Job Id</th>
+          <th>Scraped items</th>
+          <th>StartTime</th>
+          <th>EndTime</th>
+          <th> Logs </th>
+          <th> Stop reason </th>
+        </tr>
+        <%= for job <- jobs_log do %>
+        <tr>
+          <td> <%= job.spider_name %> </td>
+          <td> <%= job.id %> </td>
+          <td>
+            <a href="/spiders/<%= job.spider_name %>/items/<%= job.id %>" >
+              <%= job.scraped_items %>
+            </a>
+          </td>
+          <td> <%= job.start %> </td>
+          <td><%= job.end %></td>
+          <td>
+            <a href="/spiders/<%= job.spider_name %>/logs/<%= job.id %>"> Logs </a>
+          </td>
+          <td><%= job.stop_reason %></td>
+        </tr>
+        <% end %>
+
+      </table>
       <div class="rightcolumn">
       </div>
     </div>
