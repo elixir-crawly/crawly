@@ -44,7 +44,7 @@ compatibility is kept with a help of macro which always generates `init/1`.
 `init(options)` same as `init/0` but also takes options (which can be passed from the engine during
 the spider start).
 
-`base_url()` - defines a base_url of the given Spider. This function is used in order to filter out all requests which are going outside of the crawled website.
+`base_url()` - defines a base_url of the given Spider. This function is used by the DomainFilter in order to filter out all requests which are going outside of the crawled website.
 
 `parse_item(response)` - a function which defines how a given response is translated into the `Crawly.ParsedItem` structure. On the high level this function defines the extraction rules for both Items and Requests.
 
@@ -118,12 +118,13 @@ Note that all request configuration options for `HTTPoison`, such as proxy, ssl,
 
 Built-in middlewares:
 
-1. `Crawly.Middlewares.DomainFilter` - this middleware will disable scheduling for all requests leading outside of the crawled site.
-2. `Crawly.Middlewares.RobotsTxt` - this middleware ensures that Crawly respects the robots.txt defined by the target website.
-3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly will not schedule the same URL(request) multiple times.
-4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
-5. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
-6. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.
+1. `Crawly.Middlewares.DomainFilter` - this middleware will disable scheduling for all requests leading outside of the crawled site, based on base_url.
+2. `Crawly.Middlewares.SameDomainFilter` - this middleware filters by domain as well but does not require base_url to be set, instead the start_url is considered.
+3. `Crawly.Middlewares.RobotsTxt` - this middleware ensures that Crawly respects the robots.txt defined by the target website.
+4. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly will not schedule the same URL(request) multiple times.
+5. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
+6. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
+7. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.
    Example:
    ```elixir
     {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]},
