@@ -99,7 +99,28 @@ defmodule Crawly.API.Router do
         end
       )
 
-    response = render_template("list.html.eex", data: spiders_list)
+    jobs_log =
+      Crawly.Models.Job
+      |> Crawly.SimpleStorage.list()
+      |> Enum.map(fn crawl_id ->
+        {:ok, crawl_info} =
+          Crawly.SimpleStorage.get(Crawly.Models.Job, crawl_id)
+
+        crawl_info
+      end)
+      |> Enum.sort(fn a, b ->
+        case DateTime.compare(a.start, b.start) do
+          :gt -> true
+          _ -> false
+        end
+      end)
+
+    response =
+      render_template("list.html.eex",
+        spiders_list: spiders_list,
+        jobs_log: jobs_log
+      )
+
     send_resp(conn, 200, response)
   end
 
@@ -275,7 +296,7 @@ defmodule Crawly.API.Router do
 
   get "/spiders/:spider_name/stop" do
     spider_name = String.to_atom("Elixir.#{spider_name}")
-    result = Crawly.Engine.stop_spider(spider_name)
+    result = Crawly.Engine.stop_spider(spider_name, :manual_stop)
 
     msg =
       case result do

@@ -196,6 +196,9 @@ defmodule Crawly.Engine do
     {msg, new_started_spiders} =
       case result do
         {:ok, pid} ->
+          # Insert information about the job into storage
+          Crawly.Models.Job.new(crawl_id, spider_name)
+
           {:ok, Map.put(state.started_spiders, spider_name, {pid, crawl_id})}
 
         {:error, _} = err ->
@@ -219,6 +222,10 @@ defmodule Crawly.Engine do
             nil -> :ignore
             fun -> apply(fun, [spider_name, crawl_id, reason])
           end
+
+          # Update jobs log information
+          {:stored_items, num} = Crawly.DataStorage.stats(spider_name)
+          Crawly.Models.Job.update(crawl_id, num, reason)
 
           Crawly.EngineSup.stop_spider(pid)
 
