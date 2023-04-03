@@ -14,7 +14,6 @@
       xhttp.send();
       }
 
-
       function get(name, link) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
