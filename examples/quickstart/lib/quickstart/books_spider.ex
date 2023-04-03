@@ -2,12 +2,12 @@ defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://books.toscrape.com/"
-
-  @impl Crawly.Spider
   def init() do
     [start_urls: ["https://books.toscrape.com/"]]
   end
+
+  @impl Crawly.Spider
+  def base_url(), do: ""
 
   @impl Crawly.Spider
   def parse_item(response) do
