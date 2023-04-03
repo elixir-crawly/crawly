@@ -42,7 +42,8 @@ defmodule Middlewares.SameDomainFilterTest do
     middlewares = [Crawly.Middlewares.SameDomainFilter]
 
     req = %Crawly.Request{
-      url: "https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html",
+      url:
+        "https://www.erlang-solutions.com/blog/web-scraping-with-elixir.html",
       prev_response: %HTTPoison.Response{request_url: @base_url}
     }
 

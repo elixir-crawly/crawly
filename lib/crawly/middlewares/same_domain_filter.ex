@@ -20,7 +20,8 @@ defmodule Crawly.Middlewares.SameDomainFilter do
   require Logger
 
   def run(request, state, _opts \\ []) do
-    base_url = get_in(request, [Access.key(:prev_response), Access.key(:request_url)])
+    base_url =
+      get_in(request, [Access.key(:prev_response), Access.key(:request_url)])
 
     case base_url do
       nil ->
@@ -33,7 +34,10 @@ defmodule Crawly.Middlewares.SameDomainFilter do
 
         case request_host != nil and base_host == request_host do
           false ->
-            Logger.debug("Dropping request: #{inspect(request.url)} (domain filter)")
+            Logger.debug(
+              "Dropping request: #{inspect(request.url)} (domain filter)"
+            )
+
             {false, state}
 
           true ->
