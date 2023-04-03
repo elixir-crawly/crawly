@@ -82,7 +82,7 @@ defmodule Crawly.API.Router do
             end
 
           editable? =
-            case Crawly.SpidersStorage.get(spider_name) do
+            case Crawly.SimpleStorage.get(:spiders, spider_name) do
               {:error, :not_found} -> false
               {:ok, _value} -> true
               _ -> false
@@ -112,7 +112,7 @@ defmodule Crawly.API.Router do
           {:ok, ""}
 
         name ->
-          Crawly.SpidersStorage.get(name)
+          Crawly.SimpleStorage.get(:spiders, name)
       end
 
     case spider_data do
@@ -158,7 +158,7 @@ defmodule Crawly.API.Router do
 
     case validation_result do
       {:ok, %{"name" => spider_name} = _parsed_yml} ->
-        :ok = Crawly.SpidersStorage.put(spider_name, spider_yml)
+        :ok = Crawly.SimpleStorage.put(:spiders, spider_name, spider_yml)
 
         # Now we can finally load the spider
         Crawly.Utils.load_yml_spider(spider_yml)
@@ -177,7 +177,7 @@ defmodule Crawly.API.Router do
   end
 
   delete "/spider/:spider_name" do
-    Crawly.SpidersStorage.delete(spider_name)
+    Crawly.SimpleStorage.delete(:spiders, spider_name)
 
     conn
     |> put_resp_header("location", "/")
