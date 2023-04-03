@@ -1,0 +1,1 @@
+{"title": "My book", "price": 10}

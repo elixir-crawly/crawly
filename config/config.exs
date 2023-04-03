@@ -2,7 +2,12 @@
 # and its dependencies with the aid of the Mix.Config module.
 import Config
 
+config :logger,
+  backends: [:console, {LoggerFileBackend, :info_log}]
+
 config :crawly,
+  log_dir: "/tmp/spider_logs",
+  log_to_file: true,
   fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},
   retry: [
     retry_codes: [400],
@@ -29,9 +34,10 @@ config :crawly,
      ]}
   ],
   pipelines: [
-    {Crawly.Pipelines.Validate, fields: [:title, :author, :time, :url]},
-    {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
-    Crawly.Pipelines.JSONEncoder
+    {Crawly.Pipelines.Validate, fields: ["title", "body", "url"]},
+    {Crawly.Pipelines.DuplicatesFilter, item_id: "title"},
+    Crawly.Pipelines.JSONEncoder,
+    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "jl"}
   ]
 
 import_config "#{Mix.env()}.exs"

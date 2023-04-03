@@ -17,6 +17,6 @@ jobs:
       - run: mix local.rebar --force
       - run: mix deps.get
       - run: mix format --check-formatted
-      - run: mix compile --warnings-as-errors
+      - run: MIX_ENV=test mix compile --warnings-as-errors
       - run: MIX_ENV=test mix test --trace
       - run: MIX_ENV=test mix coveralls.circle

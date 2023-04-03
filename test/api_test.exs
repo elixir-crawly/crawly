@@ -8,6 +8,8 @@ defmodule APITest do
     Crawly.Engine.stop_spider(TestSpider)
 
     on_exit(fn ->
+      :meck.unload()
+
       :get
       |> conn("/spiders/TestSpider/stop", "")
       |> Crawly.API.Router.call(@opts)
@@ -42,22 +44,6 @@ defmodule APITest do
       |> Crawly.API.Router.call(@opts)
 
     assert conn.resp_body == "Stopped!"
-  end
-
-  test "It's possible to get preview page" do
-    conn =
-      :get
-      |> conn("/spiders/TestSpider/schedule", "")
-      |> Crawly.API.Router.call(@opts)
-
-    assert conn.resp_body == "Started!"
-
-    conn =
-      :get
-      |> conn("/spiders/TestSpider/items", "")
-      |> Crawly.API.Router.call(@opts)
-
-    assert conn.status == 200
   end
 
   test "It's possible to get requests preview page" do
@@ -178,6 +164,7 @@ defmodule APITest do
       |> conn("/new", %{spider: yml})
       |> Crawly.API.Router.call(@opts)
 
+    assert conn.resp_body == "Redirect"
     assert conn.status == 302
 
     conn =
@@ -245,5 +232,79 @@ defmodule APITest do
 
     assert String.contains?(conn.resp_body, "name: TestSpiderYMLForEdit")
     assert String.contains?(conn.resp_body, "https://other.page.com/1")
+  end
+
+  test "/spiders/:spider_name/logs/:crawl_id returns file if it exists" do
+    :meck.expect(Crawly.Utils, :spider_log_path, fn _, _ ->
+      "./test/fixtures/test_crawl123.log"
+    end)
+
+    conn =
+      :get
+      |> conn("/spiders/Test/logs/crawl123", "")
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 200
+  end
+
+  test "/spiders/:spider_name/logs/:crawl_id returns 404 if no file exists" do
+    conn =
+      :get
+      |> conn("/spiders/Test/logs/other_id", "")
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 404
+  end
+
+  test "GET /spiders/:spider_name/items/:crawl_id returns 404 if WriteToFile pipeline is not set" do
+    # :meck.expect(
+    #   Application,
+    #   :get_env,
+    #   fn :crawly, :pipelines, [] ->
+    #     [{Crawly.Pipelines.WriteToFile, [folder: "./"]}]
+    #   end
+    # )
+
+    conn =
+      :get
+      |> conn("/spiders/test_spider/items/123", "")
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 404
+  end
+
+  test "GET /spiders/:spider_name/items/:crawl_id returns 404 if WriteToFile pipeline has no folder" do
+    :meck.expect(
+      Application,
+      :get_env,
+      fn :crawly, :pipelines, [] ->
+        [{Crawly.Pipelines.WriteToFile, [format: "csv"]}]
+      end
+    )
+
+    conn =
+      :get
+      |> conn("/spiders/test_spider/items/123", "")
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 404
+  end
+
+  test "GET /spiders/:spider_name/items/:crawl_id returns file" do
+    :meck.expect(
+      Application,
+      :get_env,
+      fn :crawly, :pipelines, [] ->
+        [{Crawly.Pipelines.WriteToFile, [folder: "./test/fixtures"]}]
+      end
+    )
+
+    conn =
+      :get
+      |> conn("/spiders/test_spider/items/id123", "")
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 200
+    assert conn.resp_body == "{\"title\": \"My book\", \"price\": 10}"
   end
 end

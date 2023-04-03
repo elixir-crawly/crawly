@@ -336,6 +336,48 @@ defmodule Crawly.Utils do
     Code.eval_string(template)
   end
 
+  @doc """
+    Composes the log file path for a given spider and crawl ID.
+
+    Args:
+    spider_name (atom): The name of the spider to create the log path for.
+    crawl_id (string): The ID of the crawl to create the log path for.
+
+    Returns:
+    string: The file path to the log file for the given spider and crawl ID.
+
+    Examples:
+    iex> spider_log_path(:my_spider, "crawl_123")
+    "/tmp/crawly/my_spider/crawl_123.log"
+
+    iex> spider_log_path(:my_spider, "crawl_456")
+    "/tmp/crawly/my_spider/crawl_456.log"
+  """
+  @spec spider_log_path(spider_name, crawl_id) :: path
+        when spider_name: atom(),
+             crawl_id: String.t(),
+             path: String.t()
+  def spider_log_path(spider_name, crawl_id) do
+    spider_name_str =
+      case Atom.to_string(spider_name) do
+        "Elixir." <> name_str -> name_str
+        name_str -> name_str
+      end
+
+    log_dir =
+      Crawly.Utils.get_settings(
+        :log_dir,
+        spider_name,
+        System.tmp_dir()
+      )
+
+    Path.join([
+      log_dir,
+      spider_name_str,
+      crawl_id
+    ]) <> ".log"
+  end
+
   ##############################################################################
   # Private functions
   ##############################################################################
