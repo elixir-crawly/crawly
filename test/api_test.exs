@@ -257,14 +257,6 @@ defmodule APITest do
   end
 
   test "GET /spiders/:spider_name/items/:crawl_id returns 404 if WriteToFile pipeline is not set" do
-    # :meck.expect(
-    #   Application,
-    #   :get_env,
-    #   fn :crawly, :pipelines, [] ->
-    #     [{Crawly.Pipelines.WriteToFile, [folder: "./"]}]
-    #   end
-    # )
-
     conn =
       :get
       |> conn("/spiders/test_spider/items/123", "")
@@ -306,5 +298,61 @@ defmodule APITest do
 
     assert conn.status == 200
     assert conn.resp_body == "{\"title\": \"My book\", \"price\": 10}"
+  end
+
+  test "POST /yml-preview handles unparsable YML files" do
+    yml = """
+        >>name: invalid
+    """
+
+    conn =
+      :post
+      |> conn("/yml-preview", %{spider: yml})
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 200
+    assert conn.resp_body =~ "YamlElixir.ParsingError"
+  end
+
+  test "POST /yml-preview handles valid YML part without spider definitions" do
+    yml = """
+    just a binary
+    """
+
+    conn =
+      :post
+      |> conn("/yml-preview", %{spider: yml})
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 200
+
+    assert conn.resp_body =~
+             "%{error: \"Nothing can be extracted from YML code\"}"
+  end
+
+  test "POST /yml-preview works in case if Crawly.Utils.preview/1 gives correct response" do
+    :meck.expect(
+      Crawly.Utils,
+      :preview,
+      fn _ ->
+        [
+          %{
+            url: "https://example.com",
+            requests: ["https://example.com/1"],
+            items: [%{}]
+          }
+        ]
+      end
+    )
+
+    conn =
+      :post
+      |> conn("/yml-preview", %{spider: "yml"})
+      |> Crawly.API.Router.call(@opts)
+
+    assert conn.status == 200
+
+    assert conn.resp_body =~
+             "%{items: [%{}], requests: [\"https://example.com/1\"], url: \"https://example.com\"}"
   end
 end

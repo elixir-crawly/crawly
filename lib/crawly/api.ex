@@ -44,7 +44,11 @@ defmodule Crawly.API.Router do
     }
   }
 
-  plug(Plug.Parsers, parsers: [:urlencoded, :multipart])
+  plug(Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json],
+    json_decoder: Poison
+  )
+
   plug(:match)
   plug(:dispatch)
 
@@ -194,6 +198,20 @@ defmodule Crawly.API.Router do
         response = render_template("new.html.eex", data: data)
         send_resp(conn, 400, response)
     end
+  end
+
+  post "/yml-preview" do
+    spider = Map.get(conn.body_params, "spider", "")
+    preview_results = Crawly.Utils.preview(spider)
+
+    results =
+      Enum.map(
+        preview_results,
+        fn result -> "#{inspect(result)}" end
+      )
+
+    results = Enum.join(results, "\n\n\n")
+    send_resp(conn, 200, results)
   end
 
   delete "/spider/:spider_name" do

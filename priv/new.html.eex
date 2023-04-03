@@ -1,24 +1,60 @@
-    <div class="row">
-      <div id="status">
-        <%= Map.get(data, "errors") %>
-      </div>
-      <div class="leftcolumn">
-        <div class="card">
-
-          <h4>Define your spider here:</h4>
-          <form method="POST">
-            <input type="hidden" name="spider_name" value='<%= Map.get(data, "spider_name") %>' />
-            <textarea name="spider" rows="20" cols="150"><%= Map.get(data, "spider") %></textarea>
+<div class="row">
+  <div id="status">
+    <%= Map.get(data, "errors") %>
+  </div>
+  <div class="leftcolumn">
+    <div class="card">
+      <h4>Define your spider here:</h4>
+      <table style="border: 0px">
+        <tr>
+          <td>
+            <form method="POST" id="saveSpider">
+              <input type="hidden" name="spider_name" value='<%= Map.get(data, "spider_name") %>' />
+              <label> Spider YML </label>
+              <br />
+              <textarea id="yml" name="spider" rows="20" cols="60"><%= Map.get(data, "spider") %></textarea>
+              <br />
+            </form>
+          </td>
+          <td>
+            <label> Preview results </label>
             <br />
-            <input type="submit" />
-          </form>
-
-          <%= if Map.get(data, "spider_name") != "" do %>
-          <h4>Delete this spider</h4>
-          <input type="button" value="Delete" onclick='delete_req("/spider/<%= Map.get(data, ~s(spider_name)) %>")'>
-          <% end %>
-        </div>
+            <textarea id="preview" value="Preview results" rows="20" cols="60" disabled></textarea>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input type="submit" value="Save" onclick='document.getElementById("saveSpider").submit();'/>
+            <input type="submit" value="Preview" onclick='preview()' />
+          </td>
+          <td>
+          </td>
+        </tr>
+      </table>
+      <div>
       </div>
-      <div class="rightcolumn">
-      </div>
+      <%= if Map.get(data, "spider_name") != "" do %>
+        <h4>Delete this spider</h4>
+        <input type="button" value="Delete" onclick='delete_req("/spider/<%= Map.get(data, ~s(spider_name)) %>")'>
+      <% end %>
     </div>
+  </div>
+  <div class="rightcolumn">
+  </div>
+</div>
+<script type="text/javascript">
+  function preview(){
+    var xhttp = new XMLHttpRequest();
+    var body = JSON.stringify({"spider": document.getElementById("yml").value});
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4) {
+        document.getElementById("preview").innerHTML = xhttp.responseText;
+      }
+    };
+
+    xhttp.open("POST", "/yml-preview", true);
+    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    xhttp.send(body);
+  }
+</script>

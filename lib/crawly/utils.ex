@@ -337,6 +337,65 @@ defmodule Crawly.Utils do
   end
 
   @doc """
+  A helper function that allows to preview spider results based on a given YML
+  """
+  @spec preview(yml) :: [result]
+        when yml: binary(),
+             result:
+               %{url: binary(), items: [map()], requests: [binary()]}
+               | %{error: term()}
+               | %{error: term(), url: binary()}
+  def preview(yml) do
+    case YamlElixir.read_from_string(yml) do
+      {:error, parsing_error} ->
+        [%{error: "#{inspect(parsing_error)}"}]
+
+      {:ok,
+       %{
+         "start_urls" => start_urls,
+         "base_url" => base_url,
+         "fields" => fields,
+         "links_to_follow" => links
+       }} ->
+        fields = Poison.encode!(fields)
+        links = Poison.encode!(links)
+
+        Enum.map(
+          # Work only with 5 first URLs, so we don't timeout
+          Enum.take(start_urls, 5),
+          fn url ->
+            case HTTPoison.get(url) do
+              {:error, reason} ->
+                %{
+                  url: url,
+                  error: "#{inspect(reason)}"
+                }
+
+              {:ok, response} ->
+                {:ok, document} = Floki.parse_document(response.body)
+
+                extracted_urls =
+                  document
+                  |> Crawly.Utils.extract_requests(links, base_url)
+                  |> Enum.map(fn req -> req.url end)
+                  # restrict number of shown urls, so output is not too big
+                  |> Enum.take(10)
+
+                %{
+                  url: url,
+                  items: Crawly.Utils.extract_items(document, fields),
+                  requests: extracted_urls
+                }
+            end
+          end
+        )
+
+      {:ok, _other} ->
+        [%{error: "Nothing can be extracted from YML code"}]
+    end
+  end
+
+  @doc """
     Composes the log file path for a given spider and crawl ID.
 
     Args:
