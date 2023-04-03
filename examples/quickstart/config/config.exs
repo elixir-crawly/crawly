@@ -7,7 +7,7 @@ config :crawly,
   closespider_itemcount: 100,
 
   middlewares: [
-    Crawly.Middlewares.DomainFilter,
+    Crawly.Middlewares.SameDomainFilter,
     Crawly.Middlewares.UniqueRequest,
     {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
   ],
