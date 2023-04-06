@@ -151,8 +151,6 @@ defmodule Crawly.Utils do
 
   @doc """
   Returns a list of known modules which implements Crawly.Spider behaviour
-
-  Also search for module names under the :spiders key in persistent_term
   """
   @spec list_spiders() :: [module()]
   def list_spiders() do
@@ -195,41 +193,23 @@ defmodule Crawly.Utils do
   """
   @spec load_spiders() :: {:ok, [module()]} | {:error, :no_spiders_dir}
   def load_spiders() do
-    case System.get_env("SPIDERS_DIR", nil) do
-      nil ->
-        Logger.error("""
-          SPIDERS_DIR environment variable needs to be set in order to load
-          spiders dynamically
-        """)
+    dir = System.get_env("SPIDERS_DIR", "./spiders")
+    Logger.debug("Using the following folder to load extra spiders: #{dir}")
 
-        {:error, :no_spiders_dir}
+    {:ok, files} = File.ls(dir)
 
-      dir ->
-        {:ok, files} = File.ls(dir)
-
-        Enum.each(
-          files,
-          fn file ->
-            path = Path.join(dir, file)
-            [{module, _binary}] = Code.compile_file(path)
-
-            # Use persistent term to store information about loaded spiders
-            register_spider(module)
-          end
-        )
-
-        {:ok, registered_spiders()}
-    end
-  end
-
-  def load_yml_spiders() do
     Enum.each(
-      Crawly.SimpleStorage.list(:spiders),
-      fn spider ->
-        {:ok, spider_yml} = Crawly.SimpleStorage.get(:spiders, spider)
-        Crawly.Utils.load_yml_spider(spider_yml)
+      files,
+      fn file ->
+        path = Path.join(dir, file)
+        [{module, _binary}] = Code.compile_file(path)
+
+        # Use persistent term to store information about loaded spiders
+        register_spider(module)
       end
     )
+
+    {:ok, registered_spiders()}
   end
 
   @doc """
@@ -316,24 +296,6 @@ defmodule Crawly.Utils do
       )
 
     [item]
-  end
-
-  @spec load_yml_spider(binary()) :: {term(), Code.binding()}
-  def load_yml_spider(yml_binary) do
-    {:ok, yml_map} = YamlElixir.read_from_string(yml_binary)
-
-    path =
-      Path.join(
-        :code.priv_dir(:crawly),
-        "./yml_spider_template.eex"
-      )
-
-    template = EEx.eval_file(path, spider: yml_map)
-
-    name = String.to_atom("Elixir." <> Map.get(yml_map, "name"))
-    register_spider(name)
-
-    Code.eval_string(template)
   end
 
   @doc """

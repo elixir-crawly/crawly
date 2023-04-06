@@ -6,14 +6,10 @@ defmodule Crawly.Application do
   use Application
 
   def start(_type, _args) do
-    # Try to load spiders from the SPIDERS_DIR (for crawly standalone setup)
-    Crawly.load_spiders()
-
     # Start simple storage of crawly
     Crawly.SimpleStorage.init()
-
-    # Load spiders stored in the SimpleStorage
-    Crawly.Utils.load_yml_spiders()
+    # Load spiders from SimpleStorage and SPIDERS_DIR
+    Crawly.load_spiders()
 
     import Supervisor.Spec, warn: false
     # List all child processes to be supervised
