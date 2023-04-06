@@ -141,6 +141,19 @@ default: false
 
 Enables or disables file logging. If set to `true`, make sure to add `:logger_file_backend` https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend as a dependency to your project.
 
+Here is an example of file logger configuration where logs from different spiders are separated into multiple files:
+
+``` elixir
+config :logger,
+  backends: [{LoggerFileBackend, :info_log}]
+
+config :crawly,
+  log_dir: "/tmp/spider_logs",
+  log_to_file: true,
+  ......
+  other configurations
+```
+
 ### port :: pos_integer()
 
 default: 4001
