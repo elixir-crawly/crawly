@@ -305,6 +305,77 @@ defmodule UtilsTest do
     assert path == Path.join(["/tmp/spider_logs", "Spider", "123"]) <> ".log"
   end
 
+  test "returns an error when given invalid YAML code" do
+    yml = "invalid_yaml"
+    result = Crawly.Utils.preview(yml)
+    assert length(result) == 1
+    message = hd(result)
+    assert message.error =~ "Nothing can be extracted from YML code"
+  end
+
+  test "can handle http connection errors" do
+    yml = """
+    ---
+    name: BooksSpiderForTest
+    base_url: "https://books.toscrape.com/"
+    start_urls:
+      - "https://books.toscrape.com/"
+    fields:
+      - name: title
+        selector: ".headline"
+      - name: body
+        selector: ".body"
+    links_to_follow:
+      - selector: "a"
+        attribute: "href"
+    """
+
+    :meck.expect(
+      HTTPoison,
+      :get,
+      fn _url ->
+        {:error, %HTTPoison.Error{reason: :nxdomain, id: nil}}
+      end
+    )
+
+    [result] = Crawly.Utils.preview(yml)
+    assert result.error =~ "%HTTPoison.Error{reason: :nxdomain, id: nil}"
+  end
+
+  test "can extract data from given page" do
+    html = """
+    <h1> My product </h1>
+    <a href="/next"></a>
+    """
+
+    yml = """
+    ---
+    name: BooksSpiderForTest
+    base_url: "https://books.toscrape.com/"
+    start_urls:
+      - "https://books.toscrape.com/"
+    fields:
+      - name: title
+        selector: "h1"
+    links_to_follow:
+      - selector: "a"
+        attribute: "href"
+    """
+
+    :meck.expect(
+      HTTPoison,
+      :get,
+      fn _url ->
+        {:ok, %HTTPoison.Response{body: html}}
+      end
+    )
+
+    [result] = Crawly.Utils.preview(yml)
+    assert result.items == [%{"title" => " My product "}]
+    assert result.requests == ["https://books.toscrape.com/next"]
+    assert result.url == "https://books.toscrape.com/"
+  end
+
   defp expected_request(url) do
     %Crawly.Request{
       url: url,
