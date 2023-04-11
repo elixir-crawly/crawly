@@ -81,11 +81,13 @@ Here we will show how re-implement the example from Quickstart, to achieve the s
 
     4. Now lets start the Crawly (TODO: Insert link to crawly Docker repos):
         ```
-        docker run --name crawlyApp1 -e "SPIDERS_DIR=/app/spiders" \
+        docker run --name crawly -e "SPIDERS_DIR=/app/spiders" \
          -it -p 4001:4001 -v $(pwd)/spiders:/app/spiders \
          -v $(pwd)/crawly.config:/app/config/crawly.config \
          crawly
         ```
+
+        You can either fetch the latest version of Crawly from DockerHub or built it yourself (`docker build -t crawly .`)
 
         ** SPIDERS_DIR environment variable specifies a folder from which additional spiders are going to be fetched. `./spiders` is used by default
 

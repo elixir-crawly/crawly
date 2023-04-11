@@ -29,7 +29,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.14.0"},
+         {:crawly, "~> 0.15.0"},
          {:floki, "~> 0.33.0"}
        ]
    end
@@ -81,7 +81,7 @@ historical archival.
     end
    ```
 
-    **New in 0.15.0 (not released yet):**
+    **New in 0.15.0 :**
 
     > It's possible to use the command to speed up the spider creation,
     so you will have a generated file with all needed callbacks:
@@ -116,7 +116,7 @@ historical archival.
 
    ```
 
-    **New in 0.15.0 (not released yet):**
+    **New in 0.15.0:**
 
     > You can generate  example config with the help of the following command:
    `mix crawly.gen.config`
@@ -161,13 +161,16 @@ It allows to:
  - Start spiders
  - Stop spiders
  - Preview scheduled requests
- - Preview items extracted so far (it's required to add the
-    `Crawly.Pipelines.Experimental.Preview` item pipe to have items preview)
+ - View/Download items extracted
+ - View/Download logs
 
 ![Crawly Management UI](docs/crawly_ui.gif)
 
 
-## Experimental UI
+## Experimental UI [Deprecated]
+
+Now don't have a possibility to work on experimental UI built with Phoenix and LiveViews, and keeping it here for
+mainly demo purposes.
 
 The CrawlyUI project is an add-on that aims to provide an interface for managing and rapidly developing spiders.
 Checkout the code from [GitHub](https://github.com/oltarasenko/crawly_ui)
