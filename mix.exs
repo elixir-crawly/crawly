@@ -108,6 +108,8 @@ defmodule Crawly.Mixfile do
       "documentation/http_api.md",
       "documentation/ethical_aspects.md",
       "documentation/experimental_ui.md",
+      "documentation/standalone_crawly.md",
+      "documentation/spiders_in_yml.md",
       LICENSE: [title: "License"],
       "README.md": [title: "Introduction", file: "readme"]
     ]
