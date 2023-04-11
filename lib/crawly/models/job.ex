@@ -136,4 +136,10 @@ defmodule Crawly.Models.Job do
   def get(crawl_id) do
     Crawly.SimpleStorage.get(@table_name, crawl_id)
   end
+
+  @doc """
+  List all registered jobs
+  """
+  @spec list() :: [term()]
+  def list(), do: Crawly.SimpleStorage.list(@table_name)
 end

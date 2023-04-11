@@ -86,7 +86,7 @@ defmodule Crawly.API.Router do
             end
 
           editable? =
-            case Crawly.SimpleStorage.get(:spiders, spider_name) do
+            case Crawly.Models.YMLSpider.get(spider_name) do
               {:error, :not_found} -> false
               {:ok, _value} -> true
               _ -> false
@@ -104,11 +104,9 @@ defmodule Crawly.API.Router do
       )
 
     jobs_log =
-      Crawly.Models.Job
-      |> Crawly.SimpleStorage.list()
+      Crawly.Models.Job.list()
       |> Enum.map(fn crawl_id ->
-        {:ok, crawl_info} =
-          Crawly.SimpleStorage.get(Crawly.Models.Job, crawl_id)
+        {:ok, crawl_info} = Crawly.Models.Job.get(crawl_id)
 
         crawl_info
       end)
@@ -137,7 +135,7 @@ defmodule Crawly.API.Router do
           {:ok, ""}
 
         name ->
-          Crawly.SimpleStorage.get(:spiders, name)
+          Crawly.Models.YMLSpider.get(name)
       end
 
     case spider_data do
@@ -183,10 +181,10 @@ defmodule Crawly.API.Router do
 
     case validation_result do
       {:ok, %{"name" => spider_name} = _parsed_yml} ->
-        :ok = Crawly.SimpleStorage.put(:spiders, spider_name, spider_yml)
+        :ok = Crawly.Models.YMLSpider.new(spider_name, spider_yml)
 
         # Now we can finally load the spider
-        Crawly.Utils.load_yml_spider(spider_yml)
+        Crawly.Models.YMLSpider.load(spider_yml)
 
         # Now we can redirect to the homepage
         conn
@@ -216,7 +214,7 @@ defmodule Crawly.API.Router do
   end
 
   delete "/spider/:spider_name" do
-    Crawly.SimpleStorage.delete(:spiders, spider_name)
+    Crawly.Models.YMLSpider.delete(spider_name)
 
     conn
     |> put_resp_header("location", "/")
@@ -237,7 +235,7 @@ defmodule Crawly.API.Router do
   end
 
   get "/spiders/:spider_name/logs/:crawl_id" do
-    spider_name = String.to_existing_atom(spider_name)
+    spider_name = String.to_atom(spider_name)
     log_file_path = Crawly.Utils.spider_log_path(spider_name, crawl_id)
 
     case File.exists?(log_file_path) do
@@ -353,11 +351,7 @@ defmodule Crawly.API.Router do
   end
 
   get "/load-spiders" do
-    loaded_spiders =
-      case Crawly.load_spiders() do
-        {:ok, spiders} -> spiders
-        {:error, :no_spiders_dir} -> []
-      end
+    loaded_spiders = Crawly.load_spiders()
 
     send_resp(
       conn,

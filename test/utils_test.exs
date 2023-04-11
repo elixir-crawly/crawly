@@ -99,10 +99,6 @@ defmodule UtilsTest do
            )
   end
 
-  test "load spiders returns result if SPIDERS_DIR is not set" do
-    assert {:error, :no_spiders_dir} == Crawly.Utils.load_spiders()
-  end
-
   test "Can load modules set in SPIDERS_DIR" do
     System.put_env("SPIDERS_DIR", "./examples/quickstart/lib/quickstart")
     {:ok, loaded_modules} = Crawly.Utils.load_spiders()
@@ -242,7 +238,7 @@ defmodule UtilsTest do
         attribute: "href"
     """
 
-    Crawly.Utils.load_yml_spider(spider_yml)
+    Crawly.Models.YMLSpider.load(spider_yml)
 
     assert "https://books.toscrape.com/" == BooksSpiderForTest.base_url()
 

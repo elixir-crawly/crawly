@@ -132,10 +132,16 @@ defmodule Crawly do
   def list_spiders(), do: Crawly.Utils.list_spiders()
 
   @doc """
-  Loads spiders from a given directory. Store thm in persistant term under :spiders
+  Loads spiders from a given directory and the simple storage
   """
-  @spec load_spiders() :: {:ok, [module()]} | {:error, :no_spiders_dir}
+  @spec load_spiders() :: :ok
   def load_spiders() do
-    Crawly.Utils.load_spiders()
+    try do
+      Crawly.Utils.load_spiders()
+      Crawly.Models.YMLSpider.load()
+    rescue
+      error ->
+        Logger.error("Could not load spiders: #{inspect(error)}")
+    end
   end
 end
