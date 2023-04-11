@@ -79,7 +79,7 @@ Here we will show how re-implement the example from Quickstart, to achieve the s
         }].
         ```
 
-    4. Now lets start the Crawly (TODO: Insert link to crawly Docker repos):
+    4. Now lets start the Crawly (First pull it from DockerHub: `docker pull oltarasenko/crawly:0.15.0`):
         ```
         docker run --name crawly -e "SPIDERS_DIR=/app/spiders" \
          -it -p 4001:4001 -v $(pwd)/spiders:/app/spiders \
