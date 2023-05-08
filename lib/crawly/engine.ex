@@ -31,7 +31,7 @@ defmodule Crawly.Engine do
   - `:closespider_itemcount` (integer | disabled). Optional, overrides the close
     spider item count on startup.
   - `:closespider_timeout` (integer | disabled). Optional, overrides the close
-                            spider timeout on startup.
+    spider timeout on startup.
   - `:concurrent_requests_per_domain` (integer). Optional, overrides the number of
      workers for a given spider
 
