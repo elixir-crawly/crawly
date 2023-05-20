@@ -50,6 +50,7 @@ defmodule Crawly.API.Router do
   )
 
   plug(:match)
+  plug(:put_base_path)
   plug(:dispatch)
 
   # Simple UI for crawly management
@@ -120,7 +121,8 @@ defmodule Crawly.API.Router do
     response =
       render_template("list.html.eex",
         spiders_list: spiders_list,
-        jobs_log: jobs_log
+        jobs_log: jobs_log,
+        base_path: conn.assigns[:base_path]
       )
 
     send_resp(conn, 200, response)
@@ -149,7 +151,8 @@ defmodule Crawly.API.Router do
               "errors" => "",
               "spider" => value,
               "spider_name" => spider_name
-            }
+            },
+            base_path: conn.assigns[:base_path]
           )
 
         send_resp(conn, 200, response)
@@ -188,13 +191,22 @@ defmodule Crawly.API.Router do
 
         # Now we can redirect to the homepage
         conn
-        |> put_resp_header("location", "/")
+        |> put_resp_header("location", conn.assigns[:base_path])
         |> send_resp(conn.status || 302, "Redirect")
 
       {:error, errors} ->
         # Show errors and spider
-        data = %{"errors" => errors, "spider" => spider_yml}
-        response = render_template("new.html.eex", data: data)
+        data = %{
+          "errors" => errors,
+          "spider" => spider_yml
+        }
+
+        response =
+          render_template("new.html.eex",
+            data: data,
+            base_path: conn.assigns[:base_path]
+          )
+
         send_resp(conn, 400, response)
     end
   end
@@ -217,7 +229,7 @@ defmodule Crawly.API.Router do
     Crawly.Models.YMLSpider.delete(spider_name)
 
     conn
-    |> put_resp_header("location", "/")
+    |> put_resp_header("location", conn.assigns[:base_path])
     |> send_resp(conn.status || 302, "Redirect")
   end
 
@@ -290,7 +302,8 @@ defmodule Crawly.API.Router do
     response =
       render_template("requests_list.html.eex",
         requests: result,
-        spider_name: spider_name
+        spider_name: spider_name,
+        base_path: conn.assigns[:base_path]
       )
 
     send_resp(conn, 200, response)
@@ -364,6 +377,19 @@ defmodule Crawly.API.Router do
     send_resp(conn, 404, "Oops! Page not found!")
   end
 
+  def put_base_path(conn, _opts) do
+    base_path =
+      case conn.script_name do
+        [] ->
+          ""
+
+        paths when is_list(paths) ->
+          "/" <> Enum.join(paths, "/")
+      end
+
+    assign(conn, :base_path, base_path)
+  end
+
   defp validate_new_spider_request(maybe_yml) do
     with {:ok, yml} <- YamlElixir.read_from_string(maybe_yml),
          :ok <- ExJsonSchema.Validator.validate(@spider_validation_schema, yml) do
@@ -385,6 +411,10 @@ defmodule Crawly.API.Router do
     rendered_template = EEx.eval_file(template, assigns)
 
     base_template = Path.join(base_dir, "index.html.eex")
-    EEx.eval_file(base_template, rendered_template: rendered_template)
+
+    EEx.eval_file(base_template,
+      rendered_template: rendered_template,
+      base_path: assigns[:base_path]
+    )
   end
 end

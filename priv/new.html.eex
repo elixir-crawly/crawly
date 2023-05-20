@@ -35,7 +35,7 @@
       </div>
       <%= if Map.get(data, "spider_name") != "" do %>
         <h4>Delete this spider</h4>
-        <input type="button" value="Delete" onclick='delete_req("/spider/<%= Map.get(data, ~s(spider_name)) %>")'>
+        <input type="button" value="Delete" onclick='delete_req("<%= base_path %>/spider/<%= Map.get(data, ~s(spider_name)) %>")'>
       <% end %>
     </div>
   </div>
@@ -52,7 +52,7 @@
       }
     };
 
-    xhttp.open("POST", "/yml-preview", true);
+    xhttp.open("POST", "<%= base_path %>/yml-preview", true);
     xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
     xhttp.send(body);
