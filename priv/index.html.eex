@@ -32,7 +32,7 @@
       }
 
       function stop(name) {
-        get(name, "<%= base_path %>/spiders/" %> + name + "/stop")
+        get(name, "<%= base_path %>/spiders/" + name + "/stop")
       }
     </script>
 
