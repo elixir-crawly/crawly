@@ -4,7 +4,7 @@
         <div class="card">
           <h3>
             List of scheduled requests for: <%= spider_name %>
-            <a href="/">Back</a>
+            <a href="<%= base_path %>">Back</a>
           </h3>
           <table>
             <tr>

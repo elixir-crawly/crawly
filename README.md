@@ -164,6 +164,18 @@ It allows to:
  - View/Download items extracted
  - View/Download logs
 
+You can choose to run the management UI as a plug in your application. 
+
+```elixir
+defmodule MyApp.Router do
+  use Plug.Router
+
+  ...
+  forward "/admin", to: Crawly.API.Router
+  ...
+end
+```
+
 ![Crawly Management UI](docs/crawly_ui.gif)
 
 

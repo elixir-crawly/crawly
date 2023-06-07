@@ -18,17 +18,17 @@
                 <td><%= spider.name %></td>
                 <td><%= spider.state %> </td>
                 <td>
-                  <a href="/spiders/<%= spider.name %>/requests" ><%= spider.scheduled %>
+                  <a href="<%= base_path %>/spiders/<%= spider.name %>/requests" ><%= spider.scheduled %>
                 </td>
                 <td>
-                  <a href="/spiders/<%= spider.name %>/items/<%= spider.crawl_id %>" >
+                  <a href="<%= base_path %>/spiders/<%= spider.name %>/items/<%= spider.crawl_id %>" >
                     <%= spider.scraped %></a>
                   </td>
                 <td>
                   <%= if spider.state == :idle do %>
                     N/A
                   <% else %>
-                    <a href="/spiders/<%= spider.name %>/logs/<%= spider.crawl_id %>"> Logs </a>
+                    <a href="<%= base_path %>/spiders/<%= spider.name %>/logs/<%= spider.crawl_id %>"> Logs </a>
                   <% end %>
                 </td>
                 <%= if spider.state == :idle do %>
@@ -38,7 +38,7 @@
                 <% end %>
                 <%= if spider.editable? == :true do %>
                 <td>
-                  <a href="/new?spider_name=<%= spider.name %>">Edit</a>
+                  <a href="<%= base_path %>/new?spider_name=<%= spider.name %>">Edit</a>
                 </td>
                 <% else %>
                 <td> not editable </td>
@@ -48,8 +48,8 @@
           </table>
           <br />
 
-          <input type = "button" onclick = "get('Reload', '/load-spiders')" value = "Reload spiders">
-          <input type = "button" value="Create new spider" onclick="window.location.href = '/new';"/>
+          <input type = "button" onclick = "get('Reload', '<%= base_path %>/load-spiders')" value = "Reload spiders">
+          <input type = "button" value="Create new spider" onclick="window.location.href = '<%= base_path %>/new';"/>
         </div>
       </div>
 
@@ -70,14 +70,14 @@
           <td> <%= job.spider_name %> </td>
           <td> <%= job.id %> </td>
           <td>
-            <a href="/spiders/<%= job.spider_name %>/items/<%= job.id %>" >
+            <a href="<%= base_path %>/spiders/<%= job.spider_name %>/items/<%= job.id %>" >
               <%= job.scraped_items %>
             </a>
           </td>
           <td> <%= job.start %> </td>
           <td><%= job.end %></td>
           <td>
-            <a href="/spiders/<%= job.spider_name %>/logs/<%= job.id %>"> Logs </a>
+            <a href="<%= base_path %>/spiders/<%= job.spider_name %>/logs/<%= job.id %>"> Logs </a>
           </td>
           <td><%= job.stop_reason %></td>
         </tr>
