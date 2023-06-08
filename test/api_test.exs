@@ -352,7 +352,8 @@ defmodule APITest do
 
     assert conn.status == 200
 
-    assert conn.resp_body =~
-             "%{items: [%{}], requests: [\"https://example.com/1\"], url: \"https://example.com\"}"
+    assert conn.resp_body =~ "items: [%{}]"
+    assert conn.resp_body =~ "requests: [\"https://example.com/1\"]"
+    assert conn.resp_body =~ "url: \"https://example.com\"}"
   end
 end
