@@ -1,6 +1,7 @@
 import Config
 
 config :crawly,
+  start_http_api?: true,
   manager_operations_timeout: 500,
   # Stop spider after scraping certain amount of items
   closespider_itemcount: 100,
