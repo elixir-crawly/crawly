@@ -160,6 +160,26 @@ default: 4001
 
 Allows to specify a custom port to start the application. That is important when running more than one application in a single machine, in which case shall not use the same port as the others.
 
+### start_http_api? :: boolean()
+
+default: true
+
+Allows to switch on/off management interface of Crawly,
+that might be useful if you already have a server and want to use it to operate Crawly. For example if you have a
+phoenix application you can add the following lines to your router:
+
+```
+  defmodule MyApp.Router do
+    use Plug.Router
+
+    ...
+
+    forward "/crawlers", Crawly.API.Router
+
+    ...
+  end
+```
+
 ### on_spider_closed_callback :: function()
 default: :ignored
 
