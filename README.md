@@ -164,14 +164,17 @@ It allows to:
  - View/Download items extracted
  - View/Download logs
 
-You can choose to run the management UI as a plug in your application. 
+NOTE: It's possible to disable the Simple management UI (and rest API) with the
+`start_http_api?: false`  options of Crawly configuration.
+
+You can choose to run the management UI as a plug in your application.
 
 ```elixir
 defmodule MyApp.Router do
   use Plug.Router
 
   ...
-  forward "/admin", to: Crawly.API.Router
+  forward "/admin", Crawly.API.Router
   ...
 end
 ```

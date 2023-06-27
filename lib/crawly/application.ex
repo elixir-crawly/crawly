@@ -14,24 +14,36 @@ defmodule Crawly.Application do
     import Supervisor.Spec, warn: false
     # List all child processes to be supervised
 
-    children = [
-      {Crawly.Engine, []},
-      {DynamicSupervisor, strategy: :one_for_one, name: Crawly.EngineSup},
-      {Crawly.DataStorage, []},
-      {Crawly.RequestsStorage, []},
-      {DynamicSupervisor,
-       strategy: :one_for_one, name: Crawly.RequestsStorage.WorkersSup},
-      {DynamicSupervisor,
-       strategy: :one_for_one, name: Crawly.DataStorage.WorkersSup},
-      {Plug.Cowboy,
-       scheme: :http,
-       plug: Crawly.API.Router,
-       options: [port: Application.get_env(:crawly, :port, 4001)]}
-    ]
+    children =
+      [
+        {Crawly.Engine, []},
+        {DynamicSupervisor, strategy: :one_for_one, name: Crawly.EngineSup},
+        {Crawly.DataStorage, []},
+        {Crawly.RequestsStorage, []},
+        {DynamicSupervisor,
+         strategy: :one_for_one, name: Crawly.RequestsStorage.WorkersSup},
+        {DynamicSupervisor,
+         strategy: :one_for_one, name: Crawly.DataStorage.WorkersSup}
+      ] ++ maybe_enable_http_api()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Crawly.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp maybe_enable_http_api() do
+    case Application.get_env(:crawly, :start_http_api?, false) do
+      false ->
+        []
+
+      true ->
+        port = Application.get_env(:crawly, :port, 4001)
+
+        [
+          {Plug.Cowboy,
+           scheme: :http, plug: Crawly.API.Router, options: [port: port]}
+        ]
+    end
   end
 end
