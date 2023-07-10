@@ -17,7 +17,7 @@ defmodule SpiderTemplate do
     # Extract item field from the response here. Usually it's done this way:
     # {:ok, document} = Floki.parse_document(response.body)
     # item = %{
-    #   title: document |> Floki.find("title") |> Floki.text()
+    #   title: document |> Floki.find("title") |> Floki.text(),
     #   url: response.request_url
     # }
     extracted_items = []
