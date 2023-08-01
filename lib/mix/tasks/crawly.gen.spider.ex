@@ -33,11 +33,11 @@ defmodule Mix.Tasks.Crawly.Gen.Spider do
         help()
 
       true ->
-        generate_spider(opts)
+        Map.new(opts) |> generate_spider()
     end
   end
 
-  defp generate_spider(filepath: filepath, spidername: spidername) do
+  defp generate_spider(%{filepath: filepath, spidername: spidername}) do
     case File.exists?(filepath) do
       true ->
         Mix.shell().error("The spider already exists. Choose another filename")
@@ -49,11 +49,11 @@ defmodule Mix.Tasks.Crawly.Gen.Spider do
         spider_template =
           String.replace(spider_template, "SpiderTemplate", spidername)
 
-        :ok = File.write(filepath, spider_template)
-        Mix.shell().info("Done!")
+        write_file(filepath, spider_template)
     end
   end
 
+  # If filepath or spidername is missing
   defp generate_spider(_) do
     Mix.shell().error("Missing required arguments. \n")
     help()
@@ -72,6 +72,29 @@ defmodule Mix.Tasks.Crawly.Gen.Spider do
 
       errors ->
         {:error, "Unkown opions: #{inspect(errors)}"}
+    end
+  end
+
+  defp write_file(filepath, spider_template) do
+    case File.write(filepath, spider_template) do
+      :ok ->
+        Mix.shell().info("Done!")
+
+      {:error, :enoent} ->
+        Mix.shell().error(
+          "Error writing file: directory in the filepath doesn't exist"
+        )
+
+      {:error, :enotdir} ->
+        Mix.shell().error(
+          "Error writing file: directory in the filepath doesn't exist"
+        )
+
+      {:error, :enospc} ->
+        Mix.shell().error("Error writing file: no space left on the device")
+
+      {:error, :eacces} ->
+        Mix.shell().error("Error writing file: permission denied")
     end
   end
 
