@@ -15,7 +15,7 @@ defmodule Crawly.SimpleStorage do
   """
   @spec init :: {:error, any} | {:ok, any}
   def init() do
-    Logger.info("Opening/checking dynamic spiders storage")
+    Logger.debug("Opening/checking dynamic spiders storage")
     :dets.open_file(@dets_table, type: :set)
   end
 
