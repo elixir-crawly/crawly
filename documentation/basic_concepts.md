@@ -340,7 +340,39 @@ Crawly's codebase contains a special Splash fetcher, which allows to do the brow
 rendering before the page content is being parsed by a spider. Also it's possible
 to build own fetchers.
 
+
+### Using crawly-render-server for browser rendering
+
+NOTE: Experimental
+
+I have made a simple puppeteer based browser rendering tool that's available
+here: https://github.com/elixir-crawly/crawly-render-server
+
+I am actively testing it with various targets, and at least for me
+the results looks fine. However I am super interested in other feedback
+or contributions.
+
+To run it do this:
+1. git clone https://github.com/yourusername/crawly-render-server.git
+2. cd ./crawly-render-server
+3. docker run -p 3000:3000  --rm -it $(docker build -q .)
+4. configure it on project or spider level:
+
+(project level)
+```
+import Config
+
+config :crawly,
+  fetcher: {Crawly.Fetchers.CrawlyRenderServer, [base_url: "http://localhost:3000/render"]},
+```
+
+
 ### Using splash fetcher for browser rendering
+
+NOTE: It looks like splash is not maintained anymore.
+
+We could not run it's Docker images on M1/M2 mac machines. We could not
+build it from sources as well :(
 
 Splash is a lightweight opensourse browser implementation built with QT and python.
 See: https://splash.readthedocs.io/en/stable/api.html
