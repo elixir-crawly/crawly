@@ -48,7 +48,7 @@ defmodule Crawly.Engine do
   def start_spider(spider_name, opts \\ [])
 
   def start_spider(spider_name, crawl_id) when is_binary(crawl_id) do
-    Logger.warn(
+    Logger.warning(
       "Deprecation Warning: Setting the crawl_id as second positional argument is deprecated. Please use the :crawl_id option instead. Refer to docs for more info (https://hexdocs.pm/crawly/Crawly.Engine.html#start_spider/2) "
     )
 
@@ -67,7 +67,7 @@ defmodule Crawly.Engine do
         configure_spider_logs(spider_name, opts[:crawl_id])
 
       {true, false} ->
-        Logger.warn(
+        Logger.warning(
           ":logger_file_backend https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend must be installed as a peer dependency if log_to_file config is set to true"
         )
 
