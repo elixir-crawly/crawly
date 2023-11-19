@@ -7,7 +7,7 @@
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4) {
-            window.location.href = <%= base_path %>
+            window.location.href = "<%= base_path %>"
           }
         };
       xhttp.open("DELETE", link, true);
