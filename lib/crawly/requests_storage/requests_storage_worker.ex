@@ -95,7 +95,7 @@ defmodule Crawly.RequestsStorage.Worker do
     GenServer.call(pid, command)
   catch
     error, reason ->
-      Logger.debug(Exception.format(error, reason, __STACKTRACE__))
+      Logger.error(Exception.format(error, reason, __STACKTRACE__))
   end
 
   defp pipe_request(request, state) do

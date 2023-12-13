@@ -38,7 +38,7 @@ defmodule Crawly.Pipelines.DuplicatesFilter do
 
     case item_id do
       nil ->
-        Logger.info(
+        Logger.error(
           "Duplicates filter pipeline is inactive, item_id option is required
           to make it operational."
         )
