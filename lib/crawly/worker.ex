@@ -51,7 +51,7 @@ defmodule Crawly.Worker do
             :ok
           else
             {:error, reason} ->
-              Logger.debug(
+              Logger.warning(
                 "Crawly worker could not process the request to #{inspect(request.url)} reason: #{inspect(reason)}"
               )
           end
@@ -122,11 +122,11 @@ defmodule Crawly.Worker do
       {:ok, {parsed_item, response, spider_name}}
     catch
       error, reason ->
-        Logger.debug(
+        Logger.warning(
           "Could not parse item, error: #{inspect(error)}, reason: #{inspect(reason)}"
         )
 
-        Logger.debug(Exception.format(:error, error, __STACKTRACE__))
+        Logger.warning(Exception.format(:error, error, __STACKTRACE__))
 
         {:error, reason}
     end

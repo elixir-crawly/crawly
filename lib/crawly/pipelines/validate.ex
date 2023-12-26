@@ -47,7 +47,7 @@ defmodule Crawly.Pipelines.Validate do
         {item, state}
 
       _ ->
-        Logger.info(
+        Logger.warning(
           "Dropping item: #{inspect(item)}. Reason: missing required fields"
         )
 

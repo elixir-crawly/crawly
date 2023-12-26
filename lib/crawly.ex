@@ -141,7 +141,7 @@ defmodule Crawly do
       Crawly.Models.YMLSpider.load()
     rescue
       error ->
-        Logger.debug("Could not load spiders: #{inspect(error)}")
+        Logger.info("No spiders found to auto-load: #{inspect(error)}")
     end
   end
 end
