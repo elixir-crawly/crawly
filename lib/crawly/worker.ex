@@ -158,8 +158,8 @@ defmodule Crawly.Worker do
              parsed_item: Crawly.ParsedItem.t(),
              result: {:ok, :done}
   defp process_parsed_item({parsed_item, response, spider_name}) do
-    requests = Map.get(parsed_item, :requests, [])
-    items = Map.get(parsed_item, :items, [])
+    requests = Map.get(parsed_item, :requests) || []
+    items = Map.get(parsed_item, :items) || []
     # Process all requests one by one
     Enum.each(
       requests,
