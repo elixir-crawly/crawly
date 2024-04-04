@@ -29,6 +29,8 @@ defmodule Crawly.Middlewares.RobotsTxt do
         {false, state}
 
       _ ->
+	Logger.debug("Keeping request: #{request.url} (robots.txt filter), User-Agent: #{user_agent}")
+
         {request, state}
     end
   end
