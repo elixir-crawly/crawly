@@ -21,7 +21,9 @@ defmodule Crawly.Middlewares.RobotsTxt do
   require Logger
 
   def run(request, state, _opts \\ []) do
-    {_, user_agent} = List.keyfind(request.headers, "User-Agent", 0)
+    {_, user_agent} =
+      List.keyfind(request.headers, "User-Agent", 0, {"User-Agent", "Crawly"})
+
     case Gollum.crawlable?(user_agent, request.url) do
       :uncrawlable ->
         Logger.debug("Dropping request: #{request.url} (robots.txt filter)")
