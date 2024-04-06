@@ -46,7 +46,7 @@ defmodule Crawly.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.7"},
+      {:httpoison, "~> 2.2"},
       {:elixir_uuid, "~> 1.2"},
       {:poison, "~> 3.1"},
       {:gollum, git: "https://github.com/adonig/gollum.git"},
