@@ -11,7 +11,6 @@ defmodule Crawly.Mixfile do
       name: "Crawly",
       elixir: "~> 1.14",
       package: package(),
-      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
