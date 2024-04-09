@@ -1,7 +1,6 @@
 # Crawly
 
 [![Crawly](https://circleci.com/gh/elixir-crawly/crawly.svg?style=svg)](https://app.circleci.com/pipelines/github/elixir-crawly)
-[![Coverage Status](https://coveralls.io/repos/github/elixir-crawly/crawly/badge.svg?branch=master)](https://coveralls.io/github/elixir-crawly/crawly?branch=master)
 [![Module Version](https://img.shields.io/hexpm/v/crawly.svg)](https://hex.pm/packages/crawly)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/crawly/)
 [![Total Download](https://img.shields.io/hexpm/dt/crawly.svg)](https://hex.pm/packages/crawly)
