@@ -18,11 +18,13 @@ defmodule Crawly.Middlewares.RobotsTxt do
   """
 
   @behaviour Crawly.Pipeline
+
   require Logger
 
+  alias Crawly.Utils
+
   def run(request, state, _opts \\ []) do
-    {_, user_agent} =
-      List.keyfind(request.headers, "User-Agent", 0, {"User-Agent", "Crawly"})
+    user_agent = Utils.get_header(request.headers, "User-Agent", "Crawly")
 
     case Gollum.crawlable?(user_agent, request.url) do
       :uncrawlable ->

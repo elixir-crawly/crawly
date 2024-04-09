@@ -457,4 +457,41 @@ defmodule Crawly.Utils do
         raise "Invalid format: A #{setting} setting cannot be defined in the form `{#{inspect(x)}}`. Only the forms `{module, options}` and `module` are valid"
     end
   end
+
+  @doc """
+  Retrieves a header value from a list of key-value tuples or a map.
+
+  This function searches for a header with the specified key in the given list
+  of headers or map. If found, it returns the corresponding value; otherwise,
+  it returns the provided default value if provided, otherwise `nil`.
+
+  ## Parameters
+
+  - `headers`: A list of key-value tuples or a map representing headers.
+  - `key`: The key of the header to retrieve.
+  - `default`: (Optional) The default value to return if the header is not found. If not provided, returns `nil`.
+
+  ## Returns
+
+  The value of the header if found, otherwise the default value if provided, otherwise `nil`.
+  """
+  @spec get_header(
+          headers :: [{atom | binary, binary}] | %{binary => binary},
+          key :: binary,
+          default :: binary | nil
+        ) :: binary | nil
+  def get_header(headers, key, default \\ nil) do
+    downcased_key = String.downcase(key, :ascii)
+
+    Enum.find_value(headers, default, fn
+      {k, v} when is_atom(k) ->
+        if Atom.to_string(k) == downcased_key, do: v, else: nil
+
+      {k, v} ->
+        if String.downcase(k, :ascii) == downcased_key, do: v, else: nil
+
+      _ ->
+        nil
+    end)
+  end
 end
