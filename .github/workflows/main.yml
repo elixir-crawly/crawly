@@ -1,0 +1,38 @@
+name: Elixir GitHub Actions
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      MIX_ENV: test
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+            otp-version: "24.2.1"
+            elixir-version: "1.14.0"
+
+      - run: mix deps.get
+      - run: mix compile --all-warnings --warnings-as-errors
+      - run: mix format --check-formatted
+
+      - name: Tests & Coverage
+        uses: josecfreittas/elixir-coverage-feedback-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          coverage_threshold: 75

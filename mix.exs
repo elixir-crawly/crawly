@@ -2,7 +2,7 @@ defmodule Crawly.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/oltarasenko/crawly"
-  @version "0.16.0"
+  @version "0.17.0"
 
   def project do
     [
@@ -11,7 +11,6 @@ defmodule Crawly.Mixfile do
       name: "Crawly",
       elixir: "~> 1.14",
       package: package(),
-      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
@@ -49,7 +48,7 @@ defmodule Crawly.Mixfile do
       {:httpoison, "~> 2.2"},
       {:elixir_uuid, "~> 1.2"},
       {:poison, "~> 3.1"},
-      {:gollum, git: "https://github.com/adonig/gollum.git"},
+      {:gollum, "~> 0.5.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
       {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},

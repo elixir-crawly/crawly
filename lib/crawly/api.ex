@@ -55,11 +55,12 @@ defmodule Crawly.API.Router do
 
   # Simple UI for crawly management
   get "/" do
+    known_spiders = Crawly.Engine.list_known_spiders()
     running_spiders = Crawly.Engine.running_spiders()
 
     spiders_list =
       Enum.map(
-        Crawly.list_spiders(),
+        known_spiders,
         fn spider ->
           {crawl_id, state} =
             case Map.get(running_spiders, spider) do
@@ -68,7 +69,7 @@ defmodule Crawly.API.Router do
             end
 
           spider_name =
-            spider
+            spider.name
             |> Atom.to_string()
             |> String.replace_leading("Elixir.", "")
 
