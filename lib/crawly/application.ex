@@ -33,7 +33,7 @@ defmodule Crawly.Application do
   end
 
   defp maybe_enable_http_api() do
-    case Application.get_env(:crawly, :start_http_api?, false) do
+    case Application.get_env(:crawly, :start_http_api?, true) do
       false ->
         []
 
