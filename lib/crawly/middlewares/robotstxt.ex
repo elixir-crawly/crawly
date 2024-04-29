@@ -18,10 +18,15 @@ defmodule Crawly.Middlewares.RobotsTxt do
   """
 
   @behaviour Crawly.Pipeline
+
   require Logger
 
+  alias Crawly.Utils
+
   def run(request, state, _opts \\ []) do
-    case Gollum.crawlable?("Crawly", request.url) do
+    user_agent = Utils.get_header(request.headers, "User-Agent", "Crawly")
+
+    case Gollum.crawlable?(user_agent, request.url) do
       :uncrawlable ->
         Logger.debug("Dropping request: #{request.url} (robots.txt filter)")
 
