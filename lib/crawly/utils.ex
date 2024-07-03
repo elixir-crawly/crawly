@@ -162,7 +162,7 @@ defmodule Crawly.Utils do
       fn mod, acc ->
         try do
           behaviors =
-            Keyword.take(mod.__info__(:attributes), [:behaviour])
+            Keyword.take(mod.module_info(:attributes), [:behaviour])
             |> Keyword.values()
             |> List.flatten()
 
@@ -177,8 +177,11 @@ defmodule Crawly.Utils do
               acc
           end
         rescue
-          _error ->
-            # Just ignore the case, as probably the given module is not a Spider
+          error ->
+            Logger.debug(
+              "Could not classify module #{mod} as spider: #{inspect(error)}"
+            )
+
             acc
         end
       end
