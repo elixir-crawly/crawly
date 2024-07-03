@@ -28,7 +28,7 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.17.0"},
+         {:crawly, "~> 0.17.1"},
          {:floki, "~> 0.33.0"}
        ]
    end
