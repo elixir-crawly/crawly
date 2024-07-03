@@ -139,9 +139,13 @@ defmodule Crawly.Engine do
 
   @spec init(any) :: {:ok, t()}
   def init(_args) do
+    {:ok, %Crawly.Engine{}, {:continue, :get_known_spiders}}
+  end
+
+  def handle_continue(:get_known_spiders, state) do
     spiders = get_updated_known_spider_list()
 
-    {:ok, %Crawly.Engine{known_spiders: spiders}}
+    {:noreply, %{state | known_spiders: spiders}}
   end
 
   def handle_call({:get_manager, spider_name}, _, state) do
