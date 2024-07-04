@@ -2,7 +2,7 @@ defmodule Crawly.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/oltarasenko/crawly"
-  @version "0.17.1"
+  @version "0.17.2"
 
   def project do
     [
