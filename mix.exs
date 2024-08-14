@@ -67,9 +67,8 @@ defmodule Crawly.Mixfile do
 
   defp docs do
     [
-      assets: "documentation/assets",
+      assets: %{"documentation/assets" => "assets"},
       logo: "documentation/assets/logo.png",
-      extra_section: "documentation",
       extras: extras(),
       main: "readme",
       source_url: @source_url,
