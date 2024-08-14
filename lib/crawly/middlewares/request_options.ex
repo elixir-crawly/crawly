@@ -17,7 +17,7 @@ defmodule Crawly.Middlewares.RequestOptions do
   ### Declaring proxy settings
   ```
   middlewares: [
-   {Crawly.Middlewares.RequestOptions, [proxy: {"https://my_host.com", 3000}, proxy_auth: {"my_user", "my_password}]}
+   {Crawly.Middlewares.RequestOptions, [proxy: {"https://my_host.com", 3000}, proxy_auth: {"my_user", "my_password"}]}
   ]
   ```
 
