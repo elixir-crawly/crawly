@@ -50,14 +50,13 @@ defmodule Crawly.Mixfile do
       {:poison, "~> 3.1"},
       {:gollum, "~> 0.5.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.0"},
-      {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:earmark, "~> 1.2", only: :dev},
       {:meck, "~> 0.9", only: :test},
       {:excoveralls, "~> 0.14.6", only: :test},
       {:yaml_elixir, "~> 2.9"},
       {:ex_json_schema, "~> 0.9.2"},
-
       # Add floki only for crawly standalone release
       {:floki, "~> 0.33.0", only: [:dev, :test, :standalone_crawly]},
       {:logger_file_backend, "~> 0.0.11",

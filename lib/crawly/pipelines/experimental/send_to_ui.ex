@@ -1,6 +1,5 @@
 defmodule Crawly.Pipelines.Experimental.SendToUI do
-  @moduledoc """
-  """
+  @moduledoc false
   @behaviour Crawly.Pipeline
 
   require Logger

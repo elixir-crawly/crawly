@@ -1,6 +1,6 @@
 defmodule Crawly.Loggers.SendToUiBackend do
-  # TODO: Write doc
-  # Initialize the configuration
+  @moduledoc false
+
   def init({__MODULE__, name}) do
     {:ok, configure(name, [])}
   end

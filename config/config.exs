@@ -3,7 +3,9 @@
 import Config
 
 config :logger,
-  backends: [:console, {LoggerFileBackend, :info_log}]
+       :console,
+       backends: [:console, {LoggerFileBackend, :info_log}],
+       metadata: [:spider_name, :crawl_id]
 
 config :crawly,
   start_http_api?: true,
