@@ -130,7 +130,10 @@ defmodule WorkerTest do
 
       assert response != false
       assert response.retries == 1
+      Process.sleep(1000)
+      assert ExUnit.CaptureLog.capture_log(fn -> nil end)
 
+      assert response.retries == 1
       assert Process.alive?(context.crawler)
     end
 

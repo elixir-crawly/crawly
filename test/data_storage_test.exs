@@ -43,24 +43,36 @@ defmodule DataStorageTest do
   end
 
   test "Items without all required fields are dropped", context do
-    Crawly.DataStorage.store(context.crawler, %{
-      author: "me",
-      time: "Now",
-      url: "http://example.com"
-    })
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        Crawly.DataStorage.store(context.crawler, %{
+          author: "me",
+          time: "Now",
+          url: "http://example.com"
+        })
 
-    {:stored_items, 0} = Crawly.DataStorage.stats(context.crawler)
+        {:stored_items, 0} = Crawly.DataStorage.stats(context.crawler)
+      end)
+
+    log =~ "Dropping item:"
+    log =~ "Reason: missing required fields"
   end
 
   test "Items without all required fields are dropped nils", context do
-    Crawly.DataStorage.store(context.crawler, %{
-      title: "title",
-      author: nil,
-      time: "Now",
-      url: "http://example.com"
-    })
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        Crawly.DataStorage.store(context.crawler, %{
+          title: "title",
+          author: nil,
+          time: "Now",
+          url: "http://example.com"
+        })
 
-    {:stored_items, 0} = Crawly.DataStorage.stats(context.crawler)
+        assert {:stored_items, 0} == Crawly.DataStorage.stats(context.crawler)
+      end)
+
+    log =~ "Dropping item:"
+    log =~ "Reason: missing required fields"
   end
 
   test "Starting child worker twice", context do

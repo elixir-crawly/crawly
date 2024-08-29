@@ -1,5 +1,5 @@
 defmodule GenSpiderTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   import ExUnit.CaptureIO
 
   test "when path is incorrect it sends an error message to console" do

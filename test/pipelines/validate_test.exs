@@ -28,7 +28,12 @@ defmodule Pipelines.ValidateTest do
     item = @invalid_missing
     state = %{spider_name: Test, crawl_id: "test"}
 
-    {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
+      end)
+
+    log =~ "missing required fields"
   end
 
   test "Drops items when missing required fields with tuple config" do
@@ -36,7 +41,12 @@ defmodule Pipelines.ValidateTest do
     item = @invalid_missing
     state = %{spider_name: Test, crawl_id: "test"}
 
-    {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
+      end)
+
+    log =~ "missing required fields"
   end
 
   test "Drops items when required fields are equal to nil" do
@@ -44,6 +54,12 @@ defmodule Pipelines.ValidateTest do
     item = @invalid_nil
     state = %{spider_name: Test, crawl_id: "test"}
 
-    {false, _state} = Crawly.Utils.pipe(pipelines, item, state)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        {result, _state} = Crawly.Utils.pipe(pipelines, item, state)
+        assert result == false
+      end)
+
+    assert log =~ "missing required fields"
   end
 end

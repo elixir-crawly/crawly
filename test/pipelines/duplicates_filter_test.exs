@@ -40,16 +40,21 @@ defmodule Pipelines.DuplicatesFilterTest do
     item = @valid
     state = %{spider_name: Test, crawl_id: "test"}
 
-    {item, state} = Crawly.Utils.pipe(pipelines, item, state)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        {item, state} = Crawly.Utils.pipe(pipelines, item, state)
+        # filter state is not updated
+        assert Map.has_key?(state, :duplicates_filter) == false
 
-    # filter state is not updated
-    assert Map.has_key?(state, :duplicates_filter) == false
+        # run with same item and updated state should not drop the item
+        assert {%{} = item, state} = Crawly.Utils.pipe(pipelines, item, state)
+        assert Map.has_key?(state, :duplicates_filter) == false
 
-    # run with same item and updated state should not drop the item
-    assert {%{} = item, state} = Crawly.Utils.pipe(pipelines, item, state)
-    assert Map.has_key?(state, :duplicates_filter) == false
+        # unchanged
+        assert item == @valid
+      end)
 
-    # unchanged
-    assert item == @valid
+    assert log =~
+             "Duplicates filter pipeline is inactive, item_id option is required"
   end
 end
