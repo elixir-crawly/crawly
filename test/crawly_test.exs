@@ -1,44 +1,72 @@
 defmodule CrawlyTest do
   use ExUnit.Case
 
-  setup do
-    :meck.new(CrawlyTestSpider, [:non_strict])
+  describe "fetch/1" do
+    test "can fetch a given url" do
+      :meck.expect(HTTPoison, :get, fn _, _, _ ->
+        {:ok, %HTTPoison.Response{}}
+      end)
 
-    :meck.expect(CrawlyTestSpider, :parse_item, fn _resp ->
-      %{
-        items: [%{content: "hello"}],
-        requests: [
-          Crawly.Utils.request_from_url("https://www.example.com/test")
-        ]
-      }
-    end)
+      assert {:ok, %HTTPoison.Response{}} = Crawly.fetch("https://example.com")
+    end
 
-    :meck.expect(CrawlyTestSpider, :override_settings, fn ->
-      [pipelines: [Crawly.Pipelines.JSONEncoder]]
-    end)
+    test "returns error if unable to fetch the page" do
+      :meck.expect(HTTPoison, :get, fn _, _, _ ->
+        {:error, %HTTPoison.Error{}}
+      end)
 
-    :meck.expect(HTTPoison, :get, fn _, _, _ -> {:ok, %HTTPoison.Response{}} end)
+      assert {:error, %HTTPoison.Error{}} = Crawly.fetch("invalid-url")
+    end
 
-    on_exit(fn ->
-      :meck.unload()
-    end)
+    test "can fetch a given url with custom request options" do
+      request_opts = [timeout: 5000, recv_timeout: 5000]
 
-    {:ok, spider_module: CrawlyTestSpider}
+      :meck.expect(HTTPoison, :get, fn _, _, passed_request_opts ->
+        assert passed_request_opts == request_opts
+        {:ok, %HTTPoison.Response{}}
+      end)
+
+      assert {:ok, %HTTPoison.Response{}} =
+               Crawly.fetch("https://example.com", request_opts: request_opts)
+    end
+
+    test "can fetch a given url with headers" do
+      headers = [{"Authorization", "Bearer token"}]
+
+      :meck.expect(HTTPoison, :get, fn _, headers_opts, _ ->
+        assert headers == headers_opts
+        {:ok, %HTTPoison.Response{}}
+      end)
+
+      assert {:ok, %HTTPoison.Response{}} =
+               Crawly.fetch("https://example.com", headers: headers)
+    end
   end
 
-  test "fetch/1 is able to fetch a given url using global config, returns a response" do
-    assert %HTTPoison.Response{} = Crawly.fetch("https://example.com")
-  end
+  describe "fetch_with_spider/3" do
+    test "Can fetch a given url from behalf of the spider" do
+      expected_new_requests = [
+        Crawly.Utils.request_from_url("https://www.example.com")
+      ]
 
-  test "fetch/2 with :with option provided returns the response, parsed_item result, and processed ParsedItems",
-       %{spider_module: spider_module} do
-    assert {%HTTPoison.Response{}, parsed_item_res, parsed_items,
-            _pipeline_state} =
-             Crawly.fetch("http://example.com", with: spider_module)
+      :meck.expect(HTTPoison, :get, fn _, _, _ ->
+        {:ok, %HTTPoison.Response{}}
+      end)
 
-    assert %{items: [_], requests: _requests} = parsed_item_res
+      :meck.new(CrawlyTestSpider, [:non_strict])
 
-    assert [encoded] = parsed_items
-    assert encoded =~ "hello"
+      :meck.expect(CrawlyTestSpider, :parse_item, fn _resp ->
+        %{
+          items: [%{content: "hello"}],
+          requests: expected_new_requests
+        }
+      end)
+
+      %{requests: requests, items: items} =
+        Crawly.fetch_with_spider("https://example.com", CrawlyTestSpider)
+
+      assert items == [%{content: "hello"}]
+      assert requests == expected_new_requests
+    end
   end
 end

@@ -6,102 +6,75 @@ defmodule Crawly do
   require Logger
 
   @doc """
-  Fetches a given url. This function is mainly used for the spiders development
-  when you need to get individual pages and parse them.
+  Fetches the content from a given URL using the specified options.
 
-  The fetched URL is being converted to a request, and the request is piped
-  through the middlewares specified in a config (with the exception of
-  `Crawly.Middlewares.DomainFilter`, `Crawly.Middlewares.RobotsTxt`)
+  ## Parameters
 
-  Provide a spider with the `:with` option to fetch a given webpage using that spider.
+    - `url`: The URL to fetch the content from. It should be a valid string.
+    - `opts`: A keyword list of options to customize the request. The supported options are:
+      - `:headers` (optional): A list of HTTP headers to include in the request. Defaults to an empty list `[]`.
+      - `:request_opts` (optional): A list of options to pass to the HTTP client for configuring the request. Defaults to an empty list `[]`.
+      - `:fetcher` (optional): The module responsible for performing the HTTP request. This module must implement a `fetch/2` function. Defaults to `Crawly.Fetchers.HTTPoisonFetcher`.
 
-  ### Fetching with a spider
-  To fetch a response from a url with a spider, define your spider, and pass the module name to the `:with` option.
+  ## Returns
 
-    iex> Crawly.fetch("https://www.example.com", with: MySpider)
-    {%HTTPoison.Response{...}, %{...}, [...], %{...}}
+    - `{:ok, %HTTPoison.Response{}}`: On successful fetch, returns a tuple containing `:ok` and the HTTP response.
+    - `{:error, %HTTPoison.Error{}}`: On failure, returns a tuple containing `:error` and the error details.
 
-  Using the `:with` option will return a 4 item tuple:
+  ## Examples
 
-  1. The HTTPoison response
-  2. The result returned from the `parse_item/1` callback
-  3. The list of items that have been processed by the declared item pipelines.
-  4. The pipeline state, included for debugging purposes.
+    Fetch a URL with default options:
+
+        iex> fetch("https://example.com")
+        {:ok, %HTTPoison.Response{status_code: 200, body: "...", ...}}
+
+    Fetch a URL with custom headers:
+
+        iex> fetch("https://example.com", headers: [{"User-Agent", "MyCrawler"}])
+        {:ok, %HTTPoison.Response{status_code: 200, body: "...", ...}}
+
+    Handle a fetch error:
+
+        iex> fetch("https://invalid-url.com")
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+
+  ## Notes
+
+    - The `fetcher` option allows you to customize how the HTTP request is performed. By default, the `Crawly.Fetchers.HTTPoisonFetcher` module is used, which relies on `HTTPoison` to perform the request.
+    - The `request_opts` parameter allows you to customize the behavior of the HTTP client, such as timeouts, SSL options, etc.
+    - The function returns either `{:ok, response}` for successful requests or `{:error, error}` for failed requests, allowing you to handle these cases explicitly in your code.
   """
-  @type with_opt :: {:with, nil | module()}
-  @type request_opt :: {:request_options, list(Crawly.Request.option())}
-  @type headers_opt :: {:headers, list(Crawly.Request.header())}
-
-  @type parsed_item_result :: Crawly.ParsedItem.t()
-  @type parsed_items :: list(any())
-  @type pipeline_state :: %{optional(atom()) => any()}
-  @type spider :: module()
-
-  @spec fetch(url, opts) ::
-          HTTPoison.Response.t()
-          | {HTTPoison.Response.t(), parsed_item_result, parsed_items,
-             pipeline_state}
-        when url: binary(),
-             opts: [
-               with_opt
-               | request_opt
-               | headers_opt
-             ]
+  @spec fetch(url :: String.t(), options :: list()) ::
+          {:ok, HTTPoison.Response.t()} | {:error, HTTPoison.Error.t()}
   def fetch(url, opts \\ []) do
-    opts = Enum.into(opts, %{with: nil, request_options: [], headers: []})
+    headers = Keyword.get(opts, :headers, [])
+    request_opts = Keyword.get(opts, :request_opts, [])
+    fetcher = Keyword.get(opts, :fetcher, Crawly.Fetchers.HTTPoisonFetcher)
+    request = Crawly.Request.new(url, headers, request_opts)
+    fetcher.fetch(request, request_opts)
+  end
 
-    request0 =
-      Crawly.Request.new(url, opts[:headers], opts[:request_options])
-      |> Map.put(
-        :middlewares,
-        Crawly.Utils.get_settings(:middlewares, opts[:with], [])
-      )
+  @doc """
+  Fetches content from the given URL and processes it with the specified spider.
 
-    ignored_middlewares = [
-      Crawly.Middlewares.DomainFilter,
-      Crawly.Middlewares.RobotsTxt
-    ]
+  ## Parameters
 
-    new_middlewares = request0.middlewares -- ignored_middlewares
+    - `url`: The URL to fetch the content from. It should be a valid string.
+    - `spider_name`: The spider module responsible for processing the fetched response. The module must implement a `parse_item/1` function.
+    - `options`: A keyword list of options to customize the request. The options are passed directly to the `fetch/2` function.
 
-    request0 =
-      Map.put(
-        request0,
-        :middlewares,
-        new_middlewares
-      )
-
-    {%{} = request, _} = Crawly.Utils.pipe(request0.middlewares, request0, %{})
-    {:ok, {response, _}} = Crawly.Worker.get_response({request, opts[:with]})
-
-    case opts[:with] do
-      nil ->
-        # no spider provided, return response as is
-        response
-
-      _ ->
-        # spider provided, send response through  parse_item callback, pipe through the pipelines
-        with {:ok, {parsed_result, _, _}} <-
-               Crawly.Worker.parse_item({response, opts[:with]}),
-             pipelines <-
-               Crawly.Utils.get_settings(
-                 :pipelines,
-                 opts[:with]
-               ),
-             items <- Map.get(parsed_result, :items, []),
-             {pipeline_result, pipeline_state} <-
-               Enum.reduce(items, {[], %{}}, fn item, {acc, state} ->
-                 {piped, state} = Crawly.Utils.pipe(pipelines, item, state)
-
-                 if piped == false do
-                   # dropped
-                   {acc, state}
-                 else
-                   {[piped | acc], state}
-                 end
-               end) do
-          {response, parsed_result, pipeline_result, pipeline_state}
-        end
+  Returned Crawly.ParsedItem or HTTPoison error
+  """
+  @spec fetch_with_spider(
+          url :: String.t(),
+          spider_name :: module(),
+          options :: list()
+        ) ::
+          Crawly.ParsedItem.t() | {:error, HTTPoison.Error.t()}
+  def fetch_with_spider(url, spider_name, options \\ []) do
+    case fetch(url, options) do
+      {:ok, response} -> spider_name.parse_item(response)
+      {:error, _reason} = err -> err
     end
   end
 
