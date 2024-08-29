@@ -172,7 +172,7 @@ defmodule Crawly.API.Router do
 
         %{"name" => spider_name} = yml ->
           # Check if spider already registered, but allow editing spiders
-          case {is_spider_registered(spider_name),
+          case {spider_registered?(spider_name),
                 spider_name == name_from_query_params} do
             {true, false} ->
               {:error,
@@ -400,7 +400,7 @@ defmodule Crawly.API.Router do
     end
   end
 
-  defp is_spider_registered(name) do
+  defp spider_registered?(name) do
     module_name_str = "Elixir." <> name
     module_name = String.to_atom(module_name_str)
     Enum.member?(Crawly.Utils.list_spiders(), module_name)

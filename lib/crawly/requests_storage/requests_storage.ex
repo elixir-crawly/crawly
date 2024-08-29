@@ -110,7 +110,7 @@ defmodule Crawly.RequestsStorage do
     {:reply, msg, state}
   end
 
-  def handle_call({:pop, spider_name}, _from, state = %{workers: workers}) do
+  def handle_call({:pop, spider_name}, _from, %{workers: workers} = state) do
     resp =
       case Map.get(workers, spider_name) do
         nil ->

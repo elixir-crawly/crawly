@@ -329,34 +329,38 @@ defmodule Crawly.Utils do
           # Work only with 5 first URLs, so we don't timeout
           Enum.take(start_urls, 5),
           fn url ->
-            case HTTPoison.get(url) do
-              {:error, reason} ->
-                %{
-                  url: url,
-                  error: "#{inspect(reason)}"
-                }
-
-              {:ok, response} ->
-                {:ok, document} = Floki.parse_document(response.body)
-
-                extracted_urls =
-                  document
-                  |> Crawly.Utils.extract_requests(links, base_url)
-                  |> Enum.map(fn req -> req.url end)
-                  # restrict number of shown urls, so output is not too big
-                  |> Enum.take(10)
-
-                %{
-                  url: url,
-                  items: Crawly.Utils.extract_items(document, fields),
-                  requests: extracted_urls
-                }
-            end
+            fetch(url, base_url, fields, links)
           end
         )
 
       {:ok, _other} ->
         [%{error: "Nothing can be extracted from YML code"}]
+    end
+  end
+
+  defp fetch(url, base_url, fields, links) do
+    case HTTPoison.get(url) do
+      {:error, reason} ->
+        %{
+          url: url,
+          error: "#{inspect(reason)}"
+        }
+
+      {:ok, response} ->
+        {:ok, document} = Floki.parse_document(response.body)
+
+        extracted_urls =
+          document
+          |> Crawly.Utils.extract_requests(links, base_url)
+          |> Enum.map(fn req -> req.url end)
+          # restrict number of shown urls, so output is not too big
+          |> Enum.take(10)
+
+        %{
+          url: url,
+          items: Crawly.Utils.extract_items(document, fields),
+          requests: extracted_urls
+        }
     end
   end
 

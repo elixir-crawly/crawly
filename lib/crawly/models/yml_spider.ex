@@ -1,6 +1,5 @@
 defmodule Crawly.Models.YMLSpider do
-  @moduledoc """
-  """
+  @moduledoc false
 
   @table_name __MODULE__
 

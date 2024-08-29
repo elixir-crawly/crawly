@@ -7,12 +7,12 @@ defmodule Middlewares.RequestOptionsTest do
     middlewares = [
       {
         Crawly.Middlewares.RequestOptions,
-        [timeout: 30_000, recv_timeout: 15000]
+        [timeout: 30_000, recv_timeout: 15_000]
       }
     ]
 
     {new_request, _state} = Crawly.Utils.pipe(middlewares, req, %{})
 
-    assert [timeout: 30000, recv_timeout: 15000] == new_request.options
+    assert [timeout: 30_000, recv_timeout: 15_000] == new_request.options
   end
 end

@@ -1,7 +1,6 @@
 defmodule Crawly.SimpleStorage do
-  @moduledoc """
+  @moduledoc false
 
-  """
   @dets_table :dets_simple_storage
 
   require Logger

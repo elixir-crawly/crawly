@@ -28,12 +28,10 @@ defmodule Mix.Tasks.Crawly.Gen.Spider do
   end
 
   defp response({opts, _word}) do
-    cond do
-      opts[:help] != nil ->
-        help()
-
-      true ->
-        Map.new(opts) |> generate_spider()
+    if opts[:help] != nil do
+      help()
+    else
+      Map.new(opts) |> generate_spider()
     end
   end
 

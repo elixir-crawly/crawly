@@ -1,4 +1,5 @@
 defmodule TestUtils do
+  @moduledoc false
   def stop_process(pid) do
     :erlang.exit(pid, :shutdown)
     wait_pid(pid)
@@ -20,6 +21,7 @@ defmodule TestUtils do
 end
 
 defmodule TestSpider do
+  @moduledoc false
   use Crawly.Spider
 
   def base_url() do
@@ -47,6 +49,7 @@ defmodule TestSpider do
 end
 
 defmodule UtilsTestSpider do
+  @moduledoc false
   use Crawly.Spider
 
   @impl true
@@ -73,6 +76,7 @@ defmodule UtilsTestSpider do
 end
 
 defmodule PipelineTestSpider do
+  @moduledoc false
   use Crawly.Spider
 
   @impl true

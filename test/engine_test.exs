@@ -19,10 +19,7 @@ defmodule EngineTest do
     spiders = Crawly.Engine.list_known_spiders()
     assert [_ | _] = spiders
 
-    assert status =
-             Enum.find(spiders, fn s -> s.name == TestSpider end)
-             |> IO.inspect(label: __ENV__.line)
-
+    status = Enum.find(spiders, fn s -> s.name == TestSpider end)
     assert status.status == :stopped
 
     # test a started spider
@@ -44,9 +41,7 @@ defmodule EngineTest do
   test "get_spider_info/1 return the spider currently status in the engine" do
     Crawly.Engine.refresh_spider_list()
 
-    spider_info =
-      Crawly.Engine.get_spider_info(TestSpider)
-      |> IO.inspect(label: __ENV__.line)
+    spider_info = Crawly.Engine.get_spider_info(TestSpider)
 
     assert :stopped == spider_info.status
 
