@@ -7,7 +7,7 @@ defmodule BooksToScrape do
   end
 
   @impl Crawly.Spider
-  def base_url(), do: ""
+  def base_url(), do: "https://books.toscrape.com/"
 
   @impl Crawly.Spider
   def parse_item(response) do
