@@ -221,6 +221,7 @@ defmodule UtilsTest do
     assert "Enables search using CSS selectors" == Map.get(item, "body")
   end
 
+  @compile {:no_warn_undefined, BooksSpiderForTest}
   test "Can load a spider from a YML format" do
     spider_yml = """
     name: BooksSpiderForTest
@@ -240,7 +241,7 @@ defmodule UtilsTest do
 
     Crawly.Models.YMLSpider.load(spider_yml)
 
-    assert "https://books.toscrape.com/" == BooksSpiderForTest.base_url()
+    assert "https://books.toscrape.com/" == Elixir.BooksSpiderForTest.base_url()
 
     assert [
              start_urls: [

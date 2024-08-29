@@ -1,6 +1,7 @@
 defmodule Crawly.Fetchers.CrawlyRenderServerTest do
   use ExUnit.Case
-  import Crawly.Fetchers.CrawlyRenderServer
+
+  alias Crawly.Fetchers.CrawlyRenderServer
 
   test "throws an error when base_url is not set" do
     request = %{
@@ -10,9 +11,15 @@ defmodule Crawly.Fetchers.CrawlyRenderServerTest do
 
     client_options = []
 
-    assert_raise RuntimeError, fn ->
-      fetch(request, client_options)
-    end
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        assert_raise RuntimeError, fn ->
+          CrawlyRenderServer.fetch(request, client_options)
+        end
+      end)
+
+    assert log =~
+             "The base_url is not set. CrawlyRenderServer can't be used! Please set :base_url"
   end
 
   test "composes correct request to render server" do
@@ -33,6 +40,6 @@ defmodule Crawly.Fetchers.CrawlyRenderServerTest do
       assert %{:"User-Agent" => "Custom User Agent"} == body.headers
     end)
 
-    fetch(request, client_options)
+    CrawlyRenderServer.fetch(request, client_options)
   end
 end

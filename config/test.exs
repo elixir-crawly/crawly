@@ -1,5 +1,11 @@
 import Config
 
+config :logger,
+       :console,
+       backends: [:console, {LoggerFileBackend, :info_log}],
+       metadata: [:spider_name, :crawl_id],
+       level: :warning
+
 config :crawly,
   start_http_api?: true,
   manager_operations_timeout: 500,
