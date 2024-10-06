@@ -32,4 +32,19 @@ defmodule Middlewares.UniqueRequestTest do
     # run again, should drop the request
     assert {false, _state} = Crawly.Utils.pipe(middlewares, @valid_slash, state)
   end
+
+  test "Uses the normalise_url function if given" do
+    middlewares = [
+      {Crawly.Middlewares.UniqueRequest, normalise_url: fn url -> url end}
+    ]
+
+    state = %{spider_name: :test_spider, crawl_id: "123"}
+
+    assert {%Crawly.Request{}, state} =
+             Crawly.Utils.pipe(middlewares, @valid, state)
+
+    # run again, should not drop the request, because normalise_url overrides default
+    assert {%Crawly.Request{}, _state} =
+             Crawly.Utils.pipe(middlewares, @valid_slash, state)
+  end
 end
