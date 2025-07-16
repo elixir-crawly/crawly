@@ -17,6 +17,12 @@ defmodule Crawly.Middlewares.UniqueRequest do
   ]
   ```
 
+  ```
+  middlewares: [
+    {Crawly.Middlewares.UniqueRequest, hash: :sha, normalise_url: fn url -> String.trim_trailing("/") end}
+  ]
+  ```
+
   See the [Erlang documentation for crypto](https://www.erlang.org/doc/man/crypto.html#type-sha1)
   for available algorithms.
   """
@@ -26,16 +32,24 @@ defmodule Crawly.Middlewares.UniqueRequest do
     unique_request_seen_requests =
       Map.get(state, :unique_request_seen_requests, %{})
 
-    # we assume that https://example/foo and https://example/foo/ refer to the same content,
-    # in case they are both accessible
-    normalised_url = request.url |> String.replace_suffix("/", "")
+    normalised_url =
+      case opts[:normalise_url] do
+        nil ->
+          # Assuming that trailing slashes do not affect the content.
+          request.url |> String.trim_trailing("/")
+
+        normalise_url when is_function(normalise_url, 1) ->
+          normalise_url.(request.url)
+
+        _ ->
+          raise ArgumentError, "normalise_url must be a function with arity 1"
+      end
 
     # optionally hash the URL
     unique_hash =
-      if algo = opts[:hash] do
-        :crypto.hash(algo, normalised_url)
-      else
-        normalised_url
+      case opts[:hash] do
+        nil -> normalised_url
+        algo -> :crypto.hash(algo, normalised_url)
       end
 
     case Map.get(unique_request_seen_requests, unique_hash) do
