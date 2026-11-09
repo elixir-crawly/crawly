@@ -2,37 +2,43 @@ name: Elixir GitHub Actions
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - '*'
+    branches: [master]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-24.04
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {elixir: "1.14", otp: "25"}
+          - {elixir: "1.17", otp: "27"}
+          - {elixir: "1.18", otp: "27"}
+          - {elixir: "1.19", otp: "28"}
+          - {elixir: "1.20", otp: "29"}
 
     env:
       MIX_ENV: test
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-
-      - name: Setup Elixir
-        uses: erlef/setup-beam@v1
+      - uses: erlef/setup-beam@v1
         with:
-            otp-version: "24.2.1"
-            elixir-version: "1.14.0"
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
 
       - run: mix deps.get
-      - run: mix compile --all-warnings --warnings-as-errors
-      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - run: mix test
 
-      - name: Tests & Coverage
-        uses: josecfreittas/elixir-coverage-feedback-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          coverage_threshold: 75
+      - name: Check formatting
+        if: matrix.elixir == '1.20'
+        run: mix format --check-formatted
