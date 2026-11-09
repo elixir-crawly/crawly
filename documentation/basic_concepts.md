@@ -34,15 +34,34 @@ All items are processed sequentially and are processed by Item pipelines.
 
 In order to make a working web crawler, all the behaviour callbacks need to be implemented.
 
-`init()` - a part of the Crawly.Spider behaviour. This function should return a KVList which contains a `start_urls` entry with a list, which defines the starting requests made by Crawly. Alternatively you may provide `start_requests` if it's required
-to prepare first requests on `init()`. Which might be useful if, for example, you
-want to pass a session cookie to the starting request. Note: `start_requests` are
-processed before start_urls.
-\*\* This callback is going to be deprecated in favour of init/1. For now the backwards
-compatibility is kept with a help of macro which always generates `init/1`.
+`init/0` returns a keyword list containing `start_urls`, `start_requests`, or
+both. Use `start_requests` when an initial request needs custom headers or HTTP
+options; each value must be a `%Crawly.Request{}`. The requests in
+`start_requests` are processed before URLs in `start_urls`.
 
-`init(options)` same as `init/0` but also takes options (which can be passed from the engine during
-the spider start).
+`init/1` receives the options passed to `Crawly.Engine.start_spider/2`. For
+example, pass request headers to one spider at startup and use them when building
+its initial request:
+
+```elixir
+def init(opts) do
+  headers = Keyword.fetch!(opts, :request_headers)
+
+  [
+    start_requests: [
+      Crawly.Request.new("https://example.com/", headers)
+    ]
+  ]
+end
+
+Crawly.Engine.start_spider(MySpider,
+  request_headers: [{"Cookie", "consent=accepted"}]
+)
+```
+
+See the [`Crawly.Spider.init/1` callback](Crawly.Spider.html#c:init/1) for its
+options and the [`Crawly.Request.new/3` documentation](Crawly.Request.html#new/3)
+for request headers and HTTP options.
 
 `base_url()` - defines a base_url of the given Spider. This function is used by the DomainFilter in order to filter out all requests which are going outside of the crawled website.
 

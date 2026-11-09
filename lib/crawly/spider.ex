@@ -18,6 +18,15 @@ defmodule Crawly.Spider do
   """
 
   @callback init() :: [start_urls: list(), start_requests: list()]
+
+  @doc """
+  Returns the initial requests for a spider.
+
+  The `options` argument is the keyword list passed to
+  `Crawly.Engine.start_spider/2`.
+  Return `%Crawly.Request{}` values in `:start_requests` when an initial request
+  needs custom headers or HTTP options; build them with `Crawly.Request.new/3`.
+  """
   @callback init(options: keyword()) :: [
               start_urls: list(),
               start_requests: list()
