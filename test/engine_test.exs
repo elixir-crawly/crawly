@@ -58,65 +58,63 @@ defmodule EngineTest do
   end
 
   test ":log_to_file allows for logging to log file" do
-    :meck.expect(TestSpider, :override_settings, fn ->
-      [log_dir: "/my_tmp_dir", log_to_file: true]
-    end)
+    tmp_dir = System.tmp_dir!() |> Path.join("crawly_test_logs")
+    crawl_id = "test_crawl_#{System.unique_integer([:positive])}"
 
-    :meck.expect(Logger, :configure_backend, fn {_, :debug}, opts ->
-      log_file_path = Keyword.get(opts, :path)
-      assert log_file_path =~ "TestSpider"
-      assert log_file_path =~ "/my_tmp_dir"
+    :meck.expect(TestSpider, :override_settings, fn ->
+      [log_dir: tmp_dir, log_to_file: true]
     end)
 
     Crawly.Engine.refresh_spider_list()
+    Crawly.Engine.start_spider(TestSpider, crawl_id: crawl_id)
 
-    # test a started spider
-    Crawly.Engine.start_spider(TestSpider)
+    handler_id = :"crawly_TestSpider_#{crawl_id}"
+    assert {:ok, config} = :logger.get_handler_config(handler_id)
+    assert to_string(config.config.file) =~ tmp_dir
+    assert to_string(config.config.file) =~ "TestSpider"
 
-    assert :meck.num_calls(Logger, :configure_backend, :_) == 1
+    Crawly.Engine.stop_spider(TestSpider)
+
+    assert {:error, {:not_found, ^handler_id}} =
+             :logger.get_handler_config(handler_id)
   end
 
-  test "LoggerFileBackend is not configured when module is not loaded" do
+  test ":logger handler is not added when log_to_file is disabled" do
+    crawl_id = "no_log_#{System.unique_integer([:positive])}"
+
     :meck.expect(TestSpider, :override_settings, fn ->
-      [log_dir: "/my_tmp_dir", log_to_file: true]
-    end)
-
-    :meck.expect(Crawly.Utils, :ensure_loaded?, fn _ ->
-      false
-    end)
-
-    :meck.expect(Logger, :configure_backend, fn {_, :debug}, opts ->
-      log_file_path = Keyword.get(opts, :path)
-      assert log_file_path =~ "TestSpider"
-      assert log_file_path =~ "/my_tmp_dir"
+      [log_to_file: false]
     end)
 
     Crawly.Engine.refresh_spider_list()
+    Crawly.Engine.start_spider(TestSpider, crawl_id: crawl_id)
 
-    # test a started spider
-    Crawly.Engine.start_spider(TestSpider)
-    assert :meck.num_calls(Logger, :configure_backend, :_) == 0
+    handler_id = :"crawly_TestSpider_#{crawl_id}"
+
+    assert {:error, {:not_found, ^handler_id}} =
+             :logger.get_handler_config(handler_id)
+
+    Crawly.Engine.stop_spider(TestSpider)
   end
 
-  test "LoggerFileBackend is configured when module is loaded" do
+  test ":logger handler is configured and added when log_to_file is enabled" do
+    tmp_dir = System.tmp_dir!() |> Path.join("crawly_test_logs_enabled")
+    crawl_id = "enabled_#{System.unique_integer([:positive])}"
+
     :meck.expect(TestSpider, :override_settings, fn ->
-      [log_dir: "/my_tmp_dir", log_to_file: true]
-    end)
-
-    :meck.expect(Crawly.Utils, :ensure_loaded?, fn _ ->
-      true
-    end)
-
-    :meck.expect(Logger, :configure_backend, fn {_, :debug}, opts ->
-      log_file_path = Keyword.get(opts, :path)
-      assert log_file_path =~ "TestSpider"
-      assert log_file_path =~ "/my_tmp_dir"
+      [log_dir: tmp_dir, log_to_file: true]
     end)
 
     Crawly.Engine.refresh_spider_list()
+    Crawly.Engine.start_spider(TestSpider, crawl_id: crawl_id)
 
-    # test a started spider
-    Crawly.Engine.start_spider(TestSpider)
-    assert :meck.num_calls(Logger, :configure_backend, :_) == 1
+    handler_id = :"crawly_TestSpider_#{crawl_id}"
+    assert {:ok, config} = :logger.get_handler_config(handler_id)
+    assert to_string(config.config.file) =~ tmp_dir
+
+    Crawly.Engine.stop_spider(TestSpider)
+
+    assert {:error, {:not_found, ^handler_id}} =
+             :logger.get_handler_config(handler_id)
   end
 end

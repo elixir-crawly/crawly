@@ -45,22 +45,21 @@ defmodule Crawly.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 2.2"},
+      {:httpoison, "~> 3.0"},
       {:elixir_uuid, "~> 1.2"},
-      {:poison, "~> 3.1"},
-      {:gollum, "~> 0.5.0", hex: :new_gollum},
-      {:plug_cowboy, "~> 2.0"},
+      {:gollum, "~> 0.5.0",
+       github: "cmeon/gollum", branch: "update-dependencies"},
+      {:plug, "~> 1.20"},
+      {:plug_cowboy, "~> 2.9.0", optional: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:earmark, "~> 1.2", only: :dev},
-      {:meck, "~> 0.9", only: :test},
-      {:excoveralls, "~> 0.14.6", only: :test},
-      {:yaml_elixir, "~> 2.9"},
-      {:ex_json_schema, "~> 0.9.2"},
+      {:mdex, "~> 0.13.5", only: :dev},
+      {:meck, "~> 1.2.0", only: :test},
+      {:excoveralls, "~> 0.18.5", only: :test},
+      {:yaml_elixir, "~> 2.12.2"},
+      {:ex_json_schema, "~> 0.11.5"},
       # Add floki only for crawly standalone release
-      {:floki, "~> 0.33.0", only: [:dev, :test, :standalone_crawly]},
-      {:logger_file_backend, "~> 0.0.11",
-       only: [:test, :dev, :standalone_crawly]}
+      {:floki, "~> 0.38.4", only: [:dev, :test, :standalone_crawly]}
     ]
   end
 

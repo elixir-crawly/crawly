@@ -18,6 +18,23 @@ defmodule TestUtils do
 
     result
   end
+
+  def assert_eventually(fun, timeout \\ 2_000, interval \\ 20) do
+    deadline = System.monotonic_time(:millisecond) + timeout
+    do_assert_eventually(fun, deadline, interval)
+  end
+
+  defp do_assert_eventually(fun, deadline, interval) do
+    fun.()
+  rescue
+    error ->
+      if System.monotonic_time(:millisecond) >= deadline do
+        reraise error, __STACKTRACE__
+      else
+        Process.sleep(interval)
+        do_assert_eventually(fun, deadline, interval)
+      end
+  end
 end
 
 defmodule TestSpider do

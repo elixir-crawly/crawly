@@ -26,10 +26,10 @@ defmodule <%= Map.get(spider, "name") %> do
   end
 
   def extract_requests(document) do
-    Crawly.Utils.extract_requests(document, ~s(<%= Poison.encode!( get_in( spider, ["links_to_follow"]) )%>), base_url() )
+    Crawly.Utils.extract_requests(document, ~s(<%= JSON.encode!( get_in( spider, ["links_to_follow"]) )%>), base_url() )
   end
 
   def extract_items(document) do
-    Crawly.Utils.extract_items(document, ~s(<%= Poison.encode!( get_in( spider, ["fields"]) )%>))
+    Crawly.Utils.extract_items(document, ~s(<%= JSON.encode!( get_in( spider, ["fields"]) )%>))
   end
 end

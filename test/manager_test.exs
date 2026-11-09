@@ -1,6 +1,8 @@
 defmodule ManagerTest do
   use ExUnit.Case, async: false
 
+  import TestUtils, only: [assert_eventually: 1]
+
   alias Crawly.Engine
 
   setup do
@@ -76,13 +78,19 @@ defmodule ManagerTest do
       )
 
     Process.sleep(700)
-    assert :persistent_term.get(:spider_stop_reason) == :itemcount_limit
+
+    assert_eventually(fn ->
+      assert :persistent_term.get(:spider_stop_reason) == :itemcount_limit
+    end)
   end
 
   test "Closespider timeout is respected" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
     Process.sleep(600)
-    assert :persistent_term.get(:spider_stop_reason) == :itemcount_timeout
+
+    assert_eventually(fn ->
+      assert :persistent_term.get(:spider_stop_reason) == :itemcount_timeout
+    end)
   end
 
   test "Can't start already started spider" do
@@ -95,7 +103,10 @@ defmodule ManagerTest do
   test "Spider closed callback is called when spider is stopped" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
     :ok = Crawly.Engine.stop_spider(Manager.TestSpider, :manual_stop)
-    assert :persistent_term.get(:spider_stop_reason) == :manual_stop
+
+    assert_eventually(fn ->
+      assert :persistent_term.get(:spider_stop_reason) == :manual_stop
+    end)
   end
 
   test "It's possible to start a spider with start_requests" do

@@ -256,7 +256,7 @@ defmodule Crawly.Utils do
              base_url: binary(),
              requests: [Crawly.Request.t()]
   def extract_requests(document, selectors, base_url) do
-    selectors = Poison.decode!(selectors)
+    selectors = JSON.decode!(selectors)
 
     Enum.reduce(
       selectors,
@@ -286,7 +286,7 @@ defmodule Crawly.Utils do
              field_selectors: binary(),
              items: [map()]
   def extract_items(document, field_selectors) do
-    fields = Poison.decode!(field_selectors)
+    fields = JSON.decode!(field_selectors)
 
     item =
       Enum.reduce(
@@ -322,8 +322,8 @@ defmodule Crawly.Utils do
          "fields" => fields,
          "links_to_follow" => links
        }} ->
-        fields = Poison.encode!(fields)
-        links = Poison.encode!(links)
+        fields = JSON.encode!(fields)
+        links = JSON.encode!(links)
 
         Enum.map(
           # Work only with 5 first URLs, so we don't timeout

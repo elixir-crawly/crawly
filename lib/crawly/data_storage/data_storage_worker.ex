@@ -52,7 +52,7 @@ defmodule Crawly.DataStorage.Worker do
         {false, new_state} ->
           new_state
 
-        {new_item, new_state} ->
+        {new_item, %Worker{} = new_state} ->
           Logger.debug("Stored item: #{inspect(new_item)}")
           %Worker{new_state | stored_items: state.stored_items + 1}
       end

@@ -1,6 +1,6 @@
 defmodule APITest do
   use ExUnit.Case, async: false
-  use Plug.Test
+  import Plug.Test
 
   @opts Crawly.API.Router.init([])
 

@@ -46,7 +46,7 @@ defmodule Crawly.API.Router do
 
   plug(Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
-    json_decoder: Poison
+    json_decoder: JSON
   )
 
   plug(:match)

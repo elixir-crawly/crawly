@@ -176,7 +176,7 @@ defmodule Crawly.Worker do
   end
 
   ## Retry a request if max retries allows to do so
-  defp maybe_retry_request(spider, request) do
+  defp maybe_retry_request(spider, %Crawly.Request{} = request) do
     retries = request.retries
     retry_settings = Crawly.Utils.get_settings(:retry, spider, Keyword.new())
 

@@ -61,18 +61,8 @@ defmodule Crawly.Engine do
       |> Map.put_new_lazy(:crawl_id, &UUID.uuid1/0)
 
     # Filter all logs related to a given spider
-    case {Crawly.Utils.get_settings(:log_to_file, spider_name),
-          Crawly.Utils.ensure_loaded?(LoggerFileBackend)} do
-      {true, true} ->
-        configure_spider_logs(spider_name, opts[:crawl_id])
-
-      {true, false} ->
-        Logger.error(
-          ":logger_file_backend https://github.com/onkel-dirtus/logger_file_backend#loggerfilebackend must be installed as a peer dependency if log_to_file config is set to true"
-        )
-
-      _ ->
-        false
+    if Crawly.Utils.get_settings(:log_to_file, spider_name) do
+      configure_spider_logs(spider_name, opts[:crawl_id])
     end
 
     GenServer.call(
@@ -186,7 +176,7 @@ defmodule Crawly.Engine do
   def handle_call(
         {:start_spider, spider_name, crawl_id, options},
         _form,
-        state
+        %Crawly.Engine{} = state
       ) do
     result =
       case Map.get(state.started_spiders, spider_name) do
@@ -212,7 +202,11 @@ defmodule Crawly.Engine do
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
-  def handle_call({:stop_spider, spider_name, reason}, _form, state) do
+  def handle_call(
+        {:stop_spider, spider_name, reason},
+        _form,
+        %Crawly.Engine{} = state
+      ) do
     {msg, new_started_spiders} =
       case Map.pop(state.started_spiders, spider_name) do
         {nil, _} ->
@@ -233,13 +227,15 @@ defmodule Crawly.Engine do
 
           Crawly.EngineSup.stop_spider(pid)
 
+          remove_spider_logs(spider_name, crawl_id)
+
           {:ok, new_started_spiders}
       end
 
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
-  def handle_call({:get_spider, spider_name}, _from, state) do
+  def handle_call({:get_spider, spider_name}, _from, %Crawly.Engine{} = state) do
     return =
       if Enum.member?(state.known_spiders, spider_name) do
         format_spider_info(spider_name, state)
@@ -248,7 +244,7 @@ defmodule Crawly.Engine do
     {:reply, return, state}
   end
 
-  def handle_cast(:refresh_spider_list, state) do
+  def handle_cast(:refresh_spider_list, %Crawly.Engine{} = state) do
     updated = get_updated_known_spider_list(state.known_spiders)
     {:noreply, %Crawly.Engine{state | known_spiders: updated}}
   end
@@ -273,14 +269,64 @@ defmodule Crawly.Engine do
 
   defp configure_spider_logs(spider_name, crawl_id) do
     log_file_path = Crawly.Utils.spider_log_path(spider_name, crawl_id)
-    Logger.add_backend({LoggerFileBackend, :debug})
 
-    Logger.configure_backend({LoggerFileBackend, :debug},
-      path: Crawly.Utils.spider_log_path(spider_name, crawl_id),
+    log_file_path
+    |> Path.dirname()
+    |> File.mkdir_p!()
+
+    handler_id = spider_handler_id(spider_name, crawl_id)
+
+    filter = {
+      fn log_event, _extra ->
+        case log_event do
+          %{meta: %{crawl_id: ^crawl_id}} -> log_event
+          _ -> :stop
+        end
+      end,
+      []
+    }
+
+    config = %{
       level: :debug,
-      metadata_filter: [crawl_id: crawl_id]
-    )
+      formatter:
+        {:logger_formatter,
+         %{template: [:time, " [", :level, "] ", :msg, "\n"]}},
+      filters: [spider_filter: filter],
+      config: %{
+        file: String.to_charlist(log_file_path),
+        filesync_repeat_interval: :no_repeat
+      }
+    }
 
-    Logger.debug("Writing logs to #{log_file_path}")
+    handler_id
+    |> :logger.add_handler(:logger_std_h, config)
+    |> case do
+      :ok ->
+        Logger.metadata(crawl_id: crawl_id)
+        Logger.debug("Writing logs to #{log_file_path}")
+
+      {:error, {:already_exist, _}} ->
+        :ok
+
+      {:error, error} ->
+        Logger.error(
+          "Failed to configure log handler #{inspect(handler_id)}: #{inspect(error)}"
+        )
+    end
+  end
+
+  defp remove_spider_logs(spider_name, crawl_id) do
+    handler_id = spider_handler_id(spider_name, crawl_id)
+    :logger.remove_handler(handler_id)
+  end
+
+  defp spider_handler_id(spider_name, crawl_id) do
+    spider_name_str =
+      case Atom.to_string(spider_name) do
+        "Elixir." <> name_str -> name_str
+        name_str -> name_str
+      end
+
+    String.to_atom("crawly_#{spider_name_str}_#{crawl_id}")
   end
 end
