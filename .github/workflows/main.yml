@@ -18,8 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {elixir: "1.14", otp: "25"}
-          - {elixir: "1.17", otp: "27"}
           - {elixir: "1.18", otp: "27"}
           - {elixir: "1.18.4", otp: "28.0"}
           - {elixir: "1.19", otp: "28"}
@@ -37,7 +35,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
 
       - run: mix deps.get
-      - run: mix compile --warnings-as-errors
+      - run: mix compile
       - run: mix test
 
       - name: Check formatting

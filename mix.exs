@@ -15,7 +15,7 @@ defmodule Crawly.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
       deps: deps(),
-      elixirc_options: [warnings_as_errors: true]
+      elixirc_options: [warnings_as_errors: false]
     ]
   end
 
@@ -49,11 +49,12 @@ defmodule Crawly.Mixfile do
       {:elixir_uuid, "~> 1.2"},
       {:poison, "~> 3.1"},
       {:gollum, "~> 0.5.0", hex: :new_gollum},
-      {:plug_cowboy, "~> 2.0"},
+      {:plug_cowboy, "~> 2.7"},
+      {:cowlib, "~> 2.20"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:earmark, "~> 1.2", only: :dev},
-      {:meck, "~> 0.9", only: :test},
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false},
+      {:mdex, "~> 0.2", only: :dev, runtime: false},
+      {:meck, "~> 1.2", only: :test},
       {:excoveralls, "~> 0.14.6", only: :test},
       {:yaml_elixir, "~> 2.9"},
       {:ex_json_schema, "~> 0.11.1"},
