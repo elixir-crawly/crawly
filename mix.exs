@@ -54,7 +54,7 @@ defmodule Crawly.Mixfile do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false},
       {:mdex, "~> 0.2", only: :dev, runtime: false},
-      {:meck, "~> 0.9", only: :test},
+      {:meck, "~> 1.2", only: :test},
       {:excoveralls, "~> 0.14.6", only: :test},
       {:yaml_elixir, "~> 2.9"},
       {:ex_json_schema, "~> 0.11.1"},
