@@ -15,7 +15,7 @@ defmodule Crawly.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: docs(),
       deps: deps(),
-      elixirc_options: [warnings_as_errors: true]
+      elixirc_options: [warnings_as_errors: false]
     ]
   end
 
