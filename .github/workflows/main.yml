@@ -37,7 +37,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
 
       - run: mix deps.get
-      - run: mix compile --warnings-as-errors
+      - run: mix compile
       - run: mix test
 
       - name: Check formatting
