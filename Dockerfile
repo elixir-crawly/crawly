@@ -1,5 +1,5 @@
 # ===================== base =====================
-FROM elixir:alpine as build
+FROM elixir:1.20-otp-29-alpine AS build
 
 # install build dependencies
 RUN apk add --update git make gcc libc-dev autoconf libtool automake
