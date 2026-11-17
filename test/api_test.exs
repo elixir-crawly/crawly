@@ -1,23 +1,11 @@
 defmodule APITest do
-  use ExUnit.Case, async: false
+  use Crawly.TestCase, async: false
   use Plug.Test
 
   @opts Crawly.API.Router.init([])
 
-  setup do
-    Crawly.Engine.stop_spider(TestSpider)
-
-    on_exit(fn ->
-      :meck.unload()
-
-      :get
-      |> conn("/spiders/TestSpider/stop", "")
-      |> Crawly.API.Router.call(@opts)
-    end)
-
-    Crawly.SimpleStorage.delete(:spiders, "TestSpiderYML")
-    Crawly.SimpleStorage.delete(:spiders, "TestSpiderYMLForEdit")
-  end
+  # Running spiders, mocks and SimpleStorage are reset around every test
+  # by Crawly.TestCase.
 
   test "returns welcome" do
     conn =

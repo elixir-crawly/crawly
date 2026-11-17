@@ -1,5 +1,5 @@
 defmodule Crawly.Fetchers.CrawlyRenderServerTest do
-  use ExUnit.Case
+  use Crawly.TestCase
 
   alias Crawly.Fetchers.CrawlyRenderServer
 
