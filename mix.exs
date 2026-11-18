@@ -9,7 +9,7 @@ defmodule Crawly.Mixfile do
       app: :crawly,
       version: @version,
       name: "Crawly",
-      elixir: "~> 1.14",
+      elixir: "~> 1.18",
       package: package(),
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
