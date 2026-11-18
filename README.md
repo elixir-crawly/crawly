@@ -212,7 +212,6 @@ To be discussed
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
 2. E-commerce websites: https://github.com/oltarasenko/products-advisor
 3. Car shops: https://github.com/oltarasenko/crawly-cars
-4. JavaScript based website (Splash example): https://github.com/oltarasenko/autosites
 
 ## Contributors
 
