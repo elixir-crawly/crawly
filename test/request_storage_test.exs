@@ -1,13 +1,11 @@
 defmodule RequestStorageTest do
-  use ExUnit.Case, async: false
-
-  setup_all do
-    :meck.new(:test_spider, [:non_strict])
-    :meck.expect(:test_spider, :base_url, fn -> "example.com" end)
-    :ok
-  end
+  use Crawly.TestCase, async: false
 
   setup do
+    # Created per test: Crawly.TestCase unloads all mocks after every test.
+    :meck.new(:test_spider, [:non_strict])
+    :meck.expect(:test_spider, :base_url, fn -> "example.com" end)
+
     {:ok, pid} = Crawly.RequestsStorage.start_worker(:test_spider, "crawl_id")
 
     on_exit(fn ->

@@ -1,5 +1,5 @@
 defmodule CrawlyTest do
-  use ExUnit.Case
+  use Crawly.TestCase
 
   describe "fetch/1" do
     test "can fetch a given url" do
