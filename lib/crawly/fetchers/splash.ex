@@ -21,8 +21,6 @@ defmodule Crawly.Fetchers.Splash do
   """
   @behaviour Crawly.Fetchers.Fetcher
 
-  require Logger
-
   @spec fetch(request, client_options) :: response
         when request: Crawly.Request.t(),
              client_options: [binary()],
