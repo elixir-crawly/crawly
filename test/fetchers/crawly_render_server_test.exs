@@ -6,7 +6,8 @@ defmodule Crawly.Fetchers.CrawlyRenderServerTest do
   test "throws an error when base_url is not set" do
     request = %{
       url: "https://example.com",
-      headers: %{"User-Agent" => "Custom User Agent"}
+      headers: %{"User-Agent" => "Custom User Agent"},
+      options: []
     }
 
     client_options = []

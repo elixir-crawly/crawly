@@ -13,10 +13,13 @@ defmodule ManagerTest do
     end)
 
     on_exit(fn ->
-      Engine.running_spiders()
-      |> Map.keys()
-      |> Enum.each(fn spider ->
-        Engine.stop_spider(spider, :stopped_by_on_exit)
+      # on_exit runs after capture_log has stopped, so capture shutdown noise here
+      ExUnit.CaptureLog.capture_log(fn ->
+        Engine.running_spiders()
+        |> Map.keys()
+        |> Enum.each(fn spider ->
+          Engine.stop_spider(spider, :stopped_by_on_exit)
+        end)
       end)
 
       :persistent_term.erase(:spider_stop_reason)

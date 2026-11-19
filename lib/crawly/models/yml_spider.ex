@@ -96,6 +96,11 @@ defmodule Crawly.Models.YMLSpider do
     name = String.to_atom("Elixir." <> Map.get(yml_map, "name"))
     Crawly.Utils.register_spider(name)
 
+    # Editing a YML spider legitimately redefines its module. Unload the old
+    # version first so the compiler doesn't warn about the redefinition.
+    :code.purge(name)
+    :code.delete(name)
+
     Code.eval_string(template)
   end
 end
