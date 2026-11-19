@@ -70,7 +70,7 @@ defmodule Crawly.RequestsStorage.Worker do
   end
 
   # Get current request from the storage
-  def handle_call(:pop, _from, state) do
+  def handle_call(:pop, _from, %Worker{} = state) do
     %Worker{requests: requests, count: cnt} = state
 
     {request, rest, new_cnt} =
