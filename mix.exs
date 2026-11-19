@@ -60,6 +60,7 @@ defmodule Crawly.Mixfile do
       {:ex_json_schema, "~> 0.11.1"},
       # Add floki only for crawly standalone release
       {:floki, "~> 0.33.0", only: [:dev, :test, :standalone_crawly]},
+      {:logger_backends, "~> 1.0"},
       {:logger_file_backend, "~> 0.0.11",
        only: [:test, :dev, :standalone_crawly]}
     ]

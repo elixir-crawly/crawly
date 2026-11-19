@@ -277,9 +277,9 @@ defmodule Crawly.Engine do
 
   defp configure_spider_logs(spider_name, crawl_id) do
     log_file_path = Crawly.Utils.spider_log_path(spider_name, crawl_id)
-    Logger.add_backend({LoggerFileBackend, :debug})
+    LoggerBackends.add({LoggerFileBackend, :debug})
 
-    Logger.configure_backend({LoggerFileBackend, :debug},
+    LoggerBackends.configure({LoggerFileBackend, :debug},
       path: Crawly.Utils.spider_log_path(spider_name, crawl_id),
       level: :debug,
       metadata_filter: [crawl_id: crawl_id]
