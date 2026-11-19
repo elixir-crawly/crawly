@@ -93,7 +93,7 @@ defmodule Crawly.Models.Job do
   @spec update(String.t(), integer(), term()) :: :ok | {:error, any}
   def update(crawl_id, total_scraped, stop_reason) do
     case Crawly.SimpleStorage.get(@table_name, crawl_id) do
-      {:ok, job_item} ->
+      {:ok, %Crawly.Models.Job{} = job_item} ->
         new_job_item = %Crawly.Models.Job{
           job_item
           | stop_reason: stop_reason,

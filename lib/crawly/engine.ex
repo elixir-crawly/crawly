@@ -186,7 +186,7 @@ defmodule Crawly.Engine do
   def handle_call(
         {:start_spider, spider_name, crawl_id, options},
         _form,
-        state
+        %Crawly.Engine{} = state
       ) do
     result =
       case Map.get(state.started_spiders, spider_name) do
@@ -212,7 +212,11 @@ defmodule Crawly.Engine do
     {:reply, msg, %Crawly.Engine{state | started_spiders: new_started_spiders}}
   end
 
-  def handle_call({:stop_spider, spider_name, reason}, _form, state) do
+  def handle_call(
+        {:stop_spider, spider_name, reason},
+        _form,
+        %Crawly.Engine{} = state
+      ) do
     {msg, new_started_spiders} =
       case Map.pop(state.started_spiders, spider_name) do
         {nil, _} ->
@@ -248,7 +252,7 @@ defmodule Crawly.Engine do
     {:reply, return, state}
   end
 
-  def handle_cast(:refresh_spider_list, state) do
+  def handle_cast(:refresh_spider_list, %Crawly.Engine{} = state) do
     updated = get_updated_known_spider_list(state.known_spiders)
     {:noreply, %Crawly.Engine{state | known_spiders: updated}}
   end
