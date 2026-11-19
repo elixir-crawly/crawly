@@ -355,10 +355,6 @@ it makes the spider code quite complicated and fragile.
 Of course it's good when you can just get pages already rendered for you. And we're
 solving this problem with a help of pluggable HTTP fetchers.
 
-Crawly's codebase contains a special Splash fetcher, which allows to do the browser
-rendering before the page content is being parsed by a spider. Also it's possible
-to build own fetchers.
-
 
 ### Using crawly-render-server for browser rendering
 
@@ -384,22 +380,3 @@ import Config
 config :crawly,
   fetcher: {Crawly.Fetchers.CrawlyRenderServer, [base_url: "http://localhost:3000/render"]},
 ```
-
-
-### Using splash fetcher for browser rendering
-
-NOTE: It looks like splash is not maintained anymore.
-
-We could not run it's Docker images on M1/M2 mac machines. We could not
-build it from sources as well :(
-
-Splash is a lightweight opensourse browser implementation built with QT and python.
-See: https://splash.readthedocs.io/en/stable/api.html
-
-You can try using Splash with Crawly in the following way:
-
-1. Start splash locally (e.g. using a docker image):
-   `docker run -it -p 8050:8050 scrapinghub/splash --max-timeout 300`
-2. Configure Crawly to use Splash:
-   `fetcher: {Crawly.Fetchers.Splash, [base_url: "http://localhost:8050/render.html"]}`
-3. Now all your pages will be automatically rendered by Splash.
