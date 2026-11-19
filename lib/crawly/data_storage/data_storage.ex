@@ -73,7 +73,11 @@ defmodule Crawly.DataStorage do
     {:reply, message, state}
   end
 
-  def handle_call({:start_worker, spider_name, crawl_id}, _from, state) do
+  def handle_call(
+        {:start_worker, spider_name, crawl_id},
+        _from,
+        %Crawly.DataStorage{} = state
+      ) do
     {msg, new_state} =
       case Map.get(state.workers, spider_name) do
         nil ->
