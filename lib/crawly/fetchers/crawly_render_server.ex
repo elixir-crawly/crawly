@@ -41,7 +41,7 @@ defmodule Crawly.Fetchers.CrawlyRenderServer do
       end
 
     req_body =
-      Poison.encode!(%{
+      JSON.encode!(%{
         url: request.url,
         headers: Map.new(request.headers)
       })
@@ -53,7 +53,7 @@ defmodule Crawly.Fetchers.CrawlyRenderServer do
            request.options
          ) do
       {:ok, response} ->
-        js = Poison.decode!(response.body)
+        js = JSON.decode!(response.body)
 
         new_response = %HTTPoison.Response{
           body: Map.get(js, "page"),

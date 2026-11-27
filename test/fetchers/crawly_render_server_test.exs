@@ -36,9 +36,9 @@ defmodule Crawly.Fetchers.CrawlyRenderServerTest do
       assert headers == [{"content-type", "application/json"}]
       assert base_url == "http://localhost:3000"
 
-      body = Poison.decode!(body, %{keys: :atoms})
-      assert "https://example.com" == body.url
-      assert %{:"User-Agent" => "Custom User Agent"} == body.headers
+      body = JSON.decode!(body)
+      assert "https://example.com" == body["url"]
+      assert %{"User-Agent" => "Custom User Agent"} == body["headers"]
     end)
 
     CrawlyRenderServer.fetch(request, client_options)

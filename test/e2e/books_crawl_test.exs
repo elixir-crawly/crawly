@@ -82,7 +82,7 @@ defmodule Crawly.E2E.BooksCrawlTest do
     expected =
       @expected_books_file
       |> File.read!()
-      |> Poison.decode!()
+      |> JSON.decode!()
       |> Enum.map(
         &%{
           "url" => base_url <> &1["path"],
@@ -222,7 +222,7 @@ defmodule Crawly.E2E.BooksCrawlTest do
 
     cond do
       content != nil and content == previous ->
-        content |> String.split("\n", trim: true) |> Enum.map(&Poison.decode!/1)
+        content |> String.split("\n", trim: true) |> Enum.map(&JSON.decode!/1)
 
       attempts == 0 ->
         flunk("items file #{file} was never written")

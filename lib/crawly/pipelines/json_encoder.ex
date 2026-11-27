@@ -23,17 +23,14 @@ defmodule Crawly.Pipelines.JSONEncoder do
 
   @impl Crawly.Pipeline
   def run(item, state, _opts \\ []) do
-    case Poison.encode(item) do
-      {:ok, new_item} ->
-        {new_item, state}
+    {JSON.encode!(item), state}
+  rescue
+    error ->
+      Logger.error(
+        "Could not encode the following item: #{inspect(item)} into json,
+          reason: #{Exception.message(error)}"
+      )
 
-      {:error, reason} ->
-        Logger.error(
-          "Could not encode the following item: #{inspect(item)} into json,
-          reason: #{inspect(reason)}"
-        )
-
-        {false, state}
-    end
+      {false, state}
   end
 end
