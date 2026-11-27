@@ -141,7 +141,7 @@ defmodule UtilsTest do
     {:ok, document} = Floki.parse_document(html)
 
     selectors =
-      Poison.encode!([%{"selector" => "a.link", "attribute" => "href"}])
+      JSON.encode!([%{"selector" => "a.link", "attribute" => "href"}])
 
     [request] =
       Crawly.Utils.extract_requests(document, selectors, "https://github.com")
@@ -168,7 +168,7 @@ defmodule UtilsTest do
     {:ok, document} = Floki.parse_document(html)
 
     selectors =
-      Poison.encode!([
+      JSON.encode!([
         %{"selector" => "a.hex", "attribute" => "href"},
         %{"selector" => "a.link", "attribute" => "href"}
       ])
@@ -210,7 +210,7 @@ defmodule UtilsTest do
     {:ok, document} = Floki.parse_document(html)
 
     selectors =
-      Poison.encode!([
+      JSON.encode!([
         %{"selector" => ".headline", "name" => "title"},
         %{"selector" => "span.body", "name" => "body"}
       ])
