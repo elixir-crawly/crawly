@@ -25,9 +25,15 @@ jobs:
 
     env:
       MIX_ENV: test
+      CRAWLY_E2E_BASE_URL: http://localhost:8080
+      # So Erlang prints UTF-8 (e.g. "£" in the e2e crawl report)
+      LANG: C.UTF-8
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Start the books site for the e2e test
+        run: docker compose -f test/e2e/docker-compose.yml up -d --build --wait
 
       - uses: erlef/setup-beam@v1
         with:
@@ -38,6 +44,17 @@ jobs:
       - run: mix compile
       - run: mix test
 
+      # Crawls the local books.toscrape.com copy, see test/e2e/books_crawl_test.exs.
+      # Runs even if the unit tests failed, so both results are visible.
+      - name: End-to-end crawl
+        if: ${{ !cancelled() }}
+        run: mix test --only e2e
+
+      - name: Books site logs
+        if: failure()
+        run: docker compose -f test/e2e/docker-compose.yml logs
+
       - name: Check formatting
         if: matrix.elixir == '1.20'
         run: mix format --check-formatted
+
