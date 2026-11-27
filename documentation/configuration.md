@@ -35,6 +35,13 @@ config :crawly,
   ]
 ```
 
+The two timeout options of the default fetcher (`Crawly.Fetchers.HTTPoisonFetcher`) are:
+
+* `:timeout` is how long to wait to connect.
+* `:recv_timeout` is how long to wait for the response.
+
+Both are in milliseconds. If neither `Crawly.Middlewares.RequestOptions` nor the request sets them, the fetcher uses `timeout: 8_000` and `recv_timeout: 5_000`. Use `recv_timeout: :infinity` to wait without a limit.
+
 ### `parsers` :: [module()]
 
 default: nil
@@ -127,6 +134,8 @@ Example:
 default: Crawly.Fetchers.HTTPoisonFetcher
 
 Allows to specify a custom HTTP client which will be performing request to the crawler target.
+
+The default `Crawly.Fetchers.HTTPoisonFetcher` applies default timeouts (`timeout: 8_000`, `recv_timeout: 5_000`) unless the request sets its own. See the `middlewares` section above for what each timeout means.
 
 ### log_dir :: String.t()
 
