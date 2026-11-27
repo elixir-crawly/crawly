@@ -45,23 +45,22 @@ defmodule Crawly.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 2.2"},
+      {:httpoison, "~> 3.0"},
       {:elixir_uuid, "~> 1.2"},
-      {:gollum, "~> 0.5.0", hex: :new_gollum},
+      {:gollum, "~> 0.6.0", hex: :new_gollum},
       {:plug_cowboy, "~> 2.7"},
       {:cowlib, "~> 2.20"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false},
       {:mdex, "~> 0.2", only: :dev, runtime: false},
       {:meck, "~> 1.2", only: :test},
-      {:excoveralls, "~> 0.14.6", only: :test},
+      {:excoveralls, "~> 0.18", only: :test},
       {:yaml_elixir, "~> 2.9"},
       {:ex_json_schema, "~> 0.11.1"},
       # Add floki only for crawly standalone release
-      {:floki, "~> 0.33.0", only: [:dev, :test, :standalone_crawly]},
+      {:floki, "~> 0.38.0", only: [:dev, :test, :standalone_crawly]},
       {:logger_backends, "~> 1.0"},
-      {:logger_file_backend, "~> 0.0.11",
-       only: [:test, :dev, :standalone_crawly]}
+      {:logger_file_backend, "~> 0.1", only: [:test, :dev, :standalone_crawly]}
     ]
   end
 
