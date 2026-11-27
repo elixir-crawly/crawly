@@ -2,7 +2,7 @@ defmodule Crawly.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/oltarasenko/crawly"
-  @version "0.17.2"
+  @version "0.18.0"
 
   def project do
     [
@@ -71,7 +71,7 @@ defmodule Crawly.Mixfile do
       extras: extras(),
       main: "readme",
       source_url: @source_url,
-      source_ref: "v#{@version}",
+      source_ref: @version,
       formatters: ["html"],
       groups_for_modules: [
         "Building Spiders": [
@@ -107,6 +107,7 @@ defmodule Crawly.Mixfile do
       "documentation/experimental_ui.md",
       "documentation/standalone_crawly.md",
       "documentation/spiders_in_yml.md",
+      "CHANGELOG.md": [title: "Changelog"],
       LICENSE: [title: "License"],
       "README.md": [title: "Introduction", file: "readme"]
     ]

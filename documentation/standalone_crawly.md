@@ -79,7 +79,8 @@ Here we will show how re-implement the example from Quickstart, to achieve the s
         }].
         ```
 
-    4. Now lets start the Crawly (First pull it from DockerHub: `docker pull oltarasenko/crawly:0.15.0`):
+    4. Now lets start the Crawly. First build the image from the root of the Crawly repository: `docker build -t crawly .`
+       (The newest image on DockerHub is `oltarasenko/crawly:0.15.0`, which is older than this release.)
         ```
         docker run --name crawly -e "SPIDERS_DIR=/app/spiders" \
          -it -p 4001:4001 -v $(pwd)/spiders:/app/spiders \
@@ -87,7 +88,7 @@ Here we will show how re-implement the example from Quickstart, to achieve the s
          crawly
         ```
 
-        You can either fetch the latest version of Crawly from DockerHub or built it yourself (`docker build -t crawly .`)
+        To use the old DockerHub image instead, pull it with `docker pull oltarasenko/crawly:0.15.0` and replace `crawly` with `oltarasenko/crawly:0.15.0` in the command above.
 
         ** SPIDERS_DIR environment variable specifies a folder from which additional spiders are going to be fetched. `./spiders` is used by default
 

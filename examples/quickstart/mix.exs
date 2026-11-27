@@ -5,7 +5,7 @@ defmodule Quickstart.MixProject do
     [
       app: :quickstart,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,7 +23,7 @@ defmodule Quickstart.MixProject do
   defp deps do
     [
       {:crawly, path: "../.."},
-      {:floki, "~> 0.33.0"}
+      {:floki, "~> 0.38"}
     ]
   end
 end
