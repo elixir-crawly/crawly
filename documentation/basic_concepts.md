@@ -92,7 +92,7 @@ Where:
 2. headers - define http headers which are going to be used with the given request
 3. options - would define options (like follow redirects).
 
-Crawly uses HTTPoison library to perform the requests, but we have plans to extend the support with other pluggable backends like selenium and others.
+By default Crawly uses the HTTPoison library to perform the requests (`Crawly.Fetchers.HTTPoisonFetcher`). Fetchers are pluggable: see [Browser rendering](#browser-rendering) for `Crawly.Fetchers.CrawlyRenderServer`, or implement the `Crawly.Fetchers.Fetcher` behaviour for your own HTTP client.
 
 Responses are defined in the same way as HTTPoison responses. See more details here: https://hexdocs.pm/httpoison/HTTPoison.Response.html#content
 
@@ -228,7 +228,7 @@ defmodule MyApp.MyProxyMiddleware do
       value ->
         old_options = request.options
         new_options = [proxy: opts.proxy, proxy_auth: opts.proxy_auth]
-        new_request =  Map.put(request, :options, old_optoins ++ new_options)
+        new_request =  Map.put(request, :options, old_options ++ new_options)
         {new_request, state}
     end
   end

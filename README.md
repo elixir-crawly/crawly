@@ -15,8 +15,15 @@ historical archival.
 
 ## Requirements
 
-1. Elixir `~> 1.18`
+1. Elixir `~> 1.18` and Erlang/OTP 27 or newer
 2. Works on GNU/Linux, Windows, macOS X, and BSD.
+
+## Upgrading to 0.18
+
+0.18.0 has breaking changes: Elixir 1.18+, a new `Crawly.fetch/2` return
+value, the Splash fetcher removed, Poison replaced by Elixir's `JSON`, and
+HTTPoison 3 / hackney 4. See the [CHANGELOG](CHANGELOG.md) for what changed
+and how to update your code.
 
 
 ## Quickstart
@@ -27,8 +34,8 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.17.2"},
-         {:floki, "~> 0.33.0"}
+         {:crawly, "~> 0.18.0"},
+         {:floki, "~> 0.38"}
        ]
    end
    ```
@@ -243,6 +250,8 @@ limitations under the License.
 
 1. Update version in mix.exs
 2. Update version in quickstart (README.md, this file)
-3. Commit and create a new tag: `git commit && git tag 0.xx.0 && git push origin master --follow-tags`
-4. Build docs: `mix docs`
-5. Publish hex release: `mix hex.publish`
+3. Add the release to CHANGELOG.md
+4. Check for vulnerable or retired dependencies: `mix hex.audit`
+5. Commit and create a new tag: `git commit && git tag -a 0.xx.0 -m "Release 0.xx.0" && git push origin master --follow-tags`
+6. Build docs: `mix docs`
+7. Publish hex release: `mix hex.publish`

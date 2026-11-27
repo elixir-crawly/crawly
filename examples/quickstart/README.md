@@ -1,21 +1,20 @@
 # Quickstart
 
-**TODO: Add description**
+The spider from the [Crawly README](../../README.md#quickstart), as a ready
+project. It crawls <https://books.toscrape.com/> and writes the books it finds
+to `/tmp/BooksToScrape_<timestamp>.jl`.
 
-## Installation
+It uses Crawly from this repository (`{:crawly, path: "../.."}`). To use the
+Hex release in your own project, depend on `{:crawly, "~> 0.18.0"}` instead.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `quickstart` to your list of dependencies in `mix.exs`:
+Requires Elixir 1.18 or newer.
 
-```elixir
-def deps do
-  [
-    {:quickstart, "~> 0.1.0"}
-  ]
-end
+## Run it
+
+```bash
+mix deps.get
+iex -S mix run -e "Crawly.Engine.start_spider(BooksToScrape)"
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/quickstart>.
-
+The crawl stops after 100 items or 10 seconds without new items (see
+`config/config.exs`).

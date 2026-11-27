@@ -35,6 +35,6 @@ defmodule BooksToScrape do
         |> Crawly.Utils.request_from_url()
       end)
 
-    %{items: items, requests: next_requests}
+    %Crawly.ParsedItem{items: items, requests: next_requests}
   end
 end
